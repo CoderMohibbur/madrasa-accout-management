@@ -40,6 +40,9 @@
                                 <x-dropdown-link :href="route('add_class.index')" :active="request()->routeIs('add_class')">
                                     {{ __('Add Class') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link :href="route('add_month.index')" :active="request()->routeIs('add_month')">
+                                    {{ __('Add Month') }}
+                                </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>
