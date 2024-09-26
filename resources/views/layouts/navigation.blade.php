@@ -37,15 +37,8 @@
                             </x-slot>
 
                             <x-slot name="content">
-                                <x-dropdown-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                                    {{ __('Dashboard') }}
-                                </x-dropdown-link>
-
-                                <x-dropdown-link :href="route('test')" :active="request()->routeIs('test')">
-                                    {{ __('Test') }}
-                                </x-dropdown-link>
-                                <x-dropdown-link :href="route('test')" :active="request()->routeIs('test')">
-                                    {{ __('Test') }}
+                                <x-dropdown-link :href="route('add_class.index')" :active="request()->routeIs('add_class')">
+                                    {{ __('Add Class') }}
                                 </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
@@ -114,8 +107,8 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('test')" :active="request()->routeIs('test')">
-                {{ __('Test') }}
+            <x-responsive-nav-link :href="route('add_class.index')" :active="request()->routeIs('add_class.index')">
+                {{ __('Add Class') }}
             </x-responsive-nav-link>
         </div>
 
