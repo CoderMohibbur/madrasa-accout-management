@@ -7,6 +7,7 @@ use App\Http\Controllers\AddMonthController;
 use App\Http\Controllers\FeesTypeController;
 use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\AddAcademyController;
+use App\Http\Controllers\SectionController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -59,6 +60,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/add-fees-type/{id}/edit', [FeesTypeController::class, 'edit'])->name('add_fees_type.edit');
     Route::put('/add-fees-type/{id}', [FeesTypeController::class, 'update'])->name('add_fees_type.update');
     Route::delete('/add-fees-type/{id}', [FeesTypeController::class, 'destroy'])->name('add_fees_type.destroy');
+
+    // Section
+    Route::get('/section',[SectionController::class, 'index'])->name('Section.index');
+    Route::post('/section', [SectionController::class, 'store'])->name('Section.store');
+    Route::get('/section/{id}/edit', [SectionController::class, 'edit'])->name('Section.edit');
+    Route::put('/section/{id}', [SectionController::class, 'update'])->name('Section.update');
+    Route::delete('/section/{id}', [SectionController::class, 'destroy'])->name('Section.destroy');
 });
 
 

@@ -5,9 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AddAcademy extends Model
+class Section extends Model
 {
     use HasFactory;
-    protected $fillable = ['year', 'academic_years','starting_date','ending_date','status'];
-
+    protected $fillable = ['name', 'status','isActived','isDeleted'];
 }
