@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class AddAcademyController extends Controller
 {
-  public function index()
+    public function index()
     {
         // Fetch all years
         $years = AddAcademy::all();
@@ -21,9 +21,9 @@ class AddAcademyController extends Controller
         // Validate the form inputs
         $validated = $request->validate([
             'year' => 'required|string|max:255',
-            'academic_years'=>'required|string|max:255',
-            'starting_date'=>'required|date',
-            'ending_date'=>'required|date',
+            'academic_years' => 'required|string|max:255',
+            'starting_date' => 'required|date',
+            'ending_date' => 'required|date',
             'status' => 'required|in:active,inactive', // Ensure the status is either 'activate' or 'deactivate'
         ]);
 
@@ -53,9 +53,9 @@ class AddAcademyController extends Controller
         // Validate the request
         $request->validate([
             'year' => 'required|string|max:255',
-            'academic_years'=>'required|string|max:255',
-            'starting_date'=>'required|date',
-            'ending_date'=>'required|date',
+            'academic_years' => 'required|string|max:255',
+            'starting_date' => 'required|date',
+            'ending_date' => 'required|date',
             'status' => 'required|in:active,inactive',
         ]);
 

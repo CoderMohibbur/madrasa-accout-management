@@ -7,12 +7,13 @@ use Illuminate\Http\Request;
 
 class SectionController extends Controller
 {
-    public function index(){
+    public function index()
+    {
 
         $Sections = Section::all();
 
 
-        return view('settings.section',compact('Sections'));
+        return view('settings.section', compact('Sections'));
 
     }
     public function store(Request $request)
@@ -71,5 +72,5 @@ class SectionController extends Controller
         // Redirect back to the list of classes with a success message
         return redirect()->route('add_month.index')->with('success', 'Class deleted successfully!');
     }
-   
+
 }

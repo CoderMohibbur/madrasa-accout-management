@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('add_academies', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            
+            $table->string('year');
+            $table->string('academic_years');
+            $table->date('starting_date');
+            $table->date('ending_date');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });
