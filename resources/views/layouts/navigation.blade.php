@@ -49,6 +49,9 @@
                                 <x-dropdown-link :href="route('accounting.index')" :active="request()->routeIs('accounting')">
                                     {{ __('Accounting') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link :href="route('Section.index')" :active="request()->routeIs('Section')">
+                                    {{ __('Section') }}
+                                </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>

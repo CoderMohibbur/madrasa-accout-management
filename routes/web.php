@@ -6,6 +6,7 @@ use App\Http\Controllers\AddClassController;
 use App\Http\Controllers\AddMonthController;
 use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\AddAcademyController;
+use App\Http\Controllers\SectionController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -50,6 +51,18 @@ Route::middleware('auth')->group(function () {
 
 
     Route::get('/accounting',[AccountingController::class, 'index'])->name('accounting.index');
+
+
+
+
+
+    // Section
+    Route::get('/section',[SectionController::class, 'index'])->name('Section.index');
+    Route::post('/section', [SectionController::class, 'store'])->name('Section.store');
+    Route::get('/section/{id}/edit', [SectionController::class, 'edit'])->name('Section.edit');
+    Route::put('/section/{id}', [SectionController::class, 'update'])->name('Section.update');
+    Route::delete('/section/{id}', [SectionController::class, 'destroy'])->name('Section.destroy');
+
 });
 
 

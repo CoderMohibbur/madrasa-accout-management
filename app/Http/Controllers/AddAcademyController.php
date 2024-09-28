@@ -20,13 +20,19 @@ class AddAcademyController extends Controller
     {
         // Validate the form inputs
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'year' => 'required|string|max:255',
+            'academic_years'=>'required|string|max:255',
+            'starting_date'=>'required|date',
+            'ending_date'=>'required|date',
             'status' => 'required|in:active,inactive', // Ensure the status is either 'activate' or 'deactivate'
         ]);
 
         // Create a new class and save to the database
         AddAcademy::create([
-            'name' => $validated['name'],
+            'year' => $validated['year'],
+            'academic_years' => $validated['academic_years'],
+            'starting_date' => $validated['starting_date'],
+            'ending_date' => $validated['ending_date'],
             'status' => $validated['status'], // Save as boolean: true for 'activate', false for 'deactivate'
         ]);
 
@@ -47,6 +53,9 @@ class AddAcademyController extends Controller
         // Validate the request
         $request->validate([
             'year' => 'required|string|max:255',
+            'academic_years'=>'required|string|max:255',
+            'starting_date'=>'required|date',
+            'ending_date'=>'required|date',
             'status' => 'required|in:active,inactive',
         ]);
 
@@ -55,7 +64,10 @@ class AddAcademyController extends Controller
 
         // Update the class with new data
         $year->year = $request->year;
-        $year->status = $request->statusy;
+        $year->academic_years = $request->academic_years;
+        $year->starting_date = $request->starting_date;
+        $year->ending_date = $request->ending_date;
+        $year->status = $request->status;
         $year->save();
 
         // Redirect to the class list with a success message

@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('add_academies', function (Blueprint $table) {
+        Schema::create('sections', function (Blueprint $table) {
             $table->id();
-            $table->string('year');
-            $table->string('academic_years');
-            $table->date('starting_date');
-            $table->date('ending_date');
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->string('name');
+            $table->boolean('isActived');
+            $table->boolean('isDeleted');
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('add_academies');
+        Schema::dropIfExists('sections');
     }
 };
