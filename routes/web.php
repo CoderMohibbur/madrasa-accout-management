@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AddClassController;
 use App\Http\Controllers\AddMonthController;
+use App\Http\Controllers\FeesTypeController;
 use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\AddAcademyController;
 
@@ -50,6 +51,14 @@ Route::middleware('auth')->group(function () {
 
 
     Route::get('/accounting',[AccountingController::class, 'index'])->name('accounting.index');
+
+    //add-academy conroller
+
+    Route::get('/add-fees-type',[FeesTypeController::class, 'index'])->name('add_fees_type.index');
+    Route::post('/add-fees-type', [FeesTypeController::class, 'store'])->name('add_fees_type.store');
+    Route::get('/add-fees-type/{id}/edit', [FeesTypeController::class, 'edit'])->name('add_fees_type.edit');
+    Route::put('/add-fees-type/{id}', [FeesTypeController::class, 'update'])->name('add_fees_type.update');
+    Route::delete('/add-fees-type/{id}', [FeesTypeController::class, 'destroy'])->name('add_fees_type.destroy');
 });
 
 
