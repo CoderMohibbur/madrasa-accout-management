@@ -31,7 +31,7 @@
 
                                 <!-- Class Name -->
                                 <div class="mt-5">
-                                    <x-input-label for="name" :value="__('Class Name')" />
+                                    <x-input-label for="name" :value="__('Section Name')" />
                                     <x-text-input id="name" class="block mt-1 w-full" type="text" name="name"
                                         :value="isset($Section) ? $Section->name : old('name')" required />
                                     <x-input-error :messages="$errors->get('name')" class="mt-2" />
@@ -40,7 +40,7 @@
                                 <!-- Status -->
                                 <div class="mt-5">
                                     <x-input-label for="status" :value="__('Status')" />
-                                    <x-status id="status" name="status" :value="isset($Section) ? $Section->status : old('status')" required />
+                                    <x-status id="isActived" name="isActived" :value="isset($Section) ? $Section->isActived : old('isActived')" required />
                                     <x-input-error :messages="$errors->get('status')" class="mt-2" />
                                 </div>
 
@@ -84,9 +84,13 @@
                                             <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
                                                 {{ $Section->name }}</td>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $Section->status }}</td>
+                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
+                                                @if($Section->isActived)
+                                                <span class="text-green-500">Active</span>
+                                                @else
+                                                    <span class="text-red-500">Inactive</span>
+                                                @endif
+                                            </td>
                                             <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400 text-center">
                                                 <a href="{{ route('Section.edit', $Section->id) }}">

@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->boolean('isActived');
-            $table->boolean('isDeleted');
+            $table->boolean('isDeleted')->default(false);
             $table->timestamps();
         });
     }

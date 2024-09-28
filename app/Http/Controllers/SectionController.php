@@ -21,13 +21,13 @@ class SectionController extends Controller
         // Validate the form inputs
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive', // Ensure the status is either 'activate' or 'deactivate'
+            'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
         ]);
 
         // Create a new class and save to the database
         Section::create([
             'name' => $validated['name'],
-            'status' => $validated['status'], // Save as boolean: true for 'activate', false for 'deactivate'
+            'isActived' => $validated['isActived'], // Save as boolean: true for 'activate', false for 'deactivate'
         ]);
 
         // Redirect back or to a success page
@@ -47,19 +47,21 @@ class SectionController extends Controller
         // Validate the request
         $request->validate([
             'name' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive',
+            'isActived' => 'required|boolean', // Ensure it's a boolean value
         ]);
 
-        // Find the class by ID
+        // Find the section by ID
         $Section = Section::findOrFail($id);
 
-        // Update the class with new data
+        // Update the section with new data
         $Section->name = $request->name;
-        $Section->status = $request->status;
+        $Section->isActived = $request->isActived; // Store the boolean value
+
+        // Save the updated section
         $Section->save();
 
-        // Redirect to the class list with a success message
-        return redirect()->route('Section.index')->with('success', 'Class updated successfully!');
+        // Redirect to the section list with a success message
+        return redirect()->route('Section.index')->with('success', 'Section updated successfully!');
     }
     public function destroy($id)
     {
