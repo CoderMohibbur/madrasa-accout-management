@@ -43,6 +43,12 @@
                                 <x-dropdown-link :href="route('add_month.index')" :active="request()->routeIs('add_month')">
                                     {{ __('Add Month') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link :href="route('add_academy.index')" :active="request()->routeIs('add-academy')">
+                                    {{ __('Add Academy Year') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('accounting.index')" :active="request()->routeIs('accounting')">
+                                    {{ __('Accounting') }}
+                                </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>

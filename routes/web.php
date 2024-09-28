@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AddClassController;
 use App\Http\Controllers\AddMonthController;
+use App\Http\Controllers\AccountingController;
+use App\Http\Controllers\AddAcademyController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -35,6 +37,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/add-month/{id}/edit', [AddMonthController::class, 'edit'])->name('add_month.edit');
     Route::put('/add-month/{id}', [AddMonthController::class, 'update'])->name('add_month.update');
     Route::delete('/add-month/{id}', [AddMonthController::class, 'destroy'])->name('add_month.destroy');
+
+    //add-academy conroller
+
+    Route::get('/add-academy',[AddAcademyController::class, 'index'])->name('add_academy.index');
+    Route::post('/add-academy', [AddAcademyController::class, 'store'])->name('add_academy.store');
+    Route::get('/add-academy/{id}/edit', [AddAcademyController::class, 'edit'])->name('add_academy.edit');
+    Route::put('/add-academy/{id}', [AddAcademyController::class, 'update'])->name('add_academy.update');
+    Route::delete('/add-academy/{id}', [AddAcademyController::class, 'destroy'])->name('add_academy.destroy');
+
+    // Accounting
+
+
+    Route::get('/accounting',[AccountingController::class, 'index'])->name('accounting.index');
 });
 
 
