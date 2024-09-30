@@ -9,6 +9,7 @@ use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\AddAcademyController;
 use App\Http\Controllers\AddSectionController;
 use App\Http\Controllers\AddFessTypeController;
+use App\Http\Controllers\StudentController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -68,6 +69,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/section/{id}/edit', [AddSectionController::class, 'edit'])->name('Section.edit');
     Route::put('/section/{id}', [AddSectionController::class, 'update'])->name('Section.update');
     Route::delete('/section/{id}', [AddSectionController::class, 'destroy'])->name('Section.destroy');
+
+
+
+    // Students
+    Route::get('/add-student',action: [StudentController::class, 'index'])->name('add_student.index');
+    Route::post('/add-student',action: [StudentController::class, 'store'])->name('add_student.index');
+    Route::get('/list-student',action: [StudentController::class, 'index'])->name('add_liststudent.index');
+
+
 });
 
 
