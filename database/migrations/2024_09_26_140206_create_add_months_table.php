@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('add_months', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->boolean('isActived');
+            $table->boolean('isDeleted')->default(false);            
             $table->timestamps();
         });
     }

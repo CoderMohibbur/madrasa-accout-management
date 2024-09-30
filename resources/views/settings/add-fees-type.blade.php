@@ -38,7 +38,7 @@
                                 <!-- Status -->
                                 <div class="mt-5">
                                     <x-input-label for="status" :value="__('Status')" />
-                                    <x-status id="status" name="status" :value="isset($class) ? $class->status : old('status')" required />
+                                    <x-status id="isActived" name="isActived" :value="isset($class) ? $class->isActived : old('isActived')" required />
                                     <x-input-error :messages="$errors->get('status')" class="mt-2" />
                                 </div>
                             
@@ -70,7 +70,11 @@
                                         <tr>
                                             <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $class->id }}</td>
                                             <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $class->name }}</td>
-                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $class->status }}</td>
+                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> @if($class->isActived)
+                                                <span class="text-green-500">Active</span>
+                                                @else
+                                                    <span class="text-red-500">Inactive</span>
+                                                @endif</td></td>
                                             <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400 text-center">
                                                 <a href="{{ route('add_fees_type.edit', $class->id) }}">
                                                     <x-primary-button >

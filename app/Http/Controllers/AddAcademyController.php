@@ -24,7 +24,7 @@ class AddAcademyController extends Controller
             'academic_years' => 'required|string|max:255',
             'starting_date' => 'required|date',
             'ending_date' => 'required|date',
-            'status' => 'required|in:active,inactive', // Ensure the status is either 'activate' or 'deactivate'
+            'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
         ]);
 
         // Create a new class and save to the database
@@ -33,7 +33,7 @@ class AddAcademyController extends Controller
             'academic_years' => $validated['academic_years'],
             'starting_date' => $validated['starting_date'],
             'ending_date' => $validated['ending_date'],
-            'status' => $validated['status'], // Save as boolean: true for 'activate', false for 'deactivate'
+            'isActived' => $validated['isActived'], // Save as boolean: true for 'activate', false for 'deactivate'
         ]);
 
         // Redirect back or to a success page
@@ -56,7 +56,7 @@ class AddAcademyController extends Controller
             'academic_years' => 'required|string|max:255',
             'starting_date' => 'required|date',
             'ending_date' => 'required|date',
-            'status' => 'required|in:active,inactive',
+            'isActived' => 'required|boolean',
         ]);
 
         // Find the class by ID
@@ -67,7 +67,7 @@ class AddAcademyController extends Controller
         $year->academic_years = $request->academic_years;
         $year->starting_date = $request->starting_date;
         $year->ending_date = $request->ending_date;
-        $year->status = $request->status;
+        $year->isActived = $request->isActived;
         $year->save();
 
         // Redirect to the class list with a success message

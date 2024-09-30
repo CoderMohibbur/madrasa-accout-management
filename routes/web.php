@@ -2,12 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SectionController;
 use App\Http\Controllers\AddClassController;
 use App\Http\Controllers\AddMonthController;
-use App\Http\Controllers\FeesTypeController;
 use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\AddAcademyController;
-use App\Http\Controllers\SectionController;
+use App\Http\Controllers\AddSectionController;
+use App\Http\Controllers\AddFessTypeController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -55,18 +56,18 @@ Route::middleware('auth')->group(function () {
 
     //add-academy conroller
 
-    Route::get('/add-fees-type',[FeesTypeController::class, 'index'])->name('add_fees_type.index');
-    Route::post('/add-fees-type', [FeesTypeController::class, 'store'])->name('add_fees_type.store');
-    Route::get('/add-fees-type/{id}/edit', [FeesTypeController::class, 'edit'])->name('add_fees_type.edit');
-    Route::put('/add-fees-type/{id}', [FeesTypeController::class, 'update'])->name('add_fees_type.update');
-    Route::delete('/add-fees-type/{id}', [FeesTypeController::class, 'destroy'])->name('add_fees_type.destroy');
+    Route::get('/add-fees-type',[AddFessTypeController::class, 'index'])->name('add_fees_type.index');
+    Route::post('/add-fees-type', [AddFessTypeController::class, 'store'])->name('add_fees_type.store');
+    Route::get('/add-fees-type/{id}/edit', [AddFessTypeController::class, 'edit'])->name('add_fees_type.edit');
+    Route::put('/add-fees-type/{id}', [AddFessTypeController::class, 'update'])->name('add_fees_type.update');
+    Route::delete('/add-fees-type/{id}', [AddFessTypeController::class, 'destroy'])->name('add_fees_type.destroy');
 
     // Section
-    Route::get('/section',[SectionController::class, 'index'])->name('Section.index');
-    Route::post('/section', [SectionController::class, 'store'])->name('Section.store');
-    Route::get('/section/{id}/edit', [SectionController::class, 'edit'])->name('Section.edit');
-    Route::put('/section/{id}', [SectionController::class, 'update'])->name('Section.update');
-    Route::delete('/section/{id}', [SectionController::class, 'destroy'])->name('Section.destroy');
+    Route::get('/section',[AddSectionController::class, 'index'])->name('Section.index');
+    Route::post('/section', [AddSectionController::class, 'store'])->name('Section.store');
+    Route::get('/section/{id}/edit', [AddSectionController::class, 'edit'])->name('Section.edit');
+    Route::put('/section/{id}', [AddSectionController::class, 'update'])->name('Section.update');
+    Route::delete('/section/{id}', [AddSectionController::class, 'destroy'])->name('Section.destroy');
 });
 
 

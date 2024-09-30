@@ -59,7 +59,7 @@
                                 <!-- Status -->
                                 <div class="mt-5">
                                     <x-input-label for="status" :value="__('Status')" />
-                                    <x-status id="status" name="status" :value="isset($year) ? $year->status : old('status')" required />
+                                    <x-status id="isActived" name="isActived" :value="isset($year) ? $year->isActived : old('isActived')" required />
                                     <x-input-error :messages="$errors->get('status')" year="mt-2" />
                                 </div>
 
@@ -123,7 +123,11 @@
                                                 {{ $year->ending_date }}</td>
                                             <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $year->status }}</td>
+                                                @if($year->isActived)
+                                                <span class="text-green-500">Active</span>
+                                                @else
+                                                    <span class="text-red-500">Inactive</span>
+                                                @endif</td>
                                             <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400 text-center">
                                                 <a href="{{ route('add_academy.edit', $year->id) }}">

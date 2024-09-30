@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class AddClass extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'status'];
+    protected $fillable = ['name', 'isActived','isDeleted'];
 
 }

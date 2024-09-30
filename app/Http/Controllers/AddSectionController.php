@@ -3,17 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Section;
+use App\Models\AddSection;
 use Illuminate\Http\Request;
 
-class SectionController extends Controller
+class AddSectionController extends Controller
 {
     public function index()
     {
 
-        $Sections = Section::all();
+        $Sections = AddSection::all();
 
 
-        return view('settings.section', compact('Sections'));
+        return view('settings.add-section', compact('Sections'));
 
     }
     public function store(Request $request)
@@ -25,7 +26,7 @@ class SectionController extends Controller
         ]);
 
         // Create a new class and save to the database
-        Section::create([
+        AddSection::create([
             'name' => $validated['name'],
             'isActived' => $validated['isActived'], // Save as boolean: true for 'activate', false for 'deactivate'
         ]);
@@ -36,11 +37,11 @@ class SectionController extends Controller
     public function edit($id)
     {
         // Find the Section by ID
-        $Section = Section::findOrFail($id);
-        $Sections = Section::all();
+        $Section = AddSection::findOrFail($id);
+        $Sections = AddSection::all();
 
         // Return view with the Section details for editing
-        return view('settings.section', compact('Section', 'Sections'));
+        return view('settings.add-section', compact('Section', 'Sections'));
     }
     public function update(Request $request, $id)
     {
@@ -51,7 +52,7 @@ class SectionController extends Controller
         ]);
 
         // Find the section by ID
-        $Section = Section::findOrFail($id);
+        $Section = AddSection::findOrFail($id);
 
         // Update the section with new data
         $Section->name = $request->name;
@@ -66,13 +67,13 @@ class SectionController extends Controller
     public function destroy($id)
     {
         // Find the class by ID
-        $Section = Section::findOrFail($id);
+        $Section = AddSection::findOrFail($id);
 
         // Delete the class
         $Section->delete();
 
         // Redirect back to the list of classes with a success message
-        return redirect()->route('add_month.index')->with('success', 'Class deleted successfully!');
+        return redirect()->route('Section.index')->with('success', 'Class deleted successfully!');
     }
 
 }

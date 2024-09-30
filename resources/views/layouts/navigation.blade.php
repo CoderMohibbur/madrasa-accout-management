@@ -47,10 +47,10 @@
                                     {{ __('Add Academy Year') }}
                                 </x-dropdown-link>
                                 <x-dropdown-link :href="route('accounting.index')" :active="request()->routeIs('accounting')">
-                                    {{ __('Accounting') }}
+                                    {{ __('Add Accounting') }}
                                 </x-dropdown-link>
                                 <x-dropdown-link :href="route('add_fees_type.index')" :active="request()->routeIs('add_fees_type.index')">
-                                    {{ __('Fees Type') }}
+                                    {{ __('Add Fees Type') }}
                                 </x-dropdown-link>
                                 <x-dropdown-link :href="route('Section.index')" :active="request()->routeIs('Section.index')">
                                     {{ __('Add Section') }}

@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('academic_years');
             $table->date('starting_date');
             $table->date('ending_date');
-            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->boolean('isActived');
+            $table->boolean('isDeleted')->default(false);            
             $table->timestamps();
         });
     }

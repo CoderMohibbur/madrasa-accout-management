@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\FeesType;
+use App\Models\AddFessType;
 use Illuminate\Http\Request;
 
-class FeesTypeController extends Controller
+class AddFessTypeController extends Controller
 {
     public function index()
     {
         // Fetch all classes
-        $classes = FeesType::all();
+        $classes = AddFessType::all();
 
         // Return view with the list of classes
         return view('settings.add-fees-type', compact('classes'));
@@ -22,13 +22,13 @@ class FeesTypeController extends Controller
         // Validate the form inputs
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive', // Ensure the status is either 'activate' or 'deactivate'
+            'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
         ]);
 
         // Create a new class and save to the database
-        FeesType::create([
+        AddFessType::create([
             'name' => $validated['name'],
-            'status' => $validated['status'], // Save as boolean: true for 'activate', false for 'deactivate'
+            'isActived' => $validated['isActived'], // Save as boolean: true for 'activate', false for 'deactivate'
         ]);
 
         // Redirect back or to a success page
@@ -37,8 +37,8 @@ class FeesTypeController extends Controller
     public function edit($id)
     {
         // Find the class by ID
-        $class = FeesType::findOrFail($id);
-        $classes = FeesType::all();
+        $class = AddFessType::findOrFail($id);
+        $classes = AddFessType::all();
 
         // Return view with the class details for editing
         return view('settings.add-fees-type', compact('class', 'classes'));
@@ -49,15 +49,15 @@ class FeesTypeController extends Controller
         // Validate the request
         $request->validate([
             'name' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive',
+            'isActived' => 'required|boolean',
         ]);
 
         // Find the class by ID
-        $class = FeesType::findOrFail($id);
+        $class = AddFessType::findOrFail($id);
 
         // Update the class with new data
         $class->name = $request->name;
-        $class->status = $request->status;
+        $class->isActived = $request->isActived;
         $class->save();
 
         // Redirect to the class list with a success message
@@ -67,7 +67,7 @@ class FeesTypeController extends Controller
     public function destroy($id)
     {
         // Find the class by ID
-        $class = FeesType::findOrFail($id);
+        $class = AddFessType::findOrFail($id);
 
         // Delete the class
         $class->delete();

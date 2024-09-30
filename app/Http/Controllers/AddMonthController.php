@@ -22,13 +22,13 @@ class AddMonthController extends Controller
         // Validate the form inputs
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive', // Ensure the status is either 'activate' or 'deactivate'
+            'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
         ]);
 
         // Create a new class and save to the database
         AddMonth::create([
             'name' => $validated['name'],
-            'status' => $validated['status'], // Save as boolean: true for 'activate', false for 'deactivate'
+            'isActived' => $validated['isActived'], // Save as boolean: true for 'activate', false for 'deactivate'
         ]);
 
         // Redirect back or to a success page
@@ -49,7 +49,7 @@ class AddMonthController extends Controller
         // Validate the request
         $request->validate([
             'name' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive',
+            'isActived' => 'required|boolean',
         ]);
 
         // Find the class by ID
@@ -57,7 +57,7 @@ class AddMonthController extends Controller
 
         // Update the class with new data
         $class->name = $request->name;
-        $class->status = $request->status;
+        $class->isActived = $request->isActived;
         $class->save();
 
         // Redirect to the class list with a success message
