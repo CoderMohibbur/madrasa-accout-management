@@ -22,10 +22,16 @@ return new class extends Migration
             $table->string('mobile')->nullable();
             $table->string('photo')->nullable();
             $table->string('age')->nullable();
-            $table->string('class')->nullable();
-            $table->integer('year')->nullable();
-            $table->boolean('isActived')->nullable();
+            $table->unsignedBigInteger('fees_type_id')->nullable();
+            $table->unsignedBigInteger('class_id')->nullable();
+            $table->unsignedBigInteger('section_id')->nullable();
+            $table->unsignedBigInteger('academic_year_id')->nullable();
+            $table->boolean('isActived');
             $table->boolean('isDeleted')->default(false);
+            $table->foreign('fees_type_id')->references('id')->on('add_fess_types');
+            $table->foreign('class_id')->references('id')->on('add_classes');
+            $table->foreign('section_id')->references('id')->on('sections');
+            $table->foreign('academic_year_id')->references('id')->on('add_academies');
             $table->timestamps();
     
             
