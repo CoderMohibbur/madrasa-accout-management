@@ -37,10 +37,10 @@
                             </x-slot>
 
                             <x-slot name="content">
-                                <x-dropdown-link :href="route('add_liststudent.index')" :active="request()->routeIs('add_liststudent.index')">
+                                <x-dropdown-link :href="route('students.index')" :active="request()->routeIs('students.index')">
                                     {{ __('List Student') }}
                                 </x-dropdown-link>
-                                <x-dropdown-link :href="route('add_student.index')" :active="request()->routeIs('add_student.index')">
+                                <x-dropdown-link :href="route('students.index')" :active="request()->routeIs('students.index')">
                                     {{ __('Add Student') }}
                                 </x-dropdown-link>
                                

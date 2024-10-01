@@ -33,9 +33,6 @@ return new class extends Migration
             $table->foreign('section_id')->references('id')->on('sections');
             $table->foreign('academic_year_id')->references('id')->on('add_academies');
             $table->timestamps();
-    
-            
-
         });
     }
 

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AddAcademy;
+use App\Models\Student;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
@@ -10,11 +10,16 @@ class StudentController extends Controller
     public function index()
     {
         // Fetch all years
-        $student = AddAcademy::all();
+        $students = Student::all();
 
         // Return view with the list of years
-        return view('students.index', compact('student'));
+        return view('students.index', compact('students'));
 
+    }
+    // Show the form for creating a new student
+    public function create()
+    {
+        return view('students.create');
     }
     public function store(Request $request)
     {
@@ -35,7 +40,7 @@ class StudentController extends Controller
         ]);
 
         // Create a new class and save to the database
-        AddAcademy::create([
+        Student::create([
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
             'full_name' => $validated['full_name'],
@@ -51,13 +56,18 @@ class StudentController extends Controller
         ]);
 
         // Redirect back or to a success page
-        return redirect()->route('add_student.store')->with('success', 'Class added successfully!');
+        return redirect()->route('add_student.index')->with('success', 'Class added successfully!');
+    }
+    // Display the specified student
+    public function show(Student $student)
+    {
+        return view('students.show', compact('student'));
     }
     public function edit($id)
     {
         // Find the class by ID
-        $year = AddAcademy::findOrFail($id);
-        $years = AddAcademy::all();
+        $year = Student::findOrFail($id);
+        $years = Student::all();
 
         // Return view with the class details for editing
         return view('settings.add-academy', compact('year', 'years'));
@@ -74,7 +84,7 @@ class StudentController extends Controller
         ]);
 
         // Find the class by ID
-        $year = AddAcademy::findOrFail($id);
+        $year = Student::findOrFail($id);
 
         // Update the class with new data
         $year->year = $request->year;
@@ -87,16 +97,10 @@ class StudentController extends Controller
         // Redirect to the class list with a success message
         return redirect()->route('add_academy.index')->with('success', 'Class updated successfully!');
     }
-
-    public function destroy($id)
+    // Remove the specified student from storage
+    public function destroy(Student $student)
     {
-        // Find the class by ID
-        $year = AddAcademy::findOrFail($id);
-
-        // Delete the class
-        $year->delete();
-
-        // Redirect back to the list of years with a success message
-        return redirect()->route('add_academy.index')->with('success', 'Class deleted successfully!');
+        $student->delete();
+        return redirect()->route('students.index')->with('success', 'Student deleted successfully.');
     }
 }

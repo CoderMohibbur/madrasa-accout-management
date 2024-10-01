@@ -73,10 +73,11 @@ Route::middleware('auth')->group(function () {
 
 
     // Students
-    Route::get('/add-student',action: [StudentController::class, 'index'])->name('add_student.index');
-    Route::post('/add-student',action: [StudentController::class, 'store'])->name('add_student.index');
-    Route::get('/list-student',action: [StudentController::class, 'index'])->name('add_liststudent.index');
+    // Route::get('/add-student',action: [StudentController::class, 'index'])->name('add_student.index');
+    // Route::post('/add-student',action: [StudentController::class, 'store'])->name('add_student.index');
+    // Route::get('/list-student',action: [StudentController::class, 'index'])->name('add_liststudent.index');
 
+    Route::resource('students', StudentController::class);
 
 });
 

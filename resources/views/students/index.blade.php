@@ -9,9 +9,8 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <div class="grid grid-cols-4 gap-10">
-                       
-                        <div class="col-span-3">
+                    <div class="grid grid-cols-1 gap-10">
+                        <div >
                             <table class="border-collapse table-auto w-full text-sm">
                                 <thead>
                                     <tr>
@@ -20,7 +19,7 @@
                                             ID</th>
                                         <th
                                             class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
-                                            name/</th>
+                                            name</th>
                                         <th
                                             class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
                                             Academic Years</th>
@@ -39,38 +38,38 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-slate-800">
-                                    @foreach ($student as $student)
+                                    @foreach ($students as $student)
                                         <tr>
                                             <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $year->id }}</td>
+                                                {{ $student->id }}</td>
                                             <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $year->name }}</td>
+                                                {{ $student->name }}</td>
                                             <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $year->academic_years }}</td>
+                                                {{ $student->academic_years }}</td>
                                             <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $year->starting_date }}</td>
+                                                {{ $student->starting_date }}</td>
                                             <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $year->ending_date }}</td>
+                                                {{ $student->ending_date }}</td>
                                             <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                @if($year->isActived)
+                                                @if($student->isActived)
                                                 <span class="text-green-500">Active</span>
                                                 @else
                                                     <span class="text-red-500">Inactive</span>
                                                 @endif</td>
                                             <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400 text-center">
-                                                <a href="{{ route('add_academy.edit', $year->id) }}">
+                                                <a href="{{ route('add_academy.edit', $student->id) }}">
                                                     <x-primary-button>
                                                         {{ __('Edit') }}
                                                     </x-primary-button>
                                                 </a>
-                                                <form action="{{ route('add_academy.destroy', $list->id) }}"
+                                                <form action="{{ route('add_academy.destroy', $student->id) }}"
                                                     method="POST" style="display:inline;">
                                                     @csrf
                                                     @method('DELETE')
