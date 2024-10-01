@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Models\AddClass;
+use App\Models\AddAcademy;
+use App\Models\AddSection;
+use App\Models\AddFessType;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
@@ -19,7 +23,14 @@ class StudentController extends Controller
     // Show the form for creating a new student
     public function create()
     {
-        return view('students.create');
+        // Retrieve all necessary data from the database for the form
+        $classes = AddClass::all(); // Fetch all available classes
+        $sections = AddSection::all(); // Fetch all available sections
+        $fees_types = AddFessType::all(); // Fetch all available fees types
+        $academic_years = AddAcademy::all(); // Fetch all available academic years
+
+        // Pass the data to the view
+        return view('students.create', compact('classes', 'sections', 'fees_types', 'academic_years'));
     }
     public function store(Request $request)
     {
@@ -32,7 +43,7 @@ class StudentController extends Controller
             'roll' => 'required|integer',
             'email' => 'required|string|max:255',
             'mobile' => 'required|string|max:255',
-            'photo' => 'required|string|max:255',
+            'photo' => 'string|max:255',
             'age' => 'required|string|max:255',
             'class' => 'required|string|max:255',
             'year' => 'required|integer',
