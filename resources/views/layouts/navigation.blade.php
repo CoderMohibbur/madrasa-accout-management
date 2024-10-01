@@ -40,7 +40,7 @@
                                 <x-dropdown-link :href="route('students.index')" :active="request()->routeIs('students.index')">
                                     {{ __('List Student') }}
                                 </x-dropdown-link>
-                                <x-dropdown-link :href="route('students.index')" :active="request()->routeIs('students.index')">
+                                <x-dropdown-link :href="route('students.create')" :active="request()->routeIs('students.index')">
                                     {{ __('Add Student') }}
                                 </x-dropdown-link>
                                

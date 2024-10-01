@@ -8,6 +8,7 @@ use App\Models\AddAcademy;
 use App\Models\AddSection;
 use App\Models\AddFessType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class StudentController extends Controller
 {
@@ -34,41 +35,53 @@ class StudentController extends Controller
     }
     public function store(Request $request)
     {
-        // Validate the form inputs
-        $validated = $request->validate([
+        // Validate the incoming request data
+        $validatedData = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'full_name' => 'required|string|max:255',
             'dob' => 'required|date',
             'roll' => 'required|integer',
-            'email' => 'required|string|max:255',
-            'mobile' => 'required|string|max:255',
-            'photo' => 'string|max:255',
-            'age' => 'required|string|max:255',
-            'class' => 'required|string|max:255',
-            'year' => 'required|integer',
-            'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
+            'email' => 'nullable|email|max:255',
+            'mobile' => 'required|string|max:15',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Adjust as per needs
+            'age' => 'required|integer|min:3|max:100',
+            'fees_type_id' => 'required|exists:add_fess_types,id',
+            'class_id' => 'required|exists:add_classes,id',
+            'section_id' => 'required|exists:sections,id',
+            'academic_year_id' => 'required|exists:add_academies,id',
+            'isActived' => 'boolean',
         ]);
 
-        // Create a new class and save to the database
+        // Handle the file upload if a photo is provided
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('photos', 'public'); // Store in 'storage/app/public/photos'
+        } else {
+            $photoPath = null;
+        }
+
+        // Create a new student record using the validated data
         Student::create([
-            'first_name' => $validated['first_name'],
-            'last_name' => $validated['last_name'],
-            'full_name' => $validated['full_name'],
-            'dob' => $validated['dob'],
-            'roll' => $validated['roll'],
-            'email' => $validated['email'],
-            'mobile' => $validated['mobile'],
-            'photo' => $validated['photo'],
-            'age' => $validated['age'],
-            'class' => $validated['class'],
-            'year' => $validated['year'],
-            'isActived' => $validated['isActived'], // Save as boolean: true for 'activate', false for 'deactivate'
+            'first_name' => $validatedData['first_name'],
+            'last_name' => $validatedData['last_name'],
+            'full_name' => $validatedData['first_name'] . ' ' . $validatedData['last_name'], // Combine first and last name
+            'dob' => $validatedData['dob'],
+            'roll' => $validatedData['roll'],
+            'email' => $validatedData['email'],
+            'mobile' => $validatedData['mobile'],
+            'photo' => $photoPath, // Save the uploaded photo path
+            'age' => $validatedData['age'],
+            'fees_type_id' => $validatedData['fees_type_id'],
+            'class_id' => $validatedData['class_id'],
+            'section_id' => $validatedData['section_id'],
+            'academic_year_id' => $validatedData['academic_year_id'],
+            'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
+            'isDeleted' => 0, // Set as not deleted by default
         ]);
 
-        // Redirect back or to a success page
-        return redirect()->route('add_student.index')->with('success', 'Class added successfully!');
+        // Redirect to the students list with a success message
+        return redirect()->route('students.index')->with('success', 'Student created successfully.');
     }
+
     // Display the specified student
     public function show(Student $student)
     {
@@ -77,37 +90,68 @@ class StudentController extends Controller
     public function edit($id)
     {
         // Find the class by ID
-        $year = Student::findOrFail($id);
-        $years = Student::all();
+        $student = Student::findOrFail($id);
+        $classes = AddClass::all(); // Fetch all available classes
+        $sections = AddSection::all(); // Fetch all available sections
+        $fees_types = AddFessType::all(); // Fetch all available fees types
+        $academic_years = AddAcademy::all(); // Fetch all available academic years
 
         // Return view with the class details for editing
-        return view('settings.add-academy', compact('year', 'years'));
+        return view('students.create', compact('student', 'classes', 'sections', 'fees_types', 'academic_years'))->with('success', 'Student updated successfully.');
     }
-    public function update(Request $request, $id)
+    public function update(Request $request, Student $student)
     {
-        // Validate the request
-        $request->validate([
-            'year' => 'required|string|max:255',
-            'academic_years' => 'required|string|max:255',
-            'starting_date' => 'required|date',
-            'ending_date' => 'required|date',
-            'isActived' => 'required|boolean',
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'dob' => 'required|date',
+            'roll' => 'required|integer',
+            'email' => 'nullable|email|max:255',
+            'mobile' => 'required|string|max:15',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Adjust as per needs
+            'age' => 'required|integer|min:3|max:100',
+            'fees_type_id' => 'required|exists:add_fess_types,id',
+            'class_id' => 'required|exists:add_classes,id',
+            'section_id' => 'required|exists:sections,id',
+            'academic_year_id' => 'required|exists:add_academies,id',
+            'isActived' => 'boolean',
         ]);
 
-        // Find the class by ID
-        $year = Student::findOrFail($id);
+        // Handle the file upload if a photo is provided
+        if ($request->hasFile('photo')) {
+            // Delete the old photo if exists
+            if ($student->photo) {
+                Storage::disk('public')->delete($student->photo); // Delete old photo from storage
+            }
+            // Store the new photo
+            $photoPath = $request->file('photo')->store('photos', 'public');
+        } else {
+            $photoPath = $student->photo; // Keep the old photo if no new one is provided
+        }
 
-        // Update the class with new data
-        $year->year = $request->year;
-        $year->academic_years = $request->academic_years;
-        $year->starting_date = $request->starting_date;
-        $year->ending_date = $request->ending_date;
-        $year->isActived = $request->isActived;
-        $year->save();
+        // Update the student record using the validated data
+        $student->update([
+            'first_name' => $validatedData['first_name'],
+            'last_name' => $validatedData['last_name'],
+            'full_name' => $validatedData['first_name'] . ' ' . $validatedData['last_name'], // Combine first and last name
+            'dob' => $validatedData['dob'],
+            'roll' => $validatedData['roll'],
+            'email' => $validatedData['email'],
+            'mobile' => $validatedData['mobile'],
+            'photo' => $photoPath, // Save the updated photo path
+            'age' => $validatedData['age'],
+            'fees_type_id' => $validatedData['fees_type_id'],
+            'class_id' => $validatedData['class_id'],
+            'section_id' => $validatedData['section_id'],
+            'academic_year_id' => $validatedData['academic_year_id'],
+            'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
+        ]);
 
-        // Redirect to the class list with a success message
-        return redirect()->route('add_academy.index')->with('success', 'Class updated successfully!');
+        // Redirect to the students list with a success message
+        return redirect()->route('students.index')->with('success', 'Student updated successfully.');
     }
+
     // Remove the specified student from storage
     public function destroy(Student $student)
     {

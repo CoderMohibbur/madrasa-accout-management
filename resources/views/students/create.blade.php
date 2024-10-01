@@ -10,15 +10,16 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <x-toast-success />
-                    <div class="grid grid-cols-2 gap-10">
-                        <form method="POST" enctype="multipart/form-data"
-                            action="{{ isset($student) ? route('students.update', $student->id) : route('students.store') }}">
+                    <form method="POST" enctype="multipart/form-data"
+                        action="{{ isset($student) ? route('students.update', $student->id) : route('students.store') }}">
 
-                            @csrf
+                        @csrf
 
-                            @if (isset($student))
-                                @method('PUT') {{-- Use PUT for update --}}
-                            @endif
+                        @if (isset($student))
+                            @method('PUT') {{-- Use PUT for update --}}
+                        @endif
+                        <div class="grid grid-cols-2 gap-10">
+
 
                             <div>
 
@@ -78,6 +79,9 @@
                                     <x-input-error :messages="$errors->get('mobile')" class="mt-2" />
                                 </div>
 
+
+                            </div>
+                            <div>
                                 <!-- Age -->
                                 <div class="mt-5">
                                     <x-input-label for="age" :value="__('Age')" />
@@ -85,7 +89,6 @@
                                         :value="isset($student) ? $student->age : old('age')" required />
                                     <x-input-error :messages="$errors->get('age')" class="mt-2" />
                                 </div>
-
                                 <!-- Student Photo -->
                                 <div class="mt-5">
                                     <x-input-label for="photo" :value="__('Student Photo')" />
@@ -174,8 +177,9 @@
                                     </x-primary-button>
                                 </div>
                             </div>
-                        </form>
-                    </div>
+
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
