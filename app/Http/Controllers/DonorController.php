@@ -66,7 +66,7 @@ class DonorController extends Controller
        $Donors = Donor::all();
 
         // Return view with the class details for editing
-        return view('donors.create', compact('Donor', 'Donors'));
+        return view('donors.create', compact('Donors', 'Donor'));
     }
     public function update(Request $request, Donor $Donor)
     {

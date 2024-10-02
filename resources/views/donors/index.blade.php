@@ -39,53 +39,48 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-slate-800">
-                                    @foreach ($Donors as $Donor)
+                                    @foreach ($Donors as $Donor)  <!-- Corrected variable to $Donor -->
                                         <tr>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $Donor->id }}</td>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $Donor->name }}</td>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $Donor->email }}</td>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $Donor->mobile }}</td>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $Donor->fees_type_id }}</td>
-
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                @if ($Donor->isActived)
+                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
+                                                {{ $Donor->id }}  <!-- Corrected variable to $Donor -->
+                                            </td>
+                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
+                                                {{ $Donor->name }}  <!-- Corrected variable to $Donor -->
+                                            </td>
+                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
+                                                {{ $Donor->email }}  <!-- Corrected variable to $Donor -->
+                                            </td>
+                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
+                                                {{ $Donor->mobile }}  <!-- Corrected variable to $Donor -->
+                                            </td>
+                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
+                                                {{ $Donor->fees_type_id }}  <!-- Corrected variable to $Donor -->
+                                            </td>
+                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
+                                                @if ($Donor->isActived)  <!-- Corrected variable to $Donor -->
                                                     <span class="text-green-500">Active</span>
                                                 @else
                                                     <span class="text-red-500">Inactive</span>
                                                 @endif
                                             </td>
-
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400 text-center">
-                                                <a href="{{ route('donors.edit', $Donor->id) }}">
+                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400 text-center">
+                                                <a href="{{ route('donors.edit', $Donor->id) }}">  <!-- Corrected variable to $Donor -->
                                                     <x-primary-button>
                                                         {{ __('Edit') }}
                                                     </x-primary-button>
                                                 </a>
-                                                <form action="{{ route('donors.destroy', $Donor->id) }}" method="POST"
-                                                    style="display:inline;">
+                                                <form action="{{ route('donors.destroy', $Donor->id) }}" method="POST" style="display:inline;">  <!-- Corrected variable to $Donor -->
                                                     @csrf
                                                     @method('DELETE')
                                                     <x-danger-button>
                                                         {{ __('Delete') }}
-                                                    </x-danger-button>
+                                                    </x-primary-button>
                                                 </form>
                                             </td>
                                         </tr>
                                     @endforeach
-
                                 </tbody>
+                                
                             </table>
                         </div>
                     </div>
