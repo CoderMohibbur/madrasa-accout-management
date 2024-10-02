@@ -9,6 +9,7 @@ use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\AddAcademyController;
 use App\Http\Controllers\AddSectionController;
 use App\Http\Controllers\AddFessTypeController;
+use App\Http\Controllers\DonorController;
 use App\Http\Controllers\StudentController;
 
 Route::get('/', function () {
@@ -78,6 +79,12 @@ Route::middleware('auth')->group(function () {
     // Route::get('/list-student',action: [StudentController::class, 'index'])->name('add_liststudent.index');
 
     Route::resource('students', StudentController::class);
+
+    // Doner
+    
+    Route::resource('donors', DonorController::class);
+
+
 
 });
 

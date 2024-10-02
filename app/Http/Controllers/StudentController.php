@@ -85,7 +85,7 @@ class StudentController extends Controller
     // Display the specified student
     public function show(Student $student)
     {
-        return view('students.show', compact('student'));
+        return view('students.show', data: compact('student'));
     }
     public function edit($id)
     {
