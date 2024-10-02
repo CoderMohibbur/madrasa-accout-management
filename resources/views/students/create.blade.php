@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Add Section') }}
+            {{ __('Add Student') }}
         </h2>
     </x-slot>
 
@@ -19,10 +19,7 @@
                             @method('PUT') {{-- Use PUT for update --}}
                         @endif
                         <div class="grid grid-cols-2 gap-10">
-
-
                             <div>
-
                                 <!-- First Name -->
                                 <div class="mt-5">
                                     <x-input-label for="first_name" :value="__('First Name')" />
@@ -180,8 +177,20 @@
 
                         </div>
                     </form>
+                    <script>
+                        document.getElementById('first_name').addEventListener('input', combineNames);
+                        document.getElementById('last_name').addEventListener('input', combineNames);
+                    
+                        function combineNames() {
+                            const firstName = document.getElementById('first_name').value;
+                            const lastName = document.getElementById('last_name').value;
+                            document.getElementById('full_name').value = `${firstName} ${lastName}`;
+                        }
+                    </script>
                 </div>
             </div>
         </div>
     </div>
 </x-app-layout>
+
+
