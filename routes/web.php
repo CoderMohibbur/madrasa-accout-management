@@ -82,7 +82,7 @@ Route::middleware('auth')->group(function () {
 
     // Doner
     
-    Route::resource('donors', DonorController::class);
+    Route::resource('donors', controller: DonorController::class);
 
 
 
