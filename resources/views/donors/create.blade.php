@@ -11,11 +11,11 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <x-toast-success />
                     <form method="POST" enctype="multipart/form-data"
-                        action="{{ isset($Donors) ? route('students.update', $Donors->id) : route('donors.store') }}">
+                        action="{{ isset($Donor) ? route('donors.update', $Donor->id) : route('donors.store') }}">
 
                         @csrf
 
-                        @if (isset($Donors))
+                        @if (isset($Donor))
                             @method('PUT') {{-- Use PUT for update --}}
                         @endif
                         <div class="grid grid-cols-2 gap-10">
@@ -25,7 +25,7 @@
                                 <div class="mt-5">
                                     <x-input-label for="name" :value="__('Name')" />
                                     <x-text-input id="name" class="block mt-1 w-full" type="text" name="name"
-                                        :value="isset($Donors) ? $Donors->full_name : old('name')" required />
+                                        :value="isset($Donor) ? $Donor->name : old('name')" required />
                                     <x-input-error :messages="$errors->get('name')" class="mt-2" />
                                 </div>
 
@@ -47,7 +47,7 @@
                                 <div class="mt-5">
                                     <x-input-label for="email" :value="__('Email')" />
                                     <x-text-input id="email" class="block mt-1 w-full" type="email" name="email"
-                                        :value="isset($Donors) ? $Donors->email : old('email')" required />
+                                        :value="isset($Donor) ? $Donor->email : old('email')" required />
                                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                                 </div>
 
@@ -55,7 +55,7 @@
                                 <div class="mt-5">
                                     <x-input-label for="mobile" :value="__('Mobile Number')" />
                                     <x-text-input id="mobile" class="block mt-1 w-full" type="tel" name="mobile"
-                                        :value="isset($Donors) ? $Donors->mobile : old('mobile')" required />
+                                        :value="isset($Donor) ? $Donor->mobile : old('mobile')" required />
                                     <x-input-error :messages="$errors->get('mobile')" class="mt-2" />
                                 </div>
 
@@ -64,14 +64,14 @@
                             <!-- Status -->
                             <div class="mt-5">
                                 <x-input-label for="status" :value="__('Status')" />
-                                <x-status id="isActived" name="isActived" :value="isset($Donors) ? $Donors->isActived : old('isActived')" required />
+                                <x-status id="isActived" name="isActived" :value="isset($Donor) ? $Donor->isActived : old('isActived')" required />
                                 <x-input-error :messages="$errors->get('status')" class="mt-2" />
                             </div>
 
                             <!-- Save/Update Button -->
                             <div class="flex items-center justify-end mt-4">
                                 <x-primary-button>
-                                    @if (isset($Donors))
+                                    @if (isset($Donor))
                                         {{ __('Update') }}
                                     @else
                                         {{ __('Save') }}
