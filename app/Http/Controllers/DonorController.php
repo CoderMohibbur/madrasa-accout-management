@@ -61,13 +61,12 @@ class DonorController extends Controller
     }
     public function edit($id)
     {
-        // Find the class by ID
        // Find the class by ID
        $Donor = Donor::findOrFail($id);
        $Donors = Donor::all();
 
         // Return view with the class details for editing
-        return view('Donors.create', compact('Donor', 'Donors'));
+        return view('donors.create', compact('Donor', 'Donors'));
     }
     public function update(Request $request, Donor $Donor)
     {
@@ -95,7 +94,7 @@ class DonorController extends Controller
     }
 
     // Remove the specified student from storage
-    public function destroy(request $Donor)
+    public function destroy(Donor $Donor)
     {
         $Donor->delete();
         return redirect()->route('donors.index')->with('success', 'Student deleted successfully.');
