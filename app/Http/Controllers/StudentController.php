@@ -155,6 +155,16 @@ class StudentController extends Controller
     // Remove the specified student from storage
     public function destroy(Student $student)
     {
+        if ($student->photo) {
+            // The photo is stored in the 'public' disk, in a folder called 'photos'
+            $photoPath = storage_path('app/public/' . $student->photo);
+    
+            // Check if the photo exists before attempting to delete
+            if (file_exists($photoPath)) {
+                unlink($photoPath); // Delete the file
+            }
+        }
+        
         $student->delete();
         return redirect()->route('students.index')->with('success', 'Student deleted successfully.');
     }
