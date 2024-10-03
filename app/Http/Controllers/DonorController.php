@@ -57,7 +57,7 @@ class DonorController extends Controller
     // Display the specified student
     public function show(Donor $Donor)
     {
-        return view('Donors.show', data: compact('Donors'));
+        return view('Donors.show', data: compact(var_name: 'Donors'));
     }
     public function edit($id)
     {
@@ -67,9 +67,9 @@ class DonorController extends Controller
 
         // Return view with the class details for editing
 
-        return view('donors.create', compact('Donors', 'Donor'));
+      
 
-        return view('donors.create', compact('Donor', 'fees_types'));
+     return view('donors.create', compact('Donor', 'fees_types'));
 
     }
     public function update(Request $request, Donor $Donor)

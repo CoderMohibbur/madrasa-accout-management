@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SectionController;
@@ -10,7 +11,9 @@ use App\Http\Controllers\AddAcademyController;
 use App\Http\Controllers\AddSectionController;
 use App\Http\Controllers\AddFessTypeController;
 use App\Http\Controllers\DonorController;
+use App\Http\Controllers\ExpenController;
 use App\Http\Controllers\StudentController;
+use App\Models\Expen;
 
 Route::get('/', function () {
     return view('welcome');
@@ -82,9 +85,13 @@ Route::middleware('auth')->group(function () {
 
     // Doner
     
-    Route::resource('donors', controller: DonorController::class);
+    Route::resource(name: 'donors', controller: DonorController::class);
 
+    //Account
+    Route::resource(name: 'account', controller: AccountController::class);
 
+    //Expen
+    Route::resource(name: 'expen', controller: ExpenController::class);
 
 });
 
