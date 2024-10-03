@@ -137,16 +137,17 @@
                             </x-slot>
 
                             <x-slot name="content">
-                                <x-dropdown-link :href="route('expen.index')" :active="request()->routeIs('expen.index')">
+                                <x-dropdown-link :href="route('expens.index')" :active="request()->routeIs('expen.index')">
                                     {{ __('List Expen') }}
                                 </x-dropdown-link>
-                                <x-dropdown-link :href="route('expen.create')" :active="request()->routeIs('expen.index')">
+                                <x-dropdown-link :href="route('expens.index')" :active="request()->routeIs('expen.index')">
                                     {{ __('Add Expen') }}
                                 </x-dropdown-link>
-                                <x-dropdown-link :href="route('expen.create')" :active="request()->routeIs('expen.index')">
-                                    {{ __('Add Catagory') }}
+             
+                                <x-dropdown-link :href="route('add_catagory.index')" :active="request()->routeIs('add-catagory')">
+                                    {{ __('Add catagory') }}
                                 </x-dropdown-link>
-                                
+             
                                
                                
                             </x-slot>

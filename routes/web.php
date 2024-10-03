@@ -1,19 +1,19 @@
 <?php
 
-use App\Http\Controllers\AccountController;
+use App\Models\Expen;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DonorController;
+use App\Http\Controllers\ExpensController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SectionController;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AddClassController;
 use App\Http\Controllers\AddMonthController;
 use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\AddAcademyController;
 use App\Http\Controllers\AddSectionController;
 use App\Http\Controllers\AddFessTypeController;
-use App\Http\Controllers\DonorController;
-use App\Http\Controllers\ExpenController;
-use App\Http\Controllers\StudentController;
-use App\Models\Expen;
 
 Route::get('/', function () {
     return view('welcome');
@@ -90,9 +90,17 @@ Route::middleware('auth')->group(function () {
     //Account
     Route::resource(name: 'account', controller: AccountController::class);
 
-    //Expen
-    Route::resource(name: 'expen', controller: ExpenController::class);
 
+
+    Route::resource(name: 'expens', controller: AccountController::class);
+
+  
+     // Add catagory
+     Route::get('/add-catagory', [ExpensController::class, 'index'])->name('add_catagory.index');
+     Route::post('/add-catagory', [ExpensController::class, 'store'])->name('add_catagory.store');
+     Route::get('/add-catagory/{id}/edit', [ExpensController::class, 'edit'])->name('add_catagory.edit');
+     Route::put('/add-catagory/{id}', [ExpensController::class, 'update'])->name('add_catagory.update');
+     Route::delete('/add-catagory/{id}', [ExpensController::class, 'destroy'])->name('add_catagory.destroy');
 });
 
 

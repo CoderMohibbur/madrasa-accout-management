@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('expens', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->boolean('isActived');
+            $table->boolean('isDeleted')->default(false);
             $table->timestamps();
         });
     }
