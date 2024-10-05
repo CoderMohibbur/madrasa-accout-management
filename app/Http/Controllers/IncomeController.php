@@ -2,28 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Expen;
-use App\Models\Expens;
+use App\Models\income;
 use Illuminate\Http\Request;
 
-class ExpensController extends Controller
+class IncomeController extends Controller
 {
     public function index()
     {
         // Fetch all years
-        $Expens = Expens::all();
+        $Incomes = income::all();
 
         // Return view with the list of years
-        return view('expens.index', compact('Expens'));
+        return view('income.index', compact('Incomes'));
 
     }
     // Show the form for creating a new student
     public function create()
     {
 
-        $Expens = Expens::all(); // Fetch all available fees types
+        $Incomes = income::all(); // Fetch all available fees types
 
-        return view('expens.create', compact('Expens'));
+        return view('income.create', compact('Incomes'));
     }
     public function store(Request $request)
     {
@@ -35,35 +34,35 @@ class ExpensController extends Controller
 
 
         // Create a new student record using the validated data
-        Expens::create([
+        income::create([
             'name' => $validatedData['name'],
             'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
             'isDeleted' => 0, // Set as not deleted by default
         ]);
 
         // Redirect to the students list with a success message
-        return redirect()->route('expens.index')->with('success', 'Student created successfully.');
+        return redirect()->route('income.index')->with('success', 'income created successfully.');
     }
 
     // Display the specified student
-    public function show(Expens $Expen)
+    public function show(income $Income)
     {
-        return view('expens.create', data: compact( 'Expens'));
+        return view('income.create', data: compact( 'Income'));
     }
     public function edit($id)
     {
         // Find the class by ID
-        $Expen = Expens::findOrFail($id);
-        $Expens = Expens::all();
+        $Income = income::findOrFail($id);
+        $Incomes = income::all();
 
         // Return view with the class details for editing
 
 
 
-     return view('expens.create', compact('Expen'));
+     return view('income.create', compact('Income'));
 
     }
-    public function update(Request $request, Expens $Expen)
+    public function update(Request $request, income $Income)
     {
         // Validate the incoming request data
         $validatedData = $request->validate([
@@ -73,22 +72,21 @@ class ExpensController extends Controller
 
 
         // Update the student record using the validated data
-        $Expen->update([
+        $Income->update([
             'name' => $validatedData['name'],
             'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
         ]);
 
         // Redirect to the students list with a success message
-        return redirect()->route('expens.index')->with('success', 'Student updated successfully.');
+        return redirect()->route('income.index')->with('success', 'income updated successfully.');
     }
 
     // Remove the specified student from storage
-    public function destroy(Expens $Expen)
+    public function destroy(income $income)
     {
-        $Expen->delete();
-        return redirect()->route('expens.index')->with('success', 'Student deleted successfully.');
+        $income->delete();
+        return redirect()->route('income.index')->with('success', 'income deleted successfully.');
     }
-
 
 
 }

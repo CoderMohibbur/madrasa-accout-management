@@ -6,7 +6,7 @@
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-900" />
                     </a>
                 </div>
 
@@ -20,7 +20,7 @@
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
-                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-black-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-green-500 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
                                     <div>
                                         <h1>Students</h1>
                                     </div>
@@ -43,7 +43,7 @@
                                 <x-dropdown-link :href="route('students.create')" :active="request()->routeIs('students.index')">
                                     {{ __('Add Student') }}
                                 </x-dropdown-link>
-                               
+
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -52,7 +52,7 @@
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
-                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-black-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-red-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
                                     <div>
                                         <h1>Doner</h1>
                                     </div>
@@ -75,7 +75,7 @@
                                 <x-dropdown-link :href="route('donors.create')" :active="request()->routeIs('donors.index')">
                                     {{ __('Add Doner') }}
                                 </x-dropdown-link>
-                               
+
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -85,7 +85,7 @@
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
-                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-black-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-purple-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
                                     <div>
                                         <h1>Account</h1>
                                     </div>
@@ -108,9 +108,9 @@
                                 <x-dropdown-link :href="route('account.create')" :active="request()->routeIs('account.index')">
                                     {{ __('Add Account') }}
                                 </x-dropdown-link>
-                                
-                               
-                               
+
+
+
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -120,9 +120,9 @@
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
-                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-black-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-yellow-400 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
                                     <div>
-                                        <h1>Expen</h1>
+                                        <h1>Expens</h1>
                                     </div>
 
                                     <div class="ms-1">
@@ -137,19 +137,81 @@
                             </x-slot>
 
                             <x-slot name="content">
-                                <x-dropdown-link :href="route('expens.index')" :active="request()->routeIs('expen.index')">
+                                <x-dropdown-link :href="route('expens.index')" :active="request()->routeIs('expens.index')">
                                     {{ __('List Expen') }}
                                 </x-dropdown-link>
-                                <x-dropdown-link :href="route('expens.index')" :active="request()->routeIs('expen.index')">
+                                <x-dropdown-link :href="route('expens.create')" :active="request()->routeIs('expens.index')">
                                     {{ __('Add Expen') }}
                                 </x-dropdown-link>
-             
+
                                 <x-dropdown-link :href="route('add_catagory.index')" :active="request()->routeIs('add-catagory')">
                                     {{ __('Add catagory') }}
                                 </x-dropdown-link>
-             
-                               
-                               
+
+
+
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
+                     <!-- income -->
+                     <div class="hidden sm:flex sm:items-center sm:ms-6">
+                        <x-dropdown>
+                            <x-slot name="trigger">
+                                <button
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-black-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-orange-600 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <div>
+                                        <h1>Income</h1>
+                                    </div>
+
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('income.index')" :active="request()->routeIs('income.index')">
+                                    {{ __('List Income') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('income.create')" :active="request()->routeIs('income.index')">
+                                    {{ __('Add Income') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
+                      <!-- Transaction -->
+                      <div class="hidden sm:flex sm:items-center sm:ms-6">
+                        <x-dropdown>
+                            <x-slot name="trigger">
+                                <button
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-black-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-blue-600 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <div>
+                                        <h1>Transaction</h1>
+                                    </div>
+
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
+
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('income.index')" :active="request()->routeIs('income.index')">
+                                    {{ __('List Income') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('income.create')" :active="request()->routeIs('income.index')">
+                                    {{ __('Add Income') }}
+                                </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -158,7 +220,7 @@
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
-                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-black-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-lime-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
                                     <div>
                                         <h1>Settings</h1>
                                     </div>
@@ -200,7 +262,7 @@
                 </div>
             </div>
 
-            
+
 
             <!-- Profile Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">

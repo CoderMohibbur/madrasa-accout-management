@@ -16,20 +16,20 @@
                                 <thead>
                                     <tr>
                                         <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> ID</th>
-                                        <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">List Expens Name</th>
+                                        <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">List Income Name</th>
                                         <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-center"> Status</th>
                                         <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-center"> Action</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-slate-800">
-                                    @foreach ($Expens as $Expen)
+                                    @foreach ($Incomes as $Income)
                                         <tr>
-                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $Expen->id }}</td>
-                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $Expen->name }}</td>
+                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $Income->id }}</td>
+                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $Income->name }}</td>
 
 
                                             <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                @if ($Expen->isActived)
+                                                @if ($Income->isActived)
                                                     <span class="text-green-500">Active</span>
                                                 @else
                                                     <span class="text-red-500">Inactive</span>
@@ -37,12 +37,12 @@
                                             </td>
                                             <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400 text-center">
-                                                <a href="{{ route('expens.edit', $Expen->id) }}">
+                                                <a href="{{ route('income.edit', $Income->id) }}">
                                                     <x-primary-button>
                                                         {{ __('Edit') }}
                                                     </x-primary-button>
                                                 </a>
-                                                <form action="{{ route('expens.destroy', $Expen->id) }}"
+                                                <form action="{{ route('income.destroy', $Income->id) }}"
                                                     method="POST" style="display:inline;">
                                                     @csrf
                                                     @method('DELETE')
