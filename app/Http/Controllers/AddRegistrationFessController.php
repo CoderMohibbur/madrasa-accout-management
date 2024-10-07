@@ -11,7 +11,7 @@ class AddRegistrationFessController extends Controller
     public function index()
     {
         // Fetch all years
-        $registrations = AddRegistrationFess::all();
+        $registrations = AddRegistrationFess::with('class')->get();
         $classes = AddClass::all(); // Fetch all available class
 
         // Return view with the list of years

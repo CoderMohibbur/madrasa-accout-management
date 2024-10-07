@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <x-toast-success />
@@ -36,7 +36,7 @@
                                             <option value="{{ $class->id }}"
                                                 {{ isset($registration) && $registration->class_id == $class->id ? 'selected' : '' }}>
                                                 {{ $class->name }}
-                                                {{ $class->id }}
+
                                             </option>
                                         @endforeach
                                     </select>
@@ -102,10 +102,13 @@
                             <table class="border-collapse table-auto w-full text-sm">
                                 <thead>
                                     <tr>
+                                        {{-- <th
+                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
+                                            ID</th> --}}
                                         <th
                                             class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
-                                            ID</th>
-                                        <th
+                                            Class Name</th>
+                                            <th
                                             class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
                                             Monthly Fee</th>
                                         <th
@@ -131,9 +134,12 @@
                                 <tbody class="bg-white dark:bg-slate-800">
                                     @foreach ($registrations as $registration)
                                         <tr>
-                                            <td
+                                            {{-- <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $registration->id }}</td>
+                                                {{ $registration->id }}</td> --}}
+                                                <td
+                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
+                                                {{ $registration->class->name }}</td>
                                             <td
                                                 class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
                                                 {{ $registration->monthly_fee }}</td>

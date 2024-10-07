@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Student extends Model
 {
     use HasFactory;
-    protected $fillable = ['first_name', 'last_name', 'full_name', 'dob', 'roll', 'email', 'mobile', 'photo', 'age', 'fees_type_id', 'class_id', 'section_id', 'academic_year_id', 'isActived', 'isDeleted'];
+    protected $fillable = ['first_name', 'last_name', 'full_name', 'dob', 'roll', 'email', 'mobile', 'photo', 'age', 'fees_type_id', 'class_id', 'section_id', 'academic_year_id','scholarship_amount', 'isActived', 'isDeleted'];
 
     public function AddFess()
     {

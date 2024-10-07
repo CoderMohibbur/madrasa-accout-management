@@ -149,6 +149,14 @@
                                     </select>
                                     <x-input-error :messages="$errors->get('academic_year_id')" class="mt-2" />
                                 </div>
+                                  <!-- scholarship_amount -->
+                                  <div class="mt-5">
+                                    <x-input-label for="scholarship_amount" :value="__('Scholarship Amount')" />
+                                    <x-text-input id="scholarship_amount" class="block mt-1 w-full" type="text" name="scholarship_amount"
+                                        :value="isset($student) ? $student->scholarship_amount : old('scholarship_amount')" required />
+                                    <x-input-error :messages="$errors->get('scholarship_amount')" class="mt-2" />
+                                </div>
+
                                 <!-- Status -->
                                 <div class="mt-5">
                                     <x-input-label for="isActived" :value="__('Active Status')" />
@@ -180,7 +188,7 @@
                     <script>
                         document.getElementById('first_name').addEventListener('input', combineNames);
                         document.getElementById('last_name').addEventListener('input', combineNames);
-                    
+
                         function combineNames() {
                             const firstName = document.getElementById('first_name').value;
                             const lastName = document.getElementById('last_name').value;

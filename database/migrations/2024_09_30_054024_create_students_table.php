@@ -26,12 +26,14 @@ return new class extends Migration
             $table->unsignedBigInteger('class_id')->nullable();
             $table->unsignedBigInteger('section_id')->nullable();
             $table->unsignedBigInteger('academic_year_id')->nullable();
+            $table->decimal('scholarship_amount', 15, 2)->nullable();
             $table->boolean('isActived');
             $table->boolean('isDeleted')->default(false);
             $table->foreign('fees_type_id')->references('id')->on('add_fess_types');
             $table->foreign('class_id')->references('id')->on('add_classes');
             $table->foreign('section_id')->references('id')->on('sections');
             $table->foreign('academic_year_id')->references('id')->on('add_academies');
+
             $table->timestamps();
         });
     }
@@ -44,4 +46,3 @@ return new class extends Migration
         Schema::dropIfExists('students');
     }
 };
- 

@@ -49,6 +49,7 @@ class StudentController extends Controller
             'class_id' => 'required|exists:add_classes,id',
             'section_id' => 'required|exists:sections,id',
             'academic_year_id' => 'required|exists:add_academies,id',
+            'scholarship_amount' => 'required|numeric',
             'isActived' => 'boolean',
         ]);
 
@@ -74,6 +75,7 @@ class StudentController extends Controller
             'class_id' => $validatedData['class_id'],
             'section_id' => $validatedData['section_id'],
             'academic_year_id' => $validatedData['academic_year_id'],
+            'scholarship_amount' => $validatedData['scholarship_amount'],
             'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
             'isDeleted' => 0, // Set as not deleted by default
         ]);
@@ -115,6 +117,7 @@ class StudentController extends Controller
             'class_id' => 'required|exists:add_classes,id',
             'section_id' => 'required|exists:sections,id',
             'academic_year_id' => 'required|exists:add_academies,id',
+            'scholarship_amount' => 'required|numeric',
             'isActived' => 'boolean',
         ]);
 
@@ -145,6 +148,7 @@ class StudentController extends Controller
             'class_id' => $validatedData['class_id'],
             'section_id' => $validatedData['section_id'],
             'academic_year_id' => $validatedData['academic_year_id'],
+            'scholarship_amount' => $validatedData['scholarship_amount'],
             'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
         ]);
 
@@ -158,13 +162,13 @@ class StudentController extends Controller
         if ($student->photo) {
             // The photo is stored in the 'public' disk, in a folder called 'photos'
             $photoPath = storage_path('app/public/' . $student->photo);
-    
+
             // Check if the photo exists before attempting to delete
             if (file_exists($photoPath)) {
                 unlink($photoPath); // Delete the file
             }
         }
-        
+
         $student->delete();
         return redirect()->route('students.index')->with('success', 'Student deleted successfully.');
     }
