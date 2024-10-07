@@ -1,7 +1,9 @@
 <?php
+use App\Models\AddRegistrationFess;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DonorController;
 use App\Http\Controllers\ExpensController;
+use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
@@ -12,7 +14,7 @@ use App\Http\Controllers\AddAcademyController;
 use App\Http\Controllers\AddSectionController;
 use App\Http\Controllers\AddCatagoryController;
 use App\Http\Controllers\AddFessTypeController;
-use App\Http\Controllers\IncomeController;
+use App\Http\Controllers\AddRegistrationFessController;
 
     Route::get('/', function () {
     return view('welcome');
@@ -58,6 +60,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/section/{id}/edit', [AddSectionController::class, 'edit'])->name('Section.edit');
     Route::put('/section/{id}', [AddSectionController::class, 'update'])->name('Section.update');
     Route::delete('/section/{id}', [AddSectionController::class, 'destroy'])->name('Section.destroy');
+     //AddRegistrationFess
+     Route::get('/add-registration',[AddRegistrationFessController::class, 'index'])->name('add_registration.index');
+     Route::post('/add-registration', [AddRegistrationFessController::class, 'store'])->name('add_registration.store');
+     Route::get('/add-registration/{id}/edit', [AddRegistrationFessController::class, 'edit'])->name('add_registration.edit');
+     Route::put('/add-registration/{id}', [AddRegistrationFessController::class, 'update'])->name('add_registration.update');
+     Route::delete('/add-registration/{id}', [AddRegistrationFessController::class, 'destroy'])->name('add_registration.destroy');
     // Students
     Route::resource('students', StudentController::class);
     // Doner
