@@ -18,15 +18,6 @@ class AddRegistrationFessController extends Controller
         return view('settings.add-registration-fees', compact('registrations','classes'));
 
     }
-    public function create()
-    {
-        // Retrieve all necessary data from the database for the form
-        $classes = AddClass::all(); // Fetch all available class
-
-
-        // Pass the data to the view
-        return view('settings.add-registration-fees', compact('classes'));
-    }
     public function store(Request $request)
     {
         // Validate the form inputs
@@ -66,7 +57,7 @@ class AddRegistrationFessController extends Controller
         // Return view with the class details for editing
         return view('settings.add-registration-fees', compact('registration', 'registrations','classes'));
     }
-    public function update(Request $request, AddRegistrationFess $registration)
+    public function update(Request $request, $id)
     {
         // Validate the request
         $request->validate([
@@ -80,6 +71,9 @@ class AddRegistrationFessController extends Controller
         ]);
 
         // Update the student record using the validated data
+
+        $registration = AddRegistrationFess::findOrFail($id);
+
         $registration->update([
             'monthly_fee' => $request['monthly_fee'],
             'boarding_fee' => $request['boarding_fee'],
