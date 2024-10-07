@@ -126,7 +126,7 @@
                                 <button
                                     class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-black-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-yellow-400 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
                                     <div>
-                                        <h1>Expens</h1>
+                                        <h1>Expense</h1>
                                     </div>
 
                                     <div class="ms-1">
@@ -142,10 +142,10 @@
 
                             <x-slot name="content">
                                 <x-dropdown-link :href="route('expens.index')" :active="request()->routeIs('expens.index')">
-                                    {{ __('List Expen') }}
+                                    {{ __('List Expense') }}
                                 </x-dropdown-link>
                                 <x-dropdown-link :href="route('expens.create')" :active="request()->routeIs('expens.index')">
-                                    {{ __('Add Expen') }}
+                                    {{ __('Add Expense') }}
                                 </x-dropdown-link>
 
                                 <x-dropdown-link :href="route('add_catagory.index')" :active="request()->routeIs('add-catagory')">
