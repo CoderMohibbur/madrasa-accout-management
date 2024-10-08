@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DonorController;
 use App\Http\Controllers\ExpensController;
 use App\Http\Controllers\IncomeController;
+use App\Http\Controllers\LenderController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
@@ -82,6 +83,8 @@ Route::middleware('auth')->group(function () {
      Route::delete('/add-catagory/{id}', [AddCatagoryController::class, 'destroy'])->name('add_catagory.destroy');
      //Income
      Route::resource(name: 'income', controller: IncomeController::class);
+      //Lender
+      Route::resource(name: 'lender', controller: LenderController::class);
 
 });
 
