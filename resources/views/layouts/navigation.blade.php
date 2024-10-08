@@ -187,7 +187,7 @@
                                 </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
-                    </div>n -->
+                    </div>
                       <div class="hidden sm:flex sm:items-center ">
                       <!-- Lender -->
                         <x-dropdown>
