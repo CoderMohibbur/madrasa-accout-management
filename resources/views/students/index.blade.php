@@ -11,7 +11,7 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <x-toast-success />
                     <div class="grid grid-cols-1 gap-10">
-                        <div>
+                        <div class="overflow-auto">
                             <table class="border-collapse table-auto w-full text-sm">
                                 <thead>
                                     <tr>

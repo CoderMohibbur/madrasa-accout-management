@@ -16,7 +16,7 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                      <!-- Students -->
-                     <div class="hidden sm:flex sm:items-center sm:ms-6">
+                     <div class="hidden sm:flex sm:items-center ">
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
@@ -52,7 +52,7 @@
                         </x-dropdown>
                     </div>
                      <!-- Doner -->
-                     <div class="hidden sm:flex sm:items-center sm:ms-6">
+                     <div class="hidden sm:flex sm:items-center ">
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
@@ -85,7 +85,7 @@
                     </div>
 
                      <!-- Account -->
-                     <div class="hidden sm:flex sm:items-center sm:ms-6">
+                     <div class="hidden sm:flex sm:items-center ">
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
@@ -120,7 +120,7 @@
                     </div>
 
                      <!-- Expen -->
-                     <div class="hidden sm:flex sm:items-center sm:ms-6">
+                     <div class="hidden sm:flex sm:items-center ">
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
@@ -158,7 +158,7 @@
                         </x-dropdown>
                     </div>
                      <!-- income -->
-                     <div class="hidden sm:flex sm:items-center sm:ms-6">
+                     <div class="hidden sm:flex sm:items-center ">
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
@@ -189,7 +189,7 @@
                         </x-dropdown>
                     </div>
                       <!-- Transaction -->
-                      <div class="hidden sm:flex sm:items-center sm:ms-6">
+                      <div class="hidden sm:flex sm:items-center ">
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
@@ -220,7 +220,7 @@
                         </x-dropdown>
                     </div>
                     <!-- Settings -->
-                    <div class="hidden sm:flex sm:items-center sm:ms-6">
+                    <div class="hidden sm:flex sm:items-center ">
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
@@ -272,7 +272,7 @@
 
 
             <!-- Profile Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
+            <div class="hidden sm:flex sm:items-center ">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button
