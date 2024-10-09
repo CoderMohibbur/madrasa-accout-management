@@ -74,7 +74,7 @@ class AccountController extends Controller
             'isActived' => 'boolean',
         ]);
 
-        
+
 
         // Update the student record using the validated data
         $account->update([
