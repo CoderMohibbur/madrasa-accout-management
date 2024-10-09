@@ -16,11 +16,10 @@ return new class extends Migration
             $table->unsignedBigInteger('student_id')->nullable();
             $table->unsignedBigInteger('doner_id')->nullable();
             $table->unsignedBigInteger('lender_id')->nullable();
-            $table->unsignedBigInteger('fees_type_id')->nullable();
-            $table->unsignedBigInteger('section_id')->nullable();
-            $table->unsignedBigInteger('academic_year_id')->nullable();
+            $table->unsignedBigInteger('fess_type_id')->nullable();
+            $table->unsignedBigInteger('transactions_type_id')->nullable();
             $table->string('student_book_number')->nullable();
-            $table->integer('recipt_no')->nullable();
+            $table->string('recipt_no')->nullable();
             $table->decimal('monthly_fees', 15, 2)->nullable();
             $table->decimal('boarding_fees', 15, 2)->nullable();
             $table->decimal('management_fees', 15, 2)->nullable();
@@ -32,7 +31,9 @@ return new class extends Migration
             $table->date('transactions_date')->nullable();
             $table->unsignedBigInteger('account_id')->nullable();
             $table->unsignedBigInteger('class_id')->nullable();
+            $table->unsignedBigInteger('section_id')->nullable();
             $table->unsignedBigInteger('months_id')->nullable();
+            $table->unsignedBigInteger('academic_year_id')->nullable();
             $table->unsignedBigInteger('created_by_id')->nullable();
             $table->string('note')->nullable();
             $table->decimal('c_d_1', 15, 2)->nullable();
@@ -57,14 +58,11 @@ return new class extends Migration
             $table->integer('c_i_5')->nullable();
             $table->integer('c_i_6')->nullable();
 
-
-
-
-
             $table->foreign('student_id')->references('id')->on('students');
             $table->foreign('doner_id')->references('id')->on('donors');
             $table->foreign('lender_id')->references('id')->on('lenders');
-            $table->foreign('fees_type_id')->references('id')->on('add_fess_types');
+            $table->foreign('fess_type_id')->references('id')->on('add_fess_types');
+            $table->foreign('transactions_type_id')->references('id')->on('transactions_types');
             $table->foreign('section_id')->references('id')->on('add_sections');
             $table->foreign('academic_year_id')->references('id')->on('add_academies');
             $table->foreign('account_id')->references('id')->on('accounts');

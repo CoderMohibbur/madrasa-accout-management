@@ -77,30 +77,30 @@ class TransactionsController extends Controller
             'isActived' => $validated['isActived'], // Save as boolean: true for 'activate', false for 'deactivate'
         ]);
         Transactions::create([
-            'note' => 'test',
-            'recipt_no' => 'test',
-            'monthly_fees' => 'test',
-            'scholarship_amount' => 'test',
-            'boarding_fees' => 'test',
-            'management_fees' => 'test',
-            'exam_fees' => 'test',
-            'others_fees' => 'test',
-            'total_fees' => 'test',
-            'debit' => 'test',
-            'credit' => 'test',
-            'transactions_date' => 'test',
-            'student_id' => 'test',
-            'doner_id' => 'test',
-            'lender_id' => 'test',
-            'fees_type_id' => 'test',
-            'section_id' => 'test',
-            'academic_year_id' => 'test',
-            'account_id' => 'test',
+            'student_id' => 1,
+            'doner_id' => NULL,
+            'lender_id' => NULL,
+            'fess_type_id' => 1,
+            'transactions_type_id' => 1,
+            'student_book_number' => 'test',
+            'recipt_no' => 125425,
+            'monthly_fees' => 12424,
+            'boarding_fees' => 12424,
+            'management_fees' => 12424,
+            'exam_fees' => 12424,
+            'others_fees' => 12424,
+            'total_fees' => 12424,
+            'debit' => 12424,
+            'credit' => 12424,
+            'transactions_date' => '2024-10-09',
+            'account_id' => 1,
             'class_id' => 1,
+            'section_id' => 1,
             'months_id' => 1,
+            'academic_year_id' => 1,
             'created_by_id' => 1,
-
-            'isActived' => $validated['isActived'], // Save as boolean: true for 'activate', false for 'deactivate'
+            'note' => 'test',
+            'isActived' => 1, // Save as boolean: true for 'activate', false for 'deactivate'
         ]);
 
         // Redirect back or to a success page
