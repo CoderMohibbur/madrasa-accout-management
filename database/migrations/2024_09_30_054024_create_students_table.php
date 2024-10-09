@@ -31,7 +31,7 @@ return new class extends Migration
             $table->boolean('isDeleted')->default(false);
             $table->foreign('fees_type_id')->references('id')->on('add_fess_types');
             $table->foreign('class_id')->references('id')->on('add_classes');
-            $table->foreign('section_id')->references('id')->on('sections');
+            $table->foreign('section_id')->references('id')->on('add_sections');
             $table->foreign('academic_year_id')->references('id')->on('add_academies');
 
             $table->timestamps();

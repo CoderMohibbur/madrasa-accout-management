@@ -15,6 +15,7 @@ use App\Http\Controllers\AddAcademyController;
 use App\Http\Controllers\AddSectionController;
 use App\Http\Controllers\AddCatagoryController;
 use App\Http\Controllers\AddFessTypeController;
+use App\Http\Controllers\TransactionsController;
 use App\Http\Controllers\AddRegistrationFessController;
 
     Route::get('/', function () {
@@ -85,6 +86,14 @@ Route::middleware('auth')->group(function () {
      Route::resource(name: 'income', controller: IncomeController::class);
       //Lender
       Route::resource(name: 'lender', controller: LenderController::class);
+
+         // TransactionsController
+     Route::get('/add-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.index');
+     Route::post('/add-student-fees', [TransactionsController::class, 'store'])->name('add_student_fees.store');
+     Route::get('/add-student-fees/{id}/edit', [TransactionsController::class, 'edit'])->name('add_student_fees.edit');
+     Route::put('/add-student-fees/{id}', [TransactionsController::class, 'update'])->name('add_student_fees.update');
+     Route::delete('/add-student-fees/{id}', [TransactionsController::class, 'destroy'])->name('add_student_fees.destroy');
+
 
 });
 
