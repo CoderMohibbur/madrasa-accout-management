@@ -45,21 +45,23 @@
                                         :value="isset($lender) ? $lender->email : old('email')" required />
                                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                                 </div>
-
                                  <!-- address -->
                                  <div class="mt-5">
                                     <x-input-label for="address" :value="__('Address')" />
-                                    <textarea id="address" class="block mt-1 w-full" type="text" name="address"
-                                        :value="isset($lender) ? $lender->address : old('address')" required >
-                                    </textarea :messages="$errors->get('address')" class="mt-2" >
+                                    <textarea id="address" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" name="address" required>{{ isset($lender) ? $lender->address : old('address') }}</textarea>
+                                    @error('address')
+                                        <div class="mt-2 text-red-500">{{ $message }}</div>
+                                    @enderror
                                 </div>
+                                
 
                                  <!-- bank_detils -->
                                  <div class="mt-5">
                                     <x-input-label for="bank_detils" :value="__('Bank Detils')" />
-                                    <textarea id="bank_detils" class="block mt-1 w-full" type="text" name="bank_detils"
-                                        :value="isset($lender) ? $lender->bank_detils : old('bank_detils')" required >
-                                    </textarea :messages="$errors->get('bank_detils')" class="mt-2" >
+                                    <textarea id="bank_detils" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" type="text" name="bank_detils" required>{{ isset($lender) ? $lender->bank_detils : old('bank_detils') }}</textarea>
+                                    @error('bank_detils')
+                                        <div class="mt-2 text-red-500">{{ $message }}</div>
+                                    @enderror
                                 </div>
 
 

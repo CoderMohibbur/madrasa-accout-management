@@ -8,6 +8,7 @@ export default {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
         './node_modules/flowbite/**/*.js',
+        './src/**/*.{js,jsx,ts,tsx}',
     ],
 
     theme: {
@@ -20,6 +21,7 @@ export default {
 
     plugins: [
         forms,
-        require('flowbite/plugin')
+        require('flowbite/plugin'),
+        require('autoprefixer')
     ],
 };
