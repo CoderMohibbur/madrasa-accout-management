@@ -21,61 +21,61 @@ class TransactionsController extends Controller
     public function store(Request $request)
     {
         // Validate the form inputs
-        $validated = $request->validate([
+        // $validated = $request->validate([
 
 
-            'note' => 'string|max:255',
-            'recipt_no' => 'integer',
-            'monthly_fees' => 'numeric',
-            'scholarship_amount' => 'numeric',
-            'boarding_fees' => 'numeric',
-            'management_fees' => 'numeric',
-            'exam_fees' => 'numeric',
-            'others_fees' => 'numeric',
-            'total_fees' => 'numeric',
-            'debit' => 'numeric',
-            'credit' => 'numeric',
-            'transactions_date' => 'date',
-            'student_id' => 'exists:students,id',
-            'doner_id' => 'exists:donors,id',
-            'lender_id' => 'exists:lenders,id',
-            'fees_type_id' => 'exists:add_fess_types,id',
-            'section_id' => 'exists:add_sections,id',
-            'academic_year_id' => 'exists:add_academies,id',
-            'account_id' => 'exists:accounts,id',
-            'class_id' => 'exists:add_classes,id',
-            'months_id' => 'exists:add_months,id',
-            'created_by_id' => 'exists:users,id',
-            'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
-        ]);
+        //     'note' => 'string|max:255',
+        //     'recipt_no' => 'integer',
+        //     'monthly_fees' => 'numeric',
+        //     'scholarship_amount' => 'numeric',
+        //     'boarding_fees' => 'numeric',
+        //     'management_fees' => 'numeric',
+        //     'exam_fees' => 'numeric',
+        //     'others_fees' => 'numeric',
+        //     'total_fees' => 'numeric',
+        //     'debit' => 'numeric',
+        //     'credit' => 'numeric',
+        //     'transactions_date' => 'date',
+        //     'student_id' => 'exists:students,id',
+        //     'doner_id' => 'exists:donors,id',
+        //     'lender_id' => 'exists:lenders,id',
+        //     'fees_type_id' => 'exists:add_fess_types,id',
+        //     'section_id' => 'exists:add_sections,id',
+        //     'academic_year_id' => 'exists:add_academies,id',
+        //     'account_id' => 'exists:accounts,id',
+        //     'class_id' => 'exists:add_classes,id',
+        //     'months_id' => 'exists:add_months,id',
+        //     'created_by_id' => 'exists:users,id',
+        //     'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
+        // ]);
 
         // Create a new class and save to the database
-        Transactions::create([
-            'noth' => $validated['noth'],
-            'recipt_no' => $validated['recipt_no'],
-            'monthly_fees' => $validated['monthly_fees'],
-            'scholarship_amount' => $validated['scholarship_amount'],
-            'boarding_fees' => $validated['boarding_fees'],
-            'management_fees' => $validated['management_fees'],
-            'exam_fees' => $validated['exam_fees'],
-            'others_fees' => $validated['others_fees'],
-            'total_fees' => $validated['total_fees'],
-            'debit' => $validated['debit'],
-            'credit' => $validated['credit'],
-            'transactions_date' => $validated['transactions_date'],
-            'student_id' => $validated['student_id'],
-            'doner_id' => $validated['doner_id'],
-            'lender_id' => $validated['lender_id'],
-            'fees_type_id' => $validated['fees_type_id'],
-            'section_id' => $validated['section_id'],
-            'academic_year_id' => $validated['academic_year_id'],
-            'account_id' => $validated['account_id'],
-            'class_id' => $validated['class_id'],
-            'months_id' => $validated['months_id'],
-            'created_by_id' => $validated['created_by_id'],
+        // Transactions::create([
+        //     'noth' => $validated['noth'],
+        //     'recipt_no' => $validated['recipt_no'],
+        //     'monthly_fees' => $validated['monthly_fees'],
+        //     'scholarship_amount' => $validated['scholarship_amount'],
+        //     'boarding_fees' => $validated['boarding_fees'],
+        //     'management_fees' => $validated['management_fees'],
+        //     'exam_fees' => $validated['exam_fees'],
+        //     'others_fees' => $validated['others_fees'],
+        //     'total_fees' => $validated['total_fees'],
+        //     'debit' => $validated['debit'],
+        //     'credit' => $validated['credit'],
+        //     'transactions_date' => $validated['transactions_date'],
+        //     'student_id' => $validated['student_id'],
+        //     'doner_id' => $validated['doner_id'],
+        //     'lender_id' => $validated['lender_id'],
+        //     'fees_type_id' => $validated['fees_type_id'],
+        //     'section_id' => $validated['section_id'],
+        //     'academic_year_id' => $validated['academic_year_id'],
+        //     'account_id' => $validated['account_id'],
+        //     'class_id' => $validated['class_id'],
+        //     'months_id' => $validated['months_id'],
+        //     'created_by_id' => $validated['created_by_id'],
 
-            'isActived' => $validated['isActived'], // Save as boolean: true for 'activate', false for 'deactivate'
-        ]);
+        //     'isActived' => $validated['isActived'], // Save as boolean: true for 'activate', false for 'deactivate'
+        // ]);
         Transactions::create([
             'student_id' => 1,
             'doner_id' => NULL,
