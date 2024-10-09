@@ -24,7 +24,7 @@ class TransactionsController extends Controller
         $validated = $request->validate([
 
 
-            'noth' => 'string|max:255',
+            'note' => 'string|max:255',
             'recipt_no' => 'integer',
             'monthly_fees' => 'numeric',
             'scholarship_amount' => 'numeric',
@@ -73,6 +73,32 @@ class TransactionsController extends Controller
             'class_id' => $validated['class_id'],
             'months_id' => $validated['months_id'],
             'created_by_id' => $validated['created_by_id'],
+
+            'isActived' => $validated['isActived'], // Save as boolean: true for 'activate', false for 'deactivate'
+        ]);
+        Transactions::create([
+            'note' => 'test',
+            'recipt_no' => 'test',
+            'monthly_fees' => 'test',
+            'scholarship_amount' => 'test',
+            'boarding_fees' => 'test',
+            'management_fees' => 'test',
+            'exam_fees' => 'test',
+            'others_fees' => 'test',
+            'total_fees' => 'test',
+            'debit' => 'test',
+            'credit' => 'test',
+            'transactions_date' => 'test',
+            'student_id' => 'test',
+            'doner_id' => 'test',
+            'lender_id' => 'test',
+            'fees_type_id' => 'test',
+            'section_id' => 'test',
+            'academic_year_id' => 'test',
+            'account_id' => 'test',
+            'class_id' => 1,
+            'months_id' => 1,
+            'created_by_id' => 1,
 
             'isActived' => $validated['isActived'], // Save as boolean: true for 'activate', false for 'deactivate'
         ]);

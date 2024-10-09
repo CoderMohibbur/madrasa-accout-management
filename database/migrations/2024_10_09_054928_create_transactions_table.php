@@ -13,14 +13,13 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-
             $table->unsignedBigInteger('student_id')->nullable();
             $table->unsignedBigInteger('doner_id')->nullable();
             $table->unsignedBigInteger('lender_id')->nullable();
-            $table->string('student_book_number')->nullable();
             $table->unsignedBigInteger('fees_type_id')->nullable();
             $table->unsignedBigInteger('section_id')->nullable();
             $table->unsignedBigInteger('academic_year_id')->nullable();
+            $table->string('student_book_number')->nullable();
             $table->integer('recipt_no')->nullable();
             $table->decimal('monthly_fees', 15, 2)->nullable();
             $table->decimal('boarding_fees', 15, 2)->nullable();
@@ -35,7 +34,7 @@ return new class extends Migration
             $table->unsignedBigInteger('class_id')->nullable();
             $table->unsignedBigInteger('months_id')->nullable();
             $table->unsignedBigInteger('created_by_id')->nullable();
-            $table->string('noth')->nullable();
+            $table->string('note')->nullable();
             $table->decimal('c_d_1', 15, 2)->nullable();
             $table->decimal('c_d_2', 15, 2)->nullable();
             $table->decimal('c_d_3', 15, 2)->nullable();
