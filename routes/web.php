@@ -48,8 +48,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/add-academy/{id}/edit', [AddAcademyController::class, 'edit'])->name('add_academy.edit');
     Route::put('/add-academy/{id}', [AddAcademyController::class, 'update'])->name('add_academy.update');
     Route::delete('/add-academy/{id}', [AddAcademyController::class, 'destroy'])->name('add_academy.destroy');
-    // Accounting
-    Route::get('/accounting',[AccountingController::class, 'index'])->name('accounting.index');
     //add-academy conroller
     Route::get('/add-fees-type',[AddFessTypeController::class, 'index'])->name('add_fees_type.index');
     Route::post('/add-fees-type', [AddFessTypeController::class, 'store'])->name('add_fees_type.store');
