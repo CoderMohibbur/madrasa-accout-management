@@ -101,7 +101,11 @@ Route::middleware('auth')->group(function () {
 
   // TransactionsController
   Route::get('/add-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.index');
+  // Route::post('/add-student-fees', action: [TransactionsController::class, 'bulk_store'])->name('add_student_fees.bulk_store');
   Route::post('/add-student-fees', [TransactionsController::class, 'store'])->name('add_student_fees.store');
+  Route::get('/get-students', [TransactionsController::class, 'getStudents'])->name('get.students');
+  Route::post('/store-fees', [TransactionsController::class, 'bulkStore'])->name('fees.bulk_store');
+
   Route::get('/add-student-fees/{id}/edit', [TransactionsController::class, 'edit'])->name('add_student_fees.edit');
   Route::put('/add-student-fees/{id}', [TransactionsController::class, 'update'])->name('add_student_fees.update');
   Route::delete('/add-student-fees/{id}', [TransactionsController::class, 'destroy'])->name('add_student_fees.destroy');

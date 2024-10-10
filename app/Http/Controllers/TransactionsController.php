@@ -25,22 +25,28 @@ class TransactionsController extends Controller
         $students = Student::all();
         $accounts = Account::all();
         $classes = AddClass::all();
-        $Sections = AddSection::all();
-        $classes = AddMonth::all();
+        $sections = AddSection::all();
+        $months = AddMonth::all();
         $years = AddAcademy::all();
-        $classes = AddFessType::all();
+        $feestypes = AddFessType::all();
         $transactionss = TransactionsType::all();
         $users=User::all();
 
-
-
-
-
-
         // Return view with the list of classes
-        return view('students.add-fees', compact('transactionss','students','accounts','classes','Sections','years','classes','transactionss','users'));
+        return view('students.add-fees', compact('transactionss','students','accounts','classes','sections','years','months','transactionss','users'));
 
     }
+
+    public function getStudents(Request $request)
+    {
+        $students = Student::where('academic_year_id', $request->academic_year_id)
+            ->where('class_id', $request->class_id)
+            ->where('section_id', $request->section_id)
+            ->get();
+
+        return view('students.partials.students_list', compact('students'));
+    }
+
 
     public function store(Request $request)
     {
@@ -100,6 +106,26 @@ class TransactionsController extends Controller
         // Redirect back or to a success page
         return redirect()->route('add_fees_type.index')->with('success', 'Class added successfully!');
     }
+
+    public function bulkStore(Request $request)
+    {
+        $studentIds = $request->input('student_ids');
+        $monthlyFees = $request->input('monthly_fees');
+        $boardingFees = $request->input('boarding_fees');
+        // আরও ফিল্ড গুলো নিবেন
+
+        foreach ($studentIds as $index => $studentId) {
+            Transactions::create([
+                'student_id' => $studentId,
+                'monthly_fees' => $monthlyFees[$index],
+                'boarding_fees' => $boardingFees[$index],
+                // অন্যান্য ফিল্ড গুলো যোগ করুন
+            ]);
+        }
+
+        return redirect()->route('fees.index')->with('success', 'Fees added successfully!');
+    }
+    
     public function edit($id)
     {
         // Find the class by ID
