@@ -20,7 +20,7 @@
                         @endif
                         <div class="grid grid-cols-2 gap-10">
                             <div>
-                                <!-- Fees Type ID -->
+                                <!-- Student Id -->
                                 <div class="mt-5">
                                     <x-input-label for="student_id" :value="__('Student Id')" />
                                     <select id="student_id" name="student_id" class="block mt-1 w-full">
@@ -34,23 +34,32 @@
                                     <x-input-error :messages="$errors->get('student_id')" class="mt-2" />
                                 </div>
 
-                                <!-- fess_type_id -->
+                                <!-- Fess Type Id -->
                                 <div class="mt-5">
                                     <x-input-label for="fess_type_id" :value="__('Fess Type Id')" />
-                                    <x-text-input id="fess_type_id" class="block mt-1 w-full" type="text"
-                                        name="fess_type_id" :value="isset($transactions)
-                                            ? $transactions->fess_type_id
-                                            : old('fess_type_id')" required />
+                                    <select id="fess_type_id" name="fess_type_id" class="block mt-1 w-full">
+                                        @foreach ($classes as $class)
+                                            <option value="{{ $class->id }}"
+                                                {{ isset($transactions) && $class->fess_type_id == $class->id ? 'selected' : '' }}>
+                                                {{ $class->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     <x-input-error :messages="$errors->get('fess_type_id')" class="mt-2" />
                                 </div>
 
                                 <!-- transactions_type_id -->
                                 <div class="mt-5">
                                     <x-input-label for="transactions_type_id" :value="__('Transactions Type Id')" />
-                                    <x-text-input id="transactions_type_id" class="block mt-1 w-full" type="text"
-                                        name="transactions_type_id" :value="isset($transactions)
-                                            ? $transactions->transactions_type_id
-                                            : old('transactions_type_id')" required />
+                                    <select id="transactions_type_id" name="transactions_type_id"
+                                        class="block mt-1 w-full">
+                                        @foreach ($transactionss as $transaction)
+                                            <option value="{{ $transaction->id }}"
+                                                {{ isset($transactions) && $transaction->transactions_type_id == $transaction->id ? 'selected' : '' }}>
+                                                {{ $transaction->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     <x-input-error :messages="$errors->get('transactions_type_id')" class="mt-2" />
                                 </div>
 
@@ -94,10 +103,12 @@
 
                                 <!-- management_fees -->
                                 <div class="mt-5">
-                                    <x-input-label for="student_id" :value="__('Management Fees')" />
-                                    <x-text-input id="student_id" class="block mt-1 w-full" type="text"
-                                        name="student_id" :value="isset($transactions) ? $transactions->student_id : old('student_id')" required />
-                                    <x-input-error :messages="$errors->get('student_id')" class="mt-2" />
+                                    <x-input-label for="management_fees" :value="__('Management Fees')" />
+                                    <x-text-input id="management_fees" class="block mt-1 w-full" type="text"
+                                        name="management_fees" :value="isset($transactions)
+                                            ? $transactions->management_fees
+                                            : old('management_fees')" required />
+                                    <x-input-error :messages="$errors->get('management_fees')" class="mt-2" />
                                 </div>
 
                                 <!-- exam_fees -->
@@ -119,8 +130,8 @@
 
                                 </div>
 
-                                 <!-- total_fees -->
-                                 <div class="mt-5">
+                                <!-- total_fees -->
+                                <div class="mt-5">
                                     <x-input-label for="total_fees" :value="__('Total Fees')" />
                                     <x-text-input id="total_fees" class="block mt-1 w-full" type="text"
                                         name="total_fees" :value="isset($transactions) ? $transactions->total_fees : old('total_fees')" required />
@@ -151,7 +162,7 @@
                                 <!-- transactions_date -->
                                 <div class="mt-5">
                                     <x-input-label for="transactions_date" :value="__('Transactions Date')" />
-                                    <x-text-input id="transactions_date" class="block mt-1 w-full" type="text"
+                                    <x-text-input id="transactions_date" class="block mt-1 w-full" type="date"
                                         name="transactions_date" :value="isset($transactions)
                                             ? $transactions->transactions_date
                                             : old('transactions_date')" required />
@@ -159,57 +170,91 @@
                                 </div>
 
 
-                                <!-- account_id -->
+                                <!-- Acount Id -->
                                 <div class="mt-5">
-                                    <x-input-label for="account_id" :value="__('Account Id')" />
-                                    <x-text-input id="account_id" class="block mt-1 w-full" type="text"
-                                        name="account_id" :value="isset($transactions) ? $transactions->account_id : old('account_id')" required />
-                                    <x-input-error :messages="$errors->get('account_id')" class="mt-2" />
+                                    <x-input-label for="account_id" :value="__('Acount Id')" />
+                                    <select id="account_id" name="account_id" class="block mt-1 w-full">
+                                        @foreach ($accounts as $account)
+                                            <option value="{{ $account->id }}"
+                                                {{ isset($transactions) && $account->account_id == $account->id ? 'selected' : '' }}>
+                                                {{ $account->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <x-input-error :messages="$errors->get('student_id')" class="mt-2" />
                                 </div>
-                                <!-- class_id -->
+
+
+                                <!-- Class Id -->
                                 <div class="mt-5">
                                     <x-input-label for="class_id" :value="__('Class Id')" />
-                                    <x-text-input id="class_id" class="block mt-1 w-full" type="text"
-                                        name="class_id" :value="isset($transactions) ? $transactions->class_id : old('class_id')" />
+                                    <select id="class_id" name="class_id" class="block mt-1 w-full">
+                                        @foreach ($classes as $class)
+                                            <option value="{{ $class->id }}"
+                                                {{ isset($transactions) && $class->class_id == $class->id ? 'selected' : '' }}>
+                                                {{ $class->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     <x-input-error :messages="$errors->get('class_id')" class="mt-2" />
                                 </div>
 
-                                <!-- section_id -->
+                                <!-- Section Id -->
                                 <div class="mt-5">
                                     <x-input-label for="section_id" :value="__('Section Id')" />
-                                    <x-text-input id="section_id" class="block mt-1 w-full" type="text"
-                                        name="section_id" :value="isset($transactions) ? $transactions->section_id : old('section_id')" required />
+                                    <select id="section_id" name="section_id" class="block mt-1 w-full">
+                                        @foreach ($Sections as $Section)
+                                            <option value="{{ $Section->id }}"
+                                                {{ isset($transactions) && $Section->section_id == $Section->id ? 'selected' : '' }}>
+                                                {{ $Section->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     <x-input-error :messages="$errors->get('section_id')" class="mt-2" />
                                 </div>
 
                                 <!-- months_id -->
                                 <div class="mt-5">
                                     <x-input-label for="months_id" :value="__('Months Id')" />
-                                    <x-text-input id="months_id" class="block mt-1 w-full" type="text"
-                                        name="months_id" :value="isset($transactions) ? $transactions->months_id : old('months_id')" required />
+                                    <select id="months_id" name="months_id" class="block mt-1 w-full">
+                                        @foreach ($classes as $class)
+                                            <option value="{{ $class->id }}"
+                                                {{ isset($transactions) && $transactions->months_id == $class->id ? 'selected' : '' }}>
+                                                {{ $class->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     <x-input-error :messages="$errors->get('months_id')" class="mt-2" />
                                 </div>
 
-                                <!-- academic_year_id -->
+                                <!-- Academic Year Id' -->
                                 <div class="mt-5">
                                     <x-input-label for="academic_year_id" :value="__('Academic Year Id')" />
-                                    <x-text-input id="academic_year_id" class="block mt-1 w-full" type="text"
-                                        name="academic_year_id" :value="isset($transactions)
-                                            ? $transactions->academic_year_id
-                                            : old('academic_year_id')" required />
+                                    <select id="academic_year_id" name="academic_year_id" class="block mt-1 w-full">
+                                        @foreach ($years as $year)
+                                            <option value="{{ $year->id }}"
+                                                {{ isset($transactions) && $year->academic_year_id == $year->id ? 'selected' : '' }}>
+                                                {{ $year->year }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     <x-input-error :messages="$errors->get('academic_year_id')" class="mt-2" />
                                 </div>
 
-                                <!-- created_by_id -->
+                                <!-- users id-->
                                 <div class="mt-5">
                                     <x-input-label for="created_by_id" :value="__('Created By Id')" />
-                                    <x-text-input id="created_by_id" class="block mt-1 w-full" type="text"
-                                        name="created_by_id" :value="isset($transactions)
-                                            ? $transactions->created_by_id
-                                            : old('created_by_id')" required />
+                                    <select id="created_by_id" name="created_by_id" class="block mt-1 w-full">
+                                        @foreach ($users as $user)
+                                            <option value="{{ $user->id }}"
+                                                {{ isset($transactions) && $transactions->created_by_id == $user->id ? 'selected' : '' }}>
+                                                {{ $user->id }}
+
+                                            </option>
+                                        @endforeach
+                                    </select>
                                     <x-input-error :messages="$errors->get('created_by_id')" class="mt-2" />
                                 </div>
-
                                 <!-- note -->
                                 <div class="mt-5">
                                     <x-input-label for="note" :value="__('Note')" />
@@ -243,23 +288,11 @@
                                         @endif
                                     </x-primary-button>
                                 </div>
-
                             </div>
                             <div>
                             </div>
                         </div>
                     </form>
-                    <script>
-                        document.getElementById('first_name').addEventListener('input', combineNames);
-                        document.getElementById('last_name').addEventListener('input', combineNames);
-
-                        function combineNames() {
-                            const firstName = document.getElementById('first_name').value;
-                            const lastName = document.getElementById('last_name').value;
-                            document.getElementById('full_name').value = `${firstName} ${lastName}`;
-                        }
-
-                    </script>
                 </div>
             </div>
         </div>

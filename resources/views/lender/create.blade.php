@@ -53,7 +53,7 @@
                                         <div class="mt-2 text-red-500">{{ $message }}</div>
                                     @enderror
                                 </div>
-                                
+
 
                                  <!-- bank_detils -->
                                  <div class="mt-5">
@@ -62,11 +62,11 @@
                                     @error('bank_detils')
                                         <div class="mt-2 text-red-500">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                 </div>
 
 
                                  <!-- users id-->
-                                 <div class="mt-5">
+                                  <div class="mt-5">
                                     <x-input-label for="users_id" :value="__('Users Id')" />
                                     <select id="users_id" name="users_id" class="block mt-1 w-full">
                                         @foreach ($classes as $class)
@@ -76,8 +76,8 @@
 
                                             </option>
                                         @endforeach
-                                    </select>
-                                    <x-input-error :messages="$errors->get('users_id')" class="mt-2" />
+                                     </select>
+                                       <x-input-error :messages="$errors->get('users_id')" class="mt-2" />
                                 </div>
 
 

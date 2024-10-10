@@ -2,9 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use id;
+use App\Models\User;
+use App\Models\Account;
 use App\Models\Student;
+use App\Models\AddClass;
+use App\Models\AddMonth;
+use App\Models\AddAcademy;
+use App\Models\AddSection;
+use App\Models\AddFessType;
 use App\Models\Transactions;
 use Illuminate\Http\Request;
+use App\Models\TransactionsType;
 
 class TransactionsController extends Controller
 {
@@ -14,9 +23,22 @@ class TransactionsController extends Controller
         // Fetch all classes
         $transactionss = Transactions::all();
         $students = Student::all();
+        $accounts = Account::all();
+        $classes = AddClass::all();
+        $Sections = AddSection::all();
+        $classes = AddMonth::all();
+        $years = AddAcademy::all();
+        $classes = AddFessType::all();
+        $transactionss = TransactionsType::all();
+        $users=User::all();
+
+
+
+
+
 
         // Return view with the list of classes
-        return view('students.add-fees', compact('transactionss','students'));
+        return view('students.add-fees', compact('transactionss','students','accounts','classes','Sections','years','classes','transactionss','users'));
 
     }
 
@@ -25,8 +47,6 @@ class TransactionsController extends Controller
         // Validate the form inputs
         $validatedData = $request->validate([
             'student_id' => 'exists:students,id',
-            'doner_id' => 'exists:donors,id',
-            'lender_id' => 'exists:lenders,id',
             'fess_type_id' => 'exists:add_fess_types,id',
             'transactions_type_id' => 'exists:transactions_types,id',
             'student_book_number' => 'string|max:255',
@@ -54,8 +74,6 @@ class TransactionsController extends Controller
 
         Transactions::create([
             'student_id' => $validatedData['student_id'],
-            'doner_id' => $validatedData['doner_id'],
-            'lender_id' => $validatedData['lender_id'],
             'fess_type_id' =>$validatedData['fess_type_id'],
             'transactions_type_id' => $validatedData['transactions_type_id'],
             'student_book_number' => $validatedData['student_book_number'],
