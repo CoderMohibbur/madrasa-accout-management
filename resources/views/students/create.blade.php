@@ -156,6 +156,7 @@
                                         :value="isset($student) ? $student->scholarship_amount : old('scholarship_amount')" required />
                                     <x-input-error :messages="$errors->get('scholarship_amount')" class="mt-2" />
                                 </div>
+                                
 
                                 <!-- Status -->
                                 <div class="mt-5">

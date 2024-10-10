@@ -1,5 +1,4 @@
 <?php
-use App\Models\AddRegistrationFess;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DonorController;
 use App\Http\Controllers\ExpensController;
@@ -10,7 +9,6 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AddClassController;
 use App\Http\Controllers\AddMonthController;
-use App\Http\Controllers\AccountingController;
 use App\Http\Controllers\AddAcademyController;
 use App\Http\Controllers\AddSectionController;
 use App\Http\Controllers\AddCatagoryController;
@@ -86,8 +84,8 @@ Route::middleware('auth')->group(function () {
       Route::resource(name: 'lender', controller: LenderController::class);
 
     // TransactionsController
-     Route::get('/add-student-fees', [TransactionsController::class, 'store'])->name('add_student_fees.index');
-     Route::post('/add-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.store');
+     Route::get('/add-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.index');
+     Route::post('/add-student-fees', [TransactionsController::class, 'store'])->name('add_student_fees.store');
      Route::get('/add-student-fees/{id}/edit', [TransactionsController::class, 'edit'])->name('add_student_fees.edit');
      Route::put('/add-student-fees/{id}', [TransactionsController::class, 'update'])->name('add_student_fees.update');
      Route::delete('/add-student-fees/{id}', [TransactionsController::class, 'destroy'])->name('add_student_fees.destroy');
