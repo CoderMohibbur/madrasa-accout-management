@@ -47,21 +47,24 @@
                                 {{ __('Search') }}
                         </x-primary-button-button>
 
-                        <div class="student-fee">
-                            <label>Name</label>
-                            <label>Monthly Fees</label>
-                            <label>Boarding Fees</label>
-                            <label>Management Fees</label>
-                            <label>Exam Fees</label>
-                            <label>Others Fees</label>
-                            <label>Total Fees</label>
-                            <label>Boarding Fees</label>
+                        <div class=" overflow-auto mt-4 mb-4">
+                            <div class="student-fee flex">
+                                <input type="text" value="Name" disabled />
+                                <input type="text" value="Monthly Free" disabled/>
+                                <input type="text" value="Boarding Fees" disabled/>
+                                <input type="text" value="Management Fees" disabled/>
+                                <input type="text" value="Exam Fees" disabled/>
+                                <input type="text" value="Others Fees" disabled/>
+                                <input type="text" value="Total Fees" disabled/>
+                                <input type="text" value="Note" disabled/>
+    
+                                <!-- আরও ফিস ফিল্ড -->
+                            </div>
+                            <div id="students_list" >
+                                <!-- এখানে AJAX কলের মাধ্যমে সকল স্টুডেন্ট লোড হবে -->
+                            </div>
+                        </div>
 
-                            <!-- আরও ফিস ফিল্ড -->
-                        </div>
-                        <div id="students_list">
-                            <!-- এখানে AJAX কলের মাধ্যমে সকল স্টুডেন্ট লোড হবে -->
-                        </div>
 
                         <button type="submit">Save All Fees</button>
                         <x-primary-button >
