@@ -69,7 +69,7 @@ return new class extends Migration
             $table->foreign('class_id')->references('id')->on('add_classes');
             $table->foreign('months_id')->references('id')->on('add_months');
             $table->foreign('created_by_id')->references('id')->on('users');
-            $table->boolean('isActived');
+            $table->boolean('isActived')->default(true);;
             $table->boolean('isDeleted')->default(false);
             $table->timestamps();
         });
