@@ -125,7 +125,7 @@ class TransactionsController extends Controller
 
         return redirect()->route('fees.index')->with('success', 'Fees added successfully!');
     }
-    
+
     public function edit($id)
     {
         // Find the class by ID
@@ -151,7 +151,8 @@ class TransactionsController extends Controller
             'boarding_fees' => 'numeric',
             'management_fees' => 'numeric',
             'exam_fees' => 'numeric',
-            'others_fees' => 'numeric',
+            '
+            ' => 'numeric',
             'total_fees' => 'numeric',
             'debit' => 'numeric',
             'credit' => 'numeric',
