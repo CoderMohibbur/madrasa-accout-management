@@ -54,12 +54,12 @@ Route::middleware('auth')->group(function () {
   Route::put('/add-fees-type/{id}', [AddFessTypeController::class, 'update'])->name('add_fees_type.update');
   Route::delete('/add-fees-type/{id}', [AddFessTypeController::class, 'destroy'])->name('add_fees_type.destroy');
 
-    // TransactionsController
-    Route::get('/add-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.index');
-    Route::post('/add-student-fees', [TransactionsController::class, 'store'])->name('add_student_fees.store');
-    Route::get('/add-student-fees/{id}/edit', [TransactionsController::class, 'edit'])->name('add_student_fees.edit');
-    Route::put('/add-student-fees/{id}', [TransactionsController::class, 'update'])->name('add_student_fees.update');
-    Route::delete('/add-student-fees/{id}', [TransactionsController::class, 'destroy'])->name('add_student_fees.destroy');
+  // TransactionsController
+  Route::get('/add-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.index');
+  Route::post('/add-student-fees', [TransactionsController::class, 'store'])->name('add_student_fees.store');
+  Route::get('/add-student-fees/{id}/edit', [TransactionsController::class, 'edit'])->name('add_student_fees.edit');
+  Route::put('/add-student-fees/{id}', [TransactionsController::class, 'update'])->name('add_student_fees.update');
+  Route::delete('/add-student-fees/{id}', [TransactionsController::class, 'destroy'])->name('add_student_fees.destroy');
 
   //add-transaction conroller
   Route::get('/add-transaction-type', [TransactionsTypeController::class, 'index'])->name('add_transaction_type.index');
@@ -109,6 +109,20 @@ Route::middleware('auth')->group(function () {
   Route::get('/add-student-fees/{id}/edit', [TransactionsController::class, 'edit'])->name('add_student_fees.edit');
   Route::put('/add-student-fees/{id}', [TransactionsController::class, 'update'])->name('add_student_fees.update');
   Route::delete('/add-student-fees/{id}', [TransactionsController::class, 'destroy'])->name('add_student_fees.destroy');
+
+
+
+
+
+
+
+
+
+
+
+
+  Route::get('/add-student-fees', [TransactionsController::class, 'all'])->name('add_student_fees.index');
+
 
 });
 

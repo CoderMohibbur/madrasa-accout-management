@@ -191,5 +191,22 @@ class TransactionsController extends Controller
         return redirect()->route('add_fees_type.index')->with('success', 'Class deleted successfully!');
     }
 
+    public function all(){
+
+        $transactionss = Transactions::all();
+        $years = AddAcademy::all();
+        $months = AddMonth::all();
+        $classes = AddClass::all();
+        $sections = AddSection::all();
+
+ return view('students.add-fees_copy', compact('transactionss','years','months','classes','sections',));
+
+
+    }
+
+
+
+
+
 }
 
