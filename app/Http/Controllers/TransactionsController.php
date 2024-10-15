@@ -278,7 +278,8 @@ class TransactionsController extends Controller
             'boarding_fees' => 'numeric',
             'management_fees' => 'numeric',
             'exam_fees' => 'numeric',
-            'others_fees' => 'numeric',
+            '
+            ' => 'numeric',
             'total_fees' => 'numeric',
             'debit' => 'numeric',
             'credit' => 'numeric',
@@ -317,4 +318,23 @@ class TransactionsController extends Controller
         return redirect()->route('add_fees_type.index')->with('success', 'Class deleted successfully!');
     }
 
+
+    public function all(){
+
+        $transactionss = Transactions::all();
+        $years = AddAcademy::all();
+        $months = AddMonth::all();
+        $classes = AddClass::all();
+        $sections = AddSection::all();
+
+ return view('students.add-fees_copy', compact('transactionss','years','months','classes','sections',));
+
+
+    }
+
+
+
+
+
 }
+
