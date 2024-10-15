@@ -80,8 +80,8 @@
                 let monthId = document.getElementById('months_id').value;
                 let classId = document.getElementById('class_id').value;
                 let sectionId = document.getElementById('section_id').value;
-        
-                axios.get('{{ route('get.students') }}', {
+
+                axios.get(route('get.students') , {
                     params: {
                         academic_year_id: academicYearId,
                         months_id: monthId,
@@ -90,7 +90,6 @@
                     }
                 })
                 .then(function (response) {
-                    // Populate the students list with the response data
                     document.getElementById('students_list').innerHTML = response.data;
                 })
                 .catch(function (error) {
@@ -98,5 +97,4 @@
                 });
             }
         </script>
-        
 </x-app-layout>
