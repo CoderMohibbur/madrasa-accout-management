@@ -96,8 +96,10 @@ Route::middleware('auth')->group(function () {
   Route::delete('/add-catagory/{id}', [AddCatagoryController::class, 'destroy'])->name('add_catagory.destroy');
   //Income
   Route::resource(name: 'income', controller: IncomeController::class);
-  //Lender
-  Route::resource(name: 'lender', controller: LenderController::class);
+   //Lender
+   Route::resource(name: 'lender', controller: LenderController::class);
+   Route::get('/add-Loan', [LenderController::class, 'add_loan'])->name('add_loan');
+   Route::post('/loan-store', [LenderController::class, 'lonan_store'])->name('loan_store');
 
   // TransactionsController
   Route::get('/add-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.index');

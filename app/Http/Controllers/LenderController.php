@@ -1,9 +1,12 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Lender;
+use App\Models\Transactions;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class LenderController extends Controller
 {
@@ -92,5 +95,40 @@ class LenderController extends Controller
     {
         $lender->delete();
         return redirect()->route('lender.index')->with('success', 'Student deleted successfully.');
+    }
+
+    public function add_loan()
+    {
+
+        $lenders = Lender::all();
+
+        return view('lender.add-loan', compact('lenders'));
+    }
+
+    public function lonan_store(Request $request)
+    {
+        $today = Carbon::now();
+        // Validate the form inputs
+        $validatedData = $request->validate([
+            'lender_id' => 'exists:lenders,id',
+            'total_fees' => 'numeric',
+            'note' => 'string|max:500',
+            'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
+        ]);
+
+        // Create a new class and save to the database
+
+        Transactions::create([
+            'lender_id' => $validatedData['lender_id'],
+            'fess_type_id' => 1,
+            'transactions_type_id' => 1,
+            'total_fees' => $validatedData['total_fees'],
+            'transactions_date' => $today,
+            'note' => $validatedData['note'],
+            'isActived' => $validatedData['isActived'] ?? 1, // Save as boolean: true for 'activate', false for 'deactivate'
+        ]);
+
+        // Redirect back or to a success page
+        return redirect()->route('add_loan')->with('success', 'Class added successfully!');
     }
 }
