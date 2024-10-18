@@ -216,6 +216,9 @@
                                 <x-dropdown-link :href="route('lender.create')" :active="request()->routeIs('lender.index')">
                                     {{ __('Add Lender') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link :href="route('add_loan')" :active="request()->routeIs('add_loan')">
+                                    {{ __('Add Lone') }}
+                                </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>
