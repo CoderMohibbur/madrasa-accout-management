@@ -43,7 +43,7 @@
 
                         <!-- Button to fetch students -->
                         <x-primary-button-button onclick="fetchStudents()">
-                                {{ __('Search') }}
+                            {{ __('Search') }}
                         </x-primary-button-button>
 
                         <div class=" overflow-auto mt-4 mb-4">
@@ -61,27 +61,27 @@
                                 <input type="text" value="Credit" disabled />
                                 <input type="text" value="Note" disabled />
                             </div>
-                            <div id="students_list" >
+                            <div id="students_list">
                                 <!-- এখানে AJAX কলের মাধ্যমে সকল স্টুডেন্ট লোড হবে -->
                             </div>
                         </div>
-                        <x-primary-button >
+                        <x-primary-button>
                             {{ __('Save All Fees') }}
-                    </x-primary-button>
+                        </x-primary-button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-        <!-- AJAX script -->
-        <script>
-            function fetchStudents() {
-                let academicYearId = document.getElementById('academic_year_id').value;
-                let monthId = document.getElementById('months_id').value;
-                let classId = document.getElementById('class_id').value;
-                let sectionId = document.getElementById('section_id').value;
-        
-                axios.get('{{ route('get.students') }}', {
+    <!-- AJAX script -->
+    <script>
+        function fetchStudents() {
+            let academicYearId = document.getElementById('academic_year_id').value;
+            let monthId = document.getElementById('months_id').value;
+            let classId = document.getElementById('class_id').value;
+            let sectionId = document.getElementById('section_id').value;
+
+            axios.get('{{ route('get.students') }}', {
                     params: {
                         academic_year_id: academicYearId,
                         months_id: monthId,
@@ -89,14 +89,14 @@
                         section_id: sectionId
                     }
                 })
-                .then(function (response) {
+                .then(function(response) {
                     // Populate the students list with the response data
                     document.getElementById('students_list').innerHTML = response.data;
                 })
-                .catch(function (error) {
+                .catch(function(error) {
                     console.log(error);
                 });
-            }
-        </script>
-        
+        }
+    </script>
+
 </x-app-layout>
