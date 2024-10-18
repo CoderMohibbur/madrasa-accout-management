@@ -55,7 +55,6 @@ class TransactionsController extends Controller
         return response()->json($students);
     }
 
-
     public function getStudents(Request $request)
     {
         $academicYearId = $request->academic_year_id;
@@ -81,8 +80,6 @@ class TransactionsController extends Controller
         // Pass students and transactions data to the view
         return view('students.partials.students_list', compact('students', 'transactions'));
     }
-
-
 
     public function store(Request $request)
     {
@@ -252,7 +249,6 @@ class TransactionsController extends Controller
         return redirect()->route('add_fees_type.index')->with('success', 'Fees added successfully!');
     }
 
-
     public function edit($id)
     {
         // Find the class by ID
@@ -319,7 +315,8 @@ class TransactionsController extends Controller
     }
 
 
-    public function all(){
+    public function all()
+    {
 
         $transactionss = Transactions::all();
         $years = AddAcademy::all();
@@ -327,14 +324,8 @@ class TransactionsController extends Controller
         $classes = AddClass::all();
         $sections = AddSection::all();
 
- return view('students.add-fees_copy', compact('transactionss','years','months','classes','sections',));
-
+        return view('students.add-fees_copy', compact('transactionss', 'years', 'months', 'classes', 'sections', ));
 
     }
 
-
-
-
-
 }
-
