@@ -100,6 +100,9 @@ Route::middleware('auth')->group(function () {
    Route::resource(name: 'lender', controller: LenderController::class);
    Route::get('/add-Loan', [LenderController::class, 'add_loan'])->name('add_loan');
    Route::post('/loan-store', [LenderController::class, 'lonan_store'])->name('loan_store');
+   Route::get('/add-Loan/{id}/edit', [LenderController::class, 'edit_loan'])->name('add_loan.edit_loan');
+   Route::put('/add-Loan/{id}', [LenderController::class, 'update_loan'])->name('add_loan.update_loan');
+   Route::delete('/add-Loan/{id}', [LenderController::class, 'destroy_loan'])->name('add_loan.destroy_loan');
 
   // TransactionsController
   Route::get('/add-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.index');

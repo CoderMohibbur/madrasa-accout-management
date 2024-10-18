@@ -99,10 +99,10 @@ class LenderController extends Controller
 
     public function add_loan()
     {
-
+        $transactionss = Transactions::all();
         $lenders = Lender::all();
 
-        return view('lender.add-loan', compact('lenders'));
+        return view('lender.add-loan', compact('lenders','transactionss'));
     }
 
     public function lonan_store(Request $request)
@@ -131,4 +131,52 @@ class LenderController extends Controller
         // Redirect back or to a success page
         return redirect()->route('add_loan')->with('success', 'Class added successfully!');
     }
+
+    public function show_loan(Lender $lender)
+    {
+        $transactionss = Transactions::all();
+        $lenders = Lender::all();
+        return view('lender.add-loan', compact('transactionss', 'lenders'));
+    }
+
+    public function edit_loan($id)
+    {
+        $transaction = Transactions::findOrFail($id);
+        $lenders = Lender::all();
+        return view('lender.edit-loan', compact('transaction', 'lenders'));
+    }
+
+    public function update_loan(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'lender_id' => 'exists:lenders,id',
+            'total_fees' => 'numeric',
+            'note' => 'nullable|string|max:500',
+            'isActived' => 'required|boolean',
+        ]);
+
+        $today = Carbon::now();
+        $transaction = Transactions::findOrFail($id);
+
+        // Update the transaction
+        $transaction->update([
+            'lender_id' => $validatedData['lender_id'],
+            'fess_type_id' => 1,
+            'transactions_type_id' => 1,
+            'total_fees' => $validatedData['total_fees'],
+            'transactions_date' => $today,
+            'note' => $validatedData['note'],
+            'isActived' => $validatedData['isActived'],
+        ]);
+
+        return redirect()->route('add_loan')->with('success', 'Loan updated successfully.');
+    }
+
+    public function destroy_loan($id)
+    {
+        $lender = Lender::findOrFail($id);
+        $lender->delete();
+        return redirect()->route('add_loan')->with('success', 'Lender deleted successfully.');
+    }
 }
+
