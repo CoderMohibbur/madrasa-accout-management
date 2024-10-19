@@ -142,8 +142,9 @@ class LenderController extends Controller
     public function edit_loan($id)
     {
         $transaction = Transactions::findOrFail($id);
+        $transactionss = Transactions::all();
         $lenders = Lender::all();
-        return view('lender.edit-loan', compact('transaction', 'lenders'));
+        return view('lender.add-loan', compact('transaction', 'lenders','transactionss'));
     }
 
     public function update_loan(Request $request, $id)

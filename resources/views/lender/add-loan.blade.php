@@ -148,12 +148,12 @@
 
                                     </td>
                                     <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400 text-center">
-                                        <a href="{{ route('loan_store', $transactions->id) }}">
+                                        <a href="{{ route('add_loan.edit_loan', $transactions->id) }}">
                                             <x-primary-button >
                                                 {{ __('Edit') }}
                                             </x-primary-button>
                                         </a>
-                                        <form action="{{ route('loan_store', $transactions->id) }}" method="POST" style="display:inline;">
+                                        <form action="{{ route('add_loan.destroy_loan', $transactions->id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
                                             <x-danger-button >
