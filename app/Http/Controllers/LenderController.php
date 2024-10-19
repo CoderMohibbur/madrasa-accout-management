@@ -111,7 +111,8 @@ class LenderController extends Controller
         // Validate the form inputs
         $validatedData = $request->validate([
             'lender_id' => 'exists:lenders,id',
-            'total_fees' => 'numeric',
+            'debit' => 'numeric',
+            'c_s_1' => 'string|max:250',
             'note' => 'string|max:500',
             'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
         ]);
@@ -122,8 +123,9 @@ class LenderController extends Controller
             'lender_id' => $validatedData['lender_id'],
             'fess_type_id' => 1,
             'transactions_type_id' => 1,
-            'total_fees' => $validatedData['total_fees'],
+            'debit' => $validatedData['debit'],
             'transactions_date' => $today,
+            'c_s_1' => $validatedData['c_s_1'],
             'note' => $validatedData['note'],
             'isActived' => $validatedData['isActived'] ?? 1, // Save as boolean: true for 'activate', false for 'deactivate'
         ]);
@@ -134,7 +136,7 @@ class LenderController extends Controller
 
     public function show_loan(Lender $lender)
     {
-        $transactionss = Transactions::all();
+        $transactionss = Transactions::with('lender')->get();
         $lenders = Lender::all();
         return view('lender.add-loan', compact('transactionss', 'lenders'));
     }
@@ -142,7 +144,7 @@ class LenderController extends Controller
     public function edit_loan($id)
     {
         $transaction = Transactions::findOrFail($id);
-        $transactionss = Transactions::all();
+        $transactionss = Transactions::with('lender')->get();
         $lenders = Lender::all();
         return view('lender.add-loan', compact('transaction', 'lenders','transactionss'));
     }
@@ -151,7 +153,8 @@ class LenderController extends Controller
     {
         $validatedData = $request->validate([
             'lender_id' => 'exists:lenders,id',
-            'total_fees' => 'numeric',
+            'debit' => 'numeric',
+            'c_s_1' => 'string|max:250',
             'note' => 'nullable|string|max:500',
             'isActived' => 'required|boolean',
         ]);
@@ -164,8 +167,9 @@ class LenderController extends Controller
             'lender_id' => $validatedData['lender_id'],
             'fess_type_id' => 1,
             'transactions_type_id' => 1,
-            'total_fees' => $validatedData['total_fees'],
+            'debit' => $validatedData['debit'],
             'transactions_date' => $today,
+            'c_s_1' => $validatedData['c_s_1'],
             'note' => $validatedData['note'],
             'isActived' => $validatedData['isActived'],
         ]);
@@ -175,8 +179,8 @@ class LenderController extends Controller
 
     public function destroy_loan($id)
     {
-        $lender = Lender::findOrFail($id);
-        $lender->delete();
+        $transaction = Transactions::findOrFail($id);
+        $transaction->delete();
         return redirect()->route('add_loan')->with('success', 'Lender deleted successfully.');
     }
 }

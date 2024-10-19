@@ -13,28 +13,28 @@ class Transactions extends Model
     'c_i_1','c_i_2','c_i_3','c_i_4','c_i_5','c_i_6','isActived', 'isDeleted'];
 
 
-    public function Students()
+    public function student()
     {
 
         return $this->belongsTo(Student::class);
     }
 
-    public function Donors()
+    public function donor()
     {
 
         return $this->belongsTo(Donor::class);
     }
-    public function Lenders()
+    public function lender()
     {
 
         return $this->belongsTo(Lender::class);
     }
-    public function Fess()
+    public function fess()
     {
 
         return $this->belongsTo(AddFessType::class);
     }
-    public function Sections()
+    public function sections()
     {
 
         return $this->belongsTo(AddSection::class);
@@ -42,7 +42,7 @@ class Transactions extends Model
     {
 
         return $this->belongsTo(AddAcademy::class);
-    } public function Accounts()
+    } public function accounts()
     {
 
         return $this->belongsTo(Account::class);
@@ -50,11 +50,11 @@ class Transactions extends Model
     {
 
         return $this->belongsTo(AddClass::class);
-    } public function Months()
+    } public function months()
     {
 
         return $this->belongsTo(AddMonth::class);
-    } public function Users()
+    } public function users()
     {
 
         return $this->belongsTo(User::class);

@@ -79,6 +79,9 @@
                                 <x-dropdown-link :href="route('donors.create')" :active="request()->routeIs('donors.index')">
                                     {{ __('Add Doner') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link :href="route('add_donar')" :active="request()->routeIs('add_donar')">
+                                    {{ __('Add Doner') }}
+                                </x-dropdown-link>
 
                             </x-slot>
                         </x-dropdown>
