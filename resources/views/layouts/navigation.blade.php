@@ -80,7 +80,7 @@
                                     {{ __('Add Doner') }}
                                 </x-dropdown-link>
                                 <x-dropdown-link :href="route('add_donar')" :active="request()->routeIs('add_donar')">
-                                    {{ __('Add Doner') }}
+                                    {{ __('Add Donation') }}
                                 </x-dropdown-link>
 
                             </x-slot>

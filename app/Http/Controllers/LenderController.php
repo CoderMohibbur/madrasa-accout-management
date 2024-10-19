@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Lender;
+use App\Models\Account;
 use App\Models\Transactions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -101,8 +102,8 @@ class LenderController extends Controller
     {
         $transactionss = Transactions::all();
         $lenders = Lender::all();
-
-        return view('lender.add-loan', compact('lenders','transactionss'));
+        $accounts =Account ::all();
+        return view('lender.add-loan', compact('lenders','transactionss','accounts'));
     }
 
     public function lonan_store(Request $request)
@@ -113,6 +114,7 @@ class LenderController extends Controller
             'lender_id' => 'exists:lenders,id',
             'debit' => 'numeric',
             'c_s_1' => 'string|max:250',
+            'account_id' => 'exists:accounts,id',
             'note' => 'string|max:500',
             'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
         ]);
@@ -123,6 +125,8 @@ class LenderController extends Controller
             'lender_id' => $validatedData['lender_id'],
             'fess_type_id' => 1,
             'transactions_type_id' => 1,
+            'account_id' => $validatedData['account_id'],
+
             'debit' => $validatedData['debit'],
             'transactions_date' => $today,
             'c_s_1' => $validatedData['c_s_1'],
@@ -138,7 +142,8 @@ class LenderController extends Controller
     {
         $transactionss = Transactions::with('lender')->get();
         $lenders = Lender::all();
-        return view('lender.add-loan', compact('transactionss', 'lenders'));
+        $accounts =Account ::all();
+        return view('lender.add-loan', compact('transactionss', 'lenders','accounts'));
     }
 
     public function edit_loan($id)
@@ -146,7 +151,9 @@ class LenderController extends Controller
         $transaction = Transactions::findOrFail($id);
         $transactionss = Transactions::with('lender')->get();
         $lenders = Lender::all();
-        return view('lender.add-loan', compact('transaction', 'lenders','transactionss'));
+        $accounts =Account ::all();
+
+        return view('lender.add-loan', compact('transaction', 'lenders','transactionss','accounts'));
     }
 
     public function update_loan(Request $request, $id)
@@ -155,6 +162,8 @@ class LenderController extends Controller
             'lender_id' => 'exists:lenders,id',
             'debit' => 'numeric',
             'c_s_1' => 'string|max:250',
+            'account_id' => 'exists:accounts,id',
+
             'note' => 'nullable|string|max:500',
             'isActived' => 'required|boolean',
         ]);
@@ -168,6 +177,7 @@ class LenderController extends Controller
             'fess_type_id' => 1,
             'transactions_type_id' => 1,
             'debit' => $validatedData['debit'],
+            'account_id' => $validatedData['account_id'],
             'transactions_date' => $today,
             'c_s_1' => $validatedData['c_s_1'],
             'note' => $validatedData['note'],

@@ -85,10 +85,10 @@ Route::middleware('auth')->group(function () {
   // Doner
   Route::resource(name: 'donors', controller: DonorController::class);
   Route::get('/add-donar', [DonorController::class, 'donars'])->name('add_donar');
-  Route::post('/donar-store', [LenderController::class, 'donosr_store'])->name('donosr_store.donosr_store');
-  Route::get('/add-donar/{id}/edit', [LenderController::class, 'edit_donor'])->name('edit_donor.edit_donor');
-  Route::put('/add-donar/{id}', [LenderController::class, 'update_donor'])->name('update_donor.update_donor');
-  Route::delete('/add-donar/{id}', [LenderController::class, 'destroy_donor'])->name('destroy_donor.destroy_donor');
+  Route::post('/donar-store', [DonorController::class, 'donosr_store'])->name('donosr_store.donosr_store');
+  Route::get('/add-donar/{id}/edit', [DonorController::class, 'edit_donor'])->name('edit_donor.edit_donor');
+  Route::put('/add-donar/{id}', [DonorController::class, 'update_donor'])->name('update_donor.update_donor');
+  Route::delete('/add-donar/{id}', [DonorController::class, 'destroy_donor'])->name('destroy_donor.destroy_donor');
   //Account
   Route::resource(name: 'account', controller: AccountController::class);
   // Expens

@@ -42,7 +42,7 @@
                                         <option value="Masjid" {{ old('c_s_1', isset($transaction) ? $transaction->c_s_1 : '') === 'Masjid' ? 'selected' : '' }}>Masjid</option>
                                         <option value="Atim" {{ old('c_s_1', isset($transaction) ? $transaction->c_s_1 : '') === 'Atim' ? 'selected' : '' }}>Atim</option>
                                     </select>
-                                    
+
                                      <x-input-error :messages="$errors->get('c_s_1')" class="mt-2" />
                                  </div>
                                  <!--Note -->
@@ -66,6 +66,23 @@
                                              : old('debit')" required />
                                      <x-input-error :messages="$errors->get('debit')" class="mt-2" />
                                  </div>
+                                 <div>
+                                    
+
+
+                                    <div class="mt-5">
+                                        <!-- Account -->
+                                        <x-input-label for="account_id" :value="__('Account')" />
+                                        <select id="account_id" name="account_id" class="block mt-1 w-full">
+                                            @foreach ($accounts as $account)
+                                                <option value="{{ $account->id }}"
+                                                    {{ isset($transaction) && $transaction->account_id == $account->id ? 'selected' : '' }}>
+                                                    {{ $account->name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <x-input-error :messages="$errors->get('account_id')" class="mt-2" />
+                                    </div>
                                  <!-- Status -->
                                  <div class="mt-5">
                                      <x-input-label for="isActived" :value="__('Active Status')" />
@@ -106,10 +123,13 @@
                              <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> ID</th>
                              <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Lender Name</th>
                              <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Lender For</th>
+                             <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Account</th>
                              <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Note</th>
                              <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Debit</th>
                              <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Credit</th>
                              <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Transactions Date</th>
+                             <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Total Fees</th>
+
                              <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Status</th>
                              <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Action</th>
                          </tr>
@@ -120,11 +140,12 @@
                                  <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->id }}</td>
                                  <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->lender->name ?? 'N/A'}}</td>
                                  <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->c_s_1 }}</td>
-                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->total_fees }}</td>
+                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->account_id }}</td>
+                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->note }}</td>
                                  <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->debit }}</td>
                                  <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->credit }}</td>
                                  <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->transactions_date }}</td>
-                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->note }}</td>
+                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->total_fees }}</td>
                                  <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
                                      @if ($transactions->isActived)
                                          <span class="text-green-500">Active</span>

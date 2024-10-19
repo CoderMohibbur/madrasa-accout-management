@@ -19,7 +19,7 @@ class Transactions extends Model
         return $this->belongsTo(Student::class);
     }
 
-    public function donor()
+    public function doner()
     {
 
         return $this->belongsTo(Donor::class);

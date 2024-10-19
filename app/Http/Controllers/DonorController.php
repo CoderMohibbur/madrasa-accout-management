@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Donor;
+use App\Models\Account;
 use App\Models\AddFessType;
 use App\Models\Transactions;
 use Illuminate\Http\Request;
@@ -20,7 +21,6 @@ class DonorController extends Controller
 
         // Return view with the list of years
         return view('donors.index', compact('Donors'));
-
     }
     // Show the form for creating a new student
     public function create()
@@ -71,8 +71,7 @@ class DonorController extends Controller
 
 
 
-     return view('donors.create', compact('Donor', 'fees_types'));
-
+        return view('donors.create', compact('Donor', 'fees_types'));
     }
     public function update(Request $request, Donor $Donor)
     {
@@ -105,11 +104,13 @@ class DonorController extends Controller
         $Donor->delete();
         return redirect()->route('donors.index')->with('success', 'Student deleted successfully.');
     }
-    public function donars(){
+    public function donars()
+    {
         $transactionss = Transactions::all();
         $Donors = Donor::all();
+        $accounts = Account::all();
 
-        return view('donors.add-donar', compact('transactionss','Donors'));
+        return view('donors.add-donar', compact('transactionss', 'Donors', 'accounts'));
     }
 
     public function donosr_store(Request $request)
@@ -119,6 +120,10 @@ class DonorController extends Controller
         $validatedData = $request->validate([
             'doner_id' => 'exists:donors,id',
             'total_fees' => 'numeric',
+            'c_s_1' => 'string|max:250',
+
+
+            'account_id' => 'exists:accounts,id',
             'note' => 'string|max:500',
             'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
         ]);
@@ -130,6 +135,10 @@ class DonorController extends Controller
             'fess_type_id' => 1,
             'transactions_type_id' => 1,
             'total_fees' => $validatedData['total_fees'],
+            'c_s_1' => $validatedData['c_s_1'],
+
+            'account_id' => $validatedData['account_id'],
+
             'transactions_date' => $today,
             'note' => $validatedData['note'],
             'isActived' => $validatedData['isActived'] ?? 1, // Save as boolean: true for 'activate', false for 'deactivate'
@@ -141,16 +150,20 @@ class DonorController extends Controller
 
     public function donors_loan(Donor $lender)
     {
-        $transactionss = Transactions::all();
+        $transactionss = Transactions::with('doner')->get();
         $Donors = Donor::all();
-        return view('lender.add-loan', compact('transactionss', 'Donors'));
+        $accounts = Account::all();
+
+        return view('lender.add-loan', compact('transactionss', 'Donors', 'accounts'));
     }
 
     public function edit_donor($id)
     {
         $transaction = Transactions::findOrFail($id);
         $Donors = Donor::all();
-        return view('edit_donor.edit_donor', compact('transaction', 'Donors'));
+        $accounts = Account::all();
+
+        return view('edit_donor.edit_donor', compact('transaction', 'Donors', 'accounts'));
     }
 
     public function update_donor(Request $request, $id)
@@ -158,6 +171,9 @@ class DonorController extends Controller
         $validatedData = $request->validate([
             'doner_id' => 'doner_id',
             'total_fees' => 'numeric',
+            'account_id' => 'exists:accounts,id',
+            'c_s_1' => 'string|max:250',
+
             'note' => 'nullable|string|max:500',
             'isActived' => 'required|boolean',
         ]);
@@ -171,6 +187,10 @@ class DonorController extends Controller
             'fess_type_id' => 1,
             'transactions_type_id' => 1,
             'total_fees' => $validatedData['total_fees'],
+            'account_id' => $validatedData['account_id'],
+            'c_s_1' => $validatedData['c_s_1'],
+
+
             'transactions_date' => $today,
             'note' => $validatedData['note'],
             'isActived' => $validatedData['isActived'],
@@ -187,4 +207,3 @@ class DonorController extends Controller
         return redirect()->route('add_donar')->with('success', 'Lender deleted successfully.');
     }
 }
-
