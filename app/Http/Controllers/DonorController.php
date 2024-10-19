@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Donor;
 use App\Models\AddFessType;
+use App\Models\Transactions;
 use Illuminate\Http\Request;
 
 class DonorController extends Controller
@@ -67,7 +69,7 @@ class DonorController extends Controller
 
         // Return view with the class details for editing
 
-      
+
 
      return view('donors.create', compact('Donor', 'fees_types'));
 
@@ -102,6 +104,87 @@ class DonorController extends Controller
     {
         $Donor->delete();
         return redirect()->route('donors.index')->with('success', 'Student deleted successfully.');
+    }
+    public function donars(){
+        $transactionss = Transactions::all();
+        $Donors = Donor::all();
+
+        return view('donors.add-donar', compact('transactionss','Donors'));
+    }
+
+    public function donosr_store(Request $request)
+    {
+        $today = Carbon::now();
+        // Validate the form inputs
+        $validatedData = $request->validate([
+            'doner_id' => 'exists:donors,id',
+            'total_fees' => 'numeric',
+            'note' => 'string|max:500',
+            'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
+        ]);
+
+        // Create a new class and save to the database
+
+        Transactions::create([
+            'doner_id' => $validatedData['doner_id'],
+            'fess_type_id' => 1,
+            'transactions_type_id' => 1,
+            'total_fees' => $validatedData['total_fees'],
+            'transactions_date' => $today,
+            'note' => $validatedData['note'],
+            'isActived' => $validatedData['isActived'] ?? 1, // Save as boolean: true for 'activate', false for 'deactivate'
+        ]);
+
+        // Redirect back or to a success page
+        return redirect()->route('add_donar')->with('success', 'Class added successfully!');
+    }
+
+    public function donors_loan(Donor $lender)
+    {
+        $transactionss = Transactions::all();
+        $Donors = Donor::all();
+        return view('lender.add-loan', compact('transactionss', 'Donors'));
+    }
+
+    public function edit_donor($id)
+    {
+        $transaction = Transactions::findOrFail($id);
+        $Donors = Donor::all();
+        return view('edit_donor.edit_donor', compact('transaction', 'Donors'));
+    }
+
+    public function update_donor(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'doner_id' => $validatedData['doner_id'],
+            'total_fees' => 'numeric',
+            'note' => 'nullable|string|max:500',
+            'isActived' => 'required|boolean',
+        ]);
+
+        $today = Carbon::now();
+        $transaction = Transactions::findOrFail($id);
+
+        // Update the transaction
+        $transaction->update([
+            'doner_id' => $validatedData['doner_id'],
+            'fess_type_id' => 1,
+            'transactions_type_id' => 1,
+            'total_fees' => $validatedData['total_fees'],
+            'transactions_date' => $today,
+            'note' => $validatedData['note'],
+            'isActived' => $validatedData['isActived'],
+        ]);
+
+        return redirect()->route('add_donar')->with('success', 'Loan updated successfully.');
+    }
+
+    public function destroy_donor($id)
+    {
+        $Donor = Donor::findOrFail($id);
+
+        $Donor->delete();
+        return redirect()->route('add_donar')->with('success', 'Lender deleted successfully.');
     }
 }
 

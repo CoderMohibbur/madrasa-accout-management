@@ -1,4 +1,4 @@
- <x-app-layout>
+<x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Add Student') }}
@@ -11,7 +11,7 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <x-toast-success />
                     <form method="POST" enctype="multipart/form-data"
-                    action="{{ isset($transactions) ? route('add_loan.update_loan, $transactions->id) : route('loan_store.loan_store) }}">
+                    action="{{ isset($transactions) ? route('update_donor.update_donor, $transactions->id) : route('donosr_store.donosr_store) }}">
 
                         @csrf
                         @if (isset($transactions))
@@ -21,22 +21,22 @@
                         <div class="grid grid-cols-2 gap-10">
                             <div>
 
-                                <!-- Lender Name -->
+                                <!-- Donor Name -->
                                 <div class="mt-5">
-                                    <x-input-label for="lender_id" :value="__('Lender Name')" />
-                                    <select id="lender_id" name="lender_id" class="block mt-1 w-full">
-                                        @foreach ($lenders as $lender)
-                                            <option value="{{ $lender->id }}"
-                                                {{ isset($transactions) && $transactions->lender_id == $lender->id ? 'selected' : '' }}>
-                                                {{ $lender->name }}
+                                    <x-input-label for="doner_id" :value="__('Donor Name')" />
+                                    <select id="doner_id" name="doner_id" class="block mt-1 w-full">
+                                        @foreach ($Donors as $Donor)
+                                            <option value="{{ $Donor->id }}"
+                                                {{ isset($transactions) && $transactions->doner_id == $Donor->id ? 'selected' : '' }}>
+                                                {{ $Donor->name }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    <x-input-error :messages="$errors->get('lender_id')" class="mt-2" />
+                                    <x-input-error :messages="$errors->get('doner_id')" class="mt-2" />
                                 </div>
-                              <!-- Lender For -->
+                              <!-- Donor For -->
                                 <div class="mt-5">
-                                    <x-input-label for="c_s_1" :value="__('Lender For')" />
+                                    <x-input-label for="c_s_1" :value="__('Donor For')" />
 
                                     <select id="c_s_1" name="c_s_1" class="block mt-1 w-full" required>
                                         <option value="" disabled selected>Select an option</option>
@@ -112,7 +112,7 @@
                         <thead>
                             <tr>
                                 <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">ID</th>
-                                <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">lender_id</th>
+                                <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">doner_id</th>
                                 <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">fess_type_id</th>
                                 <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-center">transactions_type_id</th>
                                 <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">total_fees</th>
@@ -131,7 +131,7 @@
                             @foreach ($transactionss as $transactions)
                                 <tr>
                                     <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transactions->id }}</td>
-                                    <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transactions->lender_id }}</td>
+                                    <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transactions->doner_id }}</td>
                                     <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transactions->fess_type_id }}</td>
                                     <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transactions->transactions_type_id }}</td>
                                     <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transactions->total_fees }}</td>

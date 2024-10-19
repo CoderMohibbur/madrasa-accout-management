@@ -84,6 +84,11 @@ Route::middleware('auth')->group(function () {
   Route::resource('students', StudentController::class);
   // Doner
   Route::resource(name: 'donors', controller: DonorController::class);
+  Route::get('/add-donar', [DonorController::class, 'donars'])->name('add_donar');
+  Route::post('/donar-store', [LenderController::class, 'donosr_store'])->name('donosr_store.donosr_store');
+  Route::get('/add-donar/{id}/edit', [LenderController::class, 'edit_donor'])->name('edit_donor.edit_donor');
+  Route::put('/add-donar/{id}', [LenderController::class, 'update_donor'])->name('update_donor.update_donor');
+  Route::delete('/add-donar/{id}', [LenderController::class, 'destroy_donor'])->name('destroy_donor.destroy_donor');
   //Account
   Route::resource(name: 'account', controller: AccountController::class);
   // Expens
@@ -99,7 +104,7 @@ Route::middleware('auth')->group(function () {
    //Lender
    Route::resource(name: 'lender', controller: LenderController::class);
    Route::get('/add-Loan', [LenderController::class, 'add_loan'])->name('add_loan');
-   Route::post('/loan-store', [LenderController::class, 'lonan_store'])->name('loan_store');
+   Route::post('/loan-store', [LenderController::class, 'lonan_store'])->name('loan_store.loan_store');
    Route::get('/add-Loan/{id}/edit', [LenderController::class, 'edit_loan'])->name('add_loan.edit_loan');
    Route::put('/add-Loan/{id}', [LenderController::class, 'update_loan'])->name('add_loan.update_loan');
    Route::delete('/add-Loan/{id}', [LenderController::class, 'destroy_loan'])->name('add_loan.destroy_loan');
