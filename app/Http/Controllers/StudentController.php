@@ -115,7 +115,7 @@ class StudentController extends Controller
             'age' => 'required|integer|min:3|max:100',
             'fees_type_id' => 'required|exists:add_fess_types,id',
             'class_id' => 'required|exists:add_classes,id',
-            'section_id' => 'required|exists:sections,id',
+            'section_id' => 'required|exists:add_sections,id',
             'academic_year_id' => 'required|exists:add_academies,id',
             'scholarship_amount' => 'required|numeric',
             'isActived' => 'boolean',
