@@ -192,5 +192,103 @@ class LenderController extends Controller
         $transaction->delete();
         return redirect()->route('add_loan')->with('success', 'Lender deleted successfully.');
     }
+
+    public function loan_repayment(){
+        $transactionss = Transactions::whereNotNull('lender_id')->get();
+        $lenders = Lender::all();
+        $accounts =Account ::all();
+
+        return view('lender.loan-repayment', compact('lenders','transactionss','accounts'));
+    }
+
+
+    public function loan_repayment_store(Request $request)
+    {
+        $today = Carbon::now();
+        // Validate the form inputs
+        $validatedData = $request->validate([
+            'lender_id' => 'exists:lenders,id',
+            'credit' => 'numeric',
+            'c_s_1' => 'string|max:250',
+            'account_id' => 'exists:accounts,id',
+            'note' => 'string|max:500',
+            'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
+        ]);
+
+        // Create a new Lender and save to the database
+
+        Transactions::create([
+            'lender_id' => $validatedData['lender_id'],
+            'fess_type_id' => 1,
+            'transactions_type_id' => 1,
+            'account_id' => $validatedData['account_id'],
+            'credit' => $validatedData['credit'],
+            'transactions_date' => $today,
+            'c_s_1' => $validatedData['c_s_1'],
+            'note' => $validatedData['note'],
+            'isActived' => $validatedData['isActived'] ?? 1, // Save as boolean: true for 'activate', false for 'deactivate'
+        ]);
+
+        // Redirect back or to a success page
+        return redirect()->route('loan_repayment')->with('success', 'Loan Repayment added successfully!');
+    }
+
+    public function loan_repayment_loan(Lender $lender)
+    {
+        $transactionss = Transactions::with('lender')->get();
+        $lenders = Lender::all();
+        $accounts =Account ::all();
+        return view('lender.loan-repayment', compact('transactionss', 'lenders','accounts'));
+    }
+
+    public function edit_loan_repayment($id)
+    {
+        $transaction = Transactions::findOrFail($id);
+        $transactionss = Transactions::with('lender')->whereNotNull('lender_id')->get();
+        $lenders = Lender::all();
+        $accounts =Account ::all();
+
+        return view('lender.loan-repayment', compact('transaction', 'lenders','transactionss','accounts'));
+    }
+
+    public function update_loan_repayment(Request $request, $id)
+    {
+        $validatedData = $request->validate([
+            'lender_id' => 'exists:lenders,id',
+            'credit' => 'numeric',
+            'c_s_1' => 'string|max:250',
+            'account_id' => 'exists:accounts,id',
+
+            'note' => 'nullable|string|max:500',
+            'isActived' => 'required|boolean',
+        ]);
+
+        $today = Carbon::now();
+        $transaction = Transactions::findOrFail($id);
+
+        // Update the transaction
+        $transaction->update([
+            'lender_id' => $validatedData['lender_id'],
+            'fess_type_id' => 1,
+            'transactions_type_id' => 1,
+            'credit' => $validatedData['credit'],
+            'account_id' => $validatedData['account_id'],
+            'transactions_date' => $today,
+            'c_s_1' => $validatedData['c_s_1'],
+            'note' => $validatedData['note'],
+            'isActived' => $validatedData['isActived'],
+        ]);
+
+        return redirect()->route('loan_repayment')->with('success', 'Loan Repayment updated successfully.');
+    }
+
+    public function destroy_loan_repayment($id)
+    {
+        $transaction = Transactions::findOrFail($id);
+        $transaction->delete();
+        return redirect()->route('loan_repayment')->with('success', 'Loan Repayment deleted successfully.');
+    }
+
+
 }
 

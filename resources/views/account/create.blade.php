@@ -23,8 +23,8 @@
                                 <!-- Name -->
                                 <div class="mt-5">
                                     <x-input-label for="name" :value="__('Name')" />
-                                    <x-text-input id="name" class="block mt-1 w-full" type="text"
-                                        name="name" :value="isset($account) ? $account->name : old('name')" required />
+                                    <x-text-input id="name" class="block mt-1 w-full" type="text" name="name"
+                                        :value="isset($account) ? $account->name : old('name')" required />
                                     <x-input-error :messages="$errors->get('name')" class="mt-2" />
                                 </div>
 
@@ -44,19 +44,27 @@
                                     <x-input-error :messages="$errors->get('account_details')" class="mt-2" />
                                 </div>
 
+
+
+
+
+                            </div>
+
+                            <div>
+
                                 <!-- opening_balance -->
                                 <div class="mt-5">
                                     <x-input-label for="opening_balance" :value="__('Opening Balance')" />
-                                    <x-text-input id="opening_balance" class="block mt-1 w-full" type="text" name="opening_balance"
-                                        :value="isset($account) ? $account->opening_balance : old('opening_balance')" required />
+                                    <x-text-input id="opening_balance" class="block mt-1 w-full" type="text"
+                                        name="opening_balance" :value="isset($account) ? $account->opening_balance : old('opening_balance')" required />
                                     <x-input-error :messages="$errors->get('opening_balance')" class="mt-2" />
                                 </div>
 
                                 <!-- current_balance -->
                                 <div class="mt-5">
                                     <x-input-label for="current_balance" :value="__('Current Balance')" />
-                                    <x-text-input id="current_balance" class="block mt-1 w-full" type="text" name="current_balance"
-                                        :value="isset($account) ? $account->current_balance : old('current_balance')" required />
+                                    <x-text-input id="current_balance" class="block mt-1 w-full" type="text"
+                                        name="current_balance" :value="isset($account) ? $account->current_balance : old('current_balance')" required />
                                     <x-input-error :messages="$errors->get('current_balance')" class="mt-2" />
                                 </div>
 
@@ -104,5 +112,3 @@
         </div>
     </div>
 </x-app-layout>
-
-

@@ -6,13 +6,13 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-8xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <x-toast-success />
-                    <div class="grid grid-cols-4 gap-10">
+                    <div class="grid grid-cols-2 gap-10">
                         <div>
-                            <form method="POST"
+                            <form method="POST"  enctype="multipart/form-data"
                                 action="{{ isset($registration) ? route('add_registration.update', $registration->id) : route('add_registration.store') }}">
                                 @csrf
 
@@ -64,6 +64,9 @@
                                         name="management_fee" :value="isset($registration) ? $registration->management_fee : old('management_fee')" required />
                                     <x-input-error :messages="$errors->get('management_fee')" class="mt-2" />
                                 </div>
+
+                                </div>
+                                <div>
                                 <!--examination_fee  -->
                                 <div class="mt-5">
                                     <x-input-label for="examination_fee" :value="__('Examination Fee')" />
@@ -98,6 +101,7 @@
                             </form>
 
                         </div>
+                  
                         <div class="col-span-3">
                             <table class="border-collapse table-auto w-full text-sm">
                                 <thead>

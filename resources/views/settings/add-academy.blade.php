@@ -9,7 +9,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <div class="grid grid-cols-4 gap-10">
+                    <div class="grid grid-cols-2 gap-10">
                         <div>
                             <form method="POST"
                                 action="{{ isset($year) ? route('add_academy.update', $year->id) : route('add_academy.store') }}">
@@ -42,13 +42,18 @@
                                         name="academic_years" :value="isset($year) ? $year->academic_years : old('academic_years')" required />
                                     <x-input-error :messages="$errors->get('academic_years')" class="mt-2" />
                                 </div>
-                                <!--Starting Date -->
-                                <div class="mt-5">
+                                 <!--Starting Date -->
+                                 <div class="mt-5">
                                     <x-input-label for="starting_date" :value="__('Starting Date')" />
                                     <x-text-input id="starting_date" class="block mt-1 w-full" type="date"
                                         name="starting_date" :value="isset($year) ? $year->starting_date : old('starting_date')" required />
                                     <x-input-error :messages="$errors->get('starting_date')" class="mt-2" />
                                 </div>
+                                </div>
+
+                                
+                                <div>
+
                                 <!--Ending Date  -->
                                 <div class="mt-5">
                                     <x-input-label for="ending_date" :value="__('Ending Date')" />
