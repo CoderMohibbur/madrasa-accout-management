@@ -100,7 +100,7 @@ class LenderController extends Controller
 
     public function add_loan()
     {
-        $transactionss = Transactions::all();
+        $transactionss = Transactions::whereNotNull('lender_id')->get();
         $lenders = Lender::all();
         $accounts =Account ::all();
         return view('lender.add-loan', compact('lenders','transactionss','accounts'));
@@ -126,7 +126,6 @@ class LenderController extends Controller
             'fess_type_id' => 1,
             'transactions_type_id' => 1,
             'account_id' => $validatedData['account_id'],
-
             'debit' => $validatedData['debit'],
             'transactions_date' => $today,
             'c_s_1' => $validatedData['c_s_1'],
@@ -149,7 +148,7 @@ class LenderController extends Controller
     public function edit_loan($id)
     {
         $transaction = Transactions::findOrFail($id);
-        $transactionss = Transactions::with('lender')->get();
+        $transactionss = Transactions::with('lender')->whereNotNull('lender_id')->get();
         $lenders = Lender::all();
         $accounts =Account ::all();
 

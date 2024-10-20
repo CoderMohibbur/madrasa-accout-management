@@ -36,7 +36,7 @@
                                 </div>
                               <!-- Donor For -->
                                 <div class="mt-5">
-                                    <x-input-label for="c_s_1" :value="__('Donor For')" />
+                                    <x-input-label for="c_s_1" :value="__('Donation For')" />
 
                                     <select id="c_s_1" name="c_s_1" class="block mt-1 w-full" required>
                                         <option value="" disabled selected>Select an option</option>
@@ -65,10 +65,10 @@
 
                                 <!-- Lender Amount -->
                                 <div class="mt-5">
-                                    <x-input-label for="total_fees" :value="__('Lender Amount')" />
-                                    <x-text-input id="total_fees" class="block mt-1 w-full" type="text"
-                                        name="total_fees" :value="isset($transactions) ? $transactions->total_fees : old('total_fees')" required />
-                                    <x-input-error :messages="$errors->get('total_fees')" class="mt-2" />
+                                    <x-input-label for="debit" :value="__('Donation Amount')" />
+                                    <x-text-input id="debit" class="block mt-1 w-full" type="text"
+                                        name="debit" :value="isset($transactions) ? $transactions->debit : old('debit')" required />
+                                    <x-input-error :messages="$errors->get('debit')" class="mt-2" />
                                 </div>
 
                                 <div class="mt-5">
@@ -124,18 +124,15 @@
                     <table class="border-collapse table-auto w-full text-sm">
                         <thead>
                             <tr>
-                                <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">ID</th>
+                                <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">No.</th>
                                 <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">Doner Name</th>
                                 <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">Doner For</th>
+                                <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">Donation Ammount</th>
+                                <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">Donation Date</th>
                                 <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-center">Account</th>
                                 <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">Note</th>
-                                <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">Debit</th>
-                                <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Transactions Date</th>
-                                <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Total Fees</th>
                                 <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">Status</th>
                                 <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-center">Action</th>
-
-
                             </tr>
                         </thead>
                         <tbody class="bg-white dark:bg-slate-800">
@@ -144,20 +141,16 @@
                                     <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->id }}</td>
                                     <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->doner->name ?? 'N/A'}}</td>
                                     <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->c_s_1 }}</td>
+                                    <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->debit }}</td>
+                                    <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->transactions_date }}</td>
                                     <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->account_id }}</td>
                                     <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->note }}</td>
-                                    <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->debit }}</td>
-                                    <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->credit }}</td>
-                                    <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->transactions_date }}</td>
-                                    <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->total_fees }}</td>
-
                                     <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
                                         @if($transactions->isActived)
                                         <span class="text-green-500">Active</span>
                                         @else
                                             <span class="text-red-500">Inactive</span>
                                         @endif
-
                                     </td>
                                     <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400 text-center">
                                         <a href="{{ route('edit_donor.edit_donor', $transactions->id) }}">

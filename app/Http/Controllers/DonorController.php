@@ -69,8 +69,6 @@ class DonorController extends Controller
 
         // Return view with the class details for editing
 
-
-
         return view('donors.create', compact('Donor', 'fees_types'));
     }
     public function update(Request $request, Donor $Donor)
@@ -106,7 +104,7 @@ class DonorController extends Controller
     }
     public function donars()
     {
-        $transactionss = Transactions::all();
+        $transactionss = Transactions::whereNotNull('doner_id')->get();
         $Donors = Donor::all();
         $accounts = Account::all();
 
@@ -150,7 +148,7 @@ class DonorController extends Controller
 
     public function donors_loan(Donor $lender)
     {
-        $transactionss = Transactions::with('doner')->get();
+        $transactionss = Transactions::with('doner')->whereNotNull('doner_id')->get();
         $Donors = Donor::all();
         $accounts = Account::all();
 
@@ -160,10 +158,11 @@ class DonorController extends Controller
     public function edit_donor($id)
     {
         $transaction = Transactions::findOrFail($id);
+        $transactionss = Transactions::with('doner')->whereNotNull('doner_id')->get();
         $Donors = Donor::all();
         $accounts = Account::all();
 
-        return view('edit_donor.edit_donor', compact('transaction', 'Donors', 'accounts'));
+        return view('donors.add-donar', compact('transaction', 'Donors', 'accounts','transactionss'));
     }
 
     public function update_donor(Request $request, $id)
@@ -173,7 +172,6 @@ class DonorController extends Controller
             'total_fees' => 'numeric',
             'account_id' => 'exists:accounts,id',
             'c_s_1' => 'string|max:250',
-
             'note' => 'nullable|string|max:500',
             'isActived' => 'required|boolean',
         ]);
