@@ -17,7 +17,7 @@ class ExpensController extends Controller
         return view('expens.index', compact('Expens'));
 
     }
-    // Show the form for creating a new student
+    // Show the form for creating a new Expense
     public function create()
     {
 
@@ -34,18 +34,18 @@ class ExpensController extends Controller
         ]);
 
 
-        // Create a new student record using the validated data
+        // Create a new Expense record using the validated data
         Expens::create([
             'name' => $validatedData['name'],
             'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
             'isDeleted' => 0, // Set as not deleted by default
         ]);
 
-        // Redirect to the students list with a success message
-        return redirect()->route('expens.index')->with('success', 'Student created successfully.');
+        // Redirect to the Expense list with a success message
+        return redirect()->route('expens.index')->with('success', 'Expense created successfully.');
     }
 
-    // Display the specified student
+    // Display the specified Expense
     public function show(Expens $Expen)
     {
         return view('expens.create', data: compact( 'Expens'));
@@ -72,21 +72,21 @@ class ExpensController extends Controller
         ]);
 
 
-        // Update the student record using the validated data
+        // Update the Expense record using the validated data
         $Expen->update([
             'name' => $validatedData['name'],
             'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
         ]);
 
-        // Redirect to the students list with a success message
-        return redirect()->route('expens.index')->with('success', 'Student updated successfully.');
+        // Redirect to the Expense list with a success message
+        return redirect()->route('expens.index')->with('success', 'Expense updated successfully.');
     }
 
-    // Remove the specified student from storage
+    // Remove the specified Expense from storage
     public function destroy(Expens $Expen)
     {
         $Expen->delete();
-        return redirect()->route('expens.index')->with('success', 'Student deleted successfully.');
+        return redirect()->route('expens.index')->with('success', 'Expense deleted successfully.');
     }
 
 

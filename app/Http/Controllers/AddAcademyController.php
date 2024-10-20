@@ -37,7 +37,7 @@ class AddAcademyController extends Controller
         ]);
 
         // Redirect back or to a success page
-        return redirect()->route('add_academy.index')->with('success', 'Class added successfully!');
+        return redirect()->route('add_academy.index')->with('success', 'Academy year added successfully!');
     }
     public function edit($id)
     {
@@ -71,7 +71,7 @@ class AddAcademyController extends Controller
         $year->save();
 
         // Redirect to the class list with a success message
-        return redirect()->route('add_academy.index')->with('success', 'Class updated successfully!');
+        return redirect()->route('add_academy.index')->with('success', 'Academy year updated successfully!');
     }
 
     public function destroy($id)
@@ -83,6 +83,6 @@ class AddAcademyController extends Controller
         $year->delete();
 
         // Redirect back to the list of years with a success message
-        return redirect()->route('add_academy.index')->with('success', 'Class deleted successfully!');
+        return redirect()->route('add_academy.index')->with('success', 'Academy year deleted successfully!');
     }
 }

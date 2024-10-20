@@ -45,7 +45,7 @@ class AddRegistrationFessController extends Controller
         ]);
 
         // Redirect back or to a success page
-        return redirect()->route('add_registration.index')->with('success', 'Class added successfully!');
+        return redirect()->route('add_registration.index')->with('success', 'Registration Fees added successfully!');
     }
     public function edit($id)
     {
@@ -84,7 +84,7 @@ class AddRegistrationFessController extends Controller
             'isActived' => $request['isActived'] ?? 1, // Set active by default if not provided
         ]);
 
-        return redirect()->route('add_registration.index')->with('success', 'Class updated successfully!');
+        return redirect()->route('add_registration.index')->with('success', 'Registration Fees updated successfully!');
     }
 
     public function destroy($id)
@@ -96,6 +96,6 @@ class AddRegistrationFessController extends Controller
         $registration->delete();
 
         // Redirect back to the list of years with a success message
-        return redirect()->route('add_registration.index')->with('success', 'Class deleted successfully!');
+        return redirect()->route('add_registration.index')->with('success', 'Registration Fees deleted successfully!');
     }
 }

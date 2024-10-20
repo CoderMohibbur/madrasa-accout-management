@@ -91,6 +91,8 @@ Route::middleware('auth')->group(function () {
   Route::delete('/add-donar/{id}', [DonorController::class, 'destroy_donor'])->name('destroy_donor.destroy_donor');
   //Account
   Route::resource(name: 'account', controller: AccountController::class);
+  Route::get('/Chart-Of-Accounts', [AccountController::class, 'account'])->name('Chart-Of-Accounts');
+
   // Expens
   Route::resource(name: 'expens', controller: ExpensController::class);
   // Add catagory

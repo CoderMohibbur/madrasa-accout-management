@@ -299,7 +299,7 @@ class TransactionsController extends Controller
         $transactions->save();
 
         // Redirect to the class list with a success message
-        return redirect()->route('add_fees_type.index')->with('success', 'Class updated successfully!');
+        return redirect()->route('add_fees_type.index')->with('success', 'Transaction Type updated successfully!');
     }
 
     public function destroy($id)
@@ -311,7 +311,7 @@ class TransactionsController extends Controller
         $class->delete();
 
         // Redirect back to the list of classes with a success message
-        return redirect()->route('add_fees_type.index')->with('success', 'Class deleted successfully!');
+        return redirect()->route('add_fees_type.index')->with('success', 'Transaction Type deleted successfully!');
     }
 
 

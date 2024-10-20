@@ -9,10 +9,10 @@ class AddMonthController extends Controller
 {
     public function index()
     {
-        // Fetch all classes
+        // Fetch all Month
         $classes = AddMonth::all();
 
-        // Return view with the list of classes
+        // Return view with the list of Month
         return view('settings.add-month', compact('classes'));
 
     }
@@ -25,14 +25,14 @@ class AddMonthController extends Controller
             'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
         ]);
 
-        // Create a new class and save to the database
+        // Create a new Month and save to the database
         AddMonth::create([
             'name' => $validated['name'],
             'isActived' => $validated['isActived'], // Save as boolean: true for 'activate', false for 'deactivate'
         ]);
 
         // Redirect back or to a success page
-        return redirect()->route('add_month.index')->with('success', 'Class added successfully!');
+        return redirect()->route('add_month.index')->with('success', 'Month added successfully!');
     }
     public function edit($id)
     {
@@ -52,7 +52,7 @@ class AddMonthController extends Controller
             'isActived' => 'required|boolean',
         ]);
 
-        // Find the class by ID
+        // Find the Month by ID
         $class = AddMonth::findOrFail($id);
 
         // Update the class with new data
@@ -61,7 +61,7 @@ class AddMonthController extends Controller
         $class->save();
 
         // Redirect to the class list with a success message
-        return redirect()->route('add_month.index')->with('success', 'Class updated successfully!');
+        return redirect()->route('add_month.index')->with('success', 'Month updated successfully!');
     }
 
     public function destroy($id)
@@ -73,6 +73,6 @@ class AddMonthController extends Controller
         $class->delete();
 
         // Redirect back to the list of classes with a success message
-        return redirect()->route('add_month.index')->with('success', 'Class deleted successfully!');
+        return redirect()->route('add_month.index')->with('success', 'Month deleted successfully!');
     }
 }

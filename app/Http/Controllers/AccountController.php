@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\Transactions;
 use Illuminate\Http\Request;
 
 class AccountController extends Controller
@@ -100,6 +101,13 @@ class AccountController extends Controller
 
         // Redirect back to the list of classes with a success message
         return redirect()->route('account.index')->with('success', 'account deleted successfully!');
+    }
+    public function account(){
+
+        $transactionss = Transactions::all();
+
+
+        return view('account.Chart_of_accounts', compact('transactionss'));
     }
 
 }

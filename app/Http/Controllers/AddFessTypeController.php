@@ -32,7 +32,7 @@ class AddFessTypeController extends Controller
         ]);
 
         // Redirect back or to a success page
-        return redirect()->route('add_fees_type.index')->with('success', 'Class added successfully!');
+        return redirect()->route('add_fees_type.index')->with('success', 'Fees Type added successfully!');
     }
     public function edit($id)
     {
@@ -61,7 +61,7 @@ class AddFessTypeController extends Controller
         $class->save();
 
         // Redirect to the class list with a success message
-        return redirect()->route('add_fees_type.index')->with('success', 'Class updated successfully!');
+        return redirect()->route('add_fees_type.index')->with('success', 'Fees Type updated successfully!');
     }
 
     public function destroy($id)
@@ -73,6 +73,6 @@ class AddFessTypeController extends Controller
         $class->delete();
 
         // Redirect back to the list of classes with a success message
-        return redirect()->route('add_fees_type.index')->with('success', 'Class deleted successfully!');
+        return redirect()->route('add_fees_type.index')->with('success', 'Fees Type deleted successfully!');
     }
 }

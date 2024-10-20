@@ -22,7 +22,7 @@ class DonorController extends Controller
         // Return view with the list of years
         return view('donors.index', compact('Donors'));
     }
-    // Show the form for creating a new student
+    // Show the form for creating a new Donor
     public function create()
     {
 
@@ -42,7 +42,7 @@ class DonorController extends Controller
         ]);
 
 
-        // Create a new student record using the validated data
+        // Create a new Donor record using the validated data
         Donor::create([
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
@@ -52,22 +52,22 @@ class DonorController extends Controller
             'isDeleted' => 0, // Set as not deleted by default
         ]);
 
-        // Redirect to the students list with a success message
-        return redirect()->route('donors.index')->with('success', 'Student created successfully.');
+        // Redirect to the Donor list with a success message
+        return redirect()->route('donors.index')->with('success', 'Donor created successfully.');
     }
 
-    // Display the specified student
+    // Display the specified Donor
     public function show(Donor $Donor)
     {
         return view('Donors.show', data: compact(var_name: 'Donors'));
     }
     public function edit($id)
     {
-        // Find the class by ID
+        // Find the Donation by ID
         $Donor = Donor::findOrFail($id);
         $fees_types = AddFessType::all();
 
-        // Return view with the class details for editing
+        // Return view with the Donation details for editing
 
 
 
@@ -85,7 +85,7 @@ class DonorController extends Controller
         ]);
 
 
-        // Update the student record using the validated data
+        // Update the Donor record using the validated data
         $Donor->update([
             'name' => $validatedData['name'],
             'mobile' => $validatedData['mobile'],
@@ -94,15 +94,15 @@ class DonorController extends Controller
             'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
         ]);
 
-        // Redirect to the students list with a success message
-        return redirect()->route('donors.index')->with('success', 'Student updated successfully.');
+        // Redirect to the Donor list with a success message
+        return redirect()->route('donors.index')->with('success', 'Donor updated successfully.');
     }
 
-    // Remove the specified student from storage
+    // Remove the specified Donor from storage
     public function destroy(Donor $Donor)
     {
         $Donor->delete();
-        return redirect()->route('donors.index')->with('success', 'Student deleted successfully.');
+        return redirect()->route('donors.index')->with('success', 'Donor deleted successfully.');
     }
     public function donars()
     {
@@ -128,7 +128,7 @@ class DonorController extends Controller
             'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
         ]);
 
-        // Create a new class and save to the database
+        // Create a new Donation and save to the database
 
         Transactions::create([
             'doner_id' => $validatedData['doner_id'],
@@ -145,7 +145,7 @@ class DonorController extends Controller
         ]);
 
         // Redirect back or to a success page
-        return redirect()->route('add_donar')->with('success', 'Class added successfully!');
+        return redirect()->route('add_donar')->with('success', 'Donation added successfully!');
     }
 
     public function donors_loan(Donor $lender)
@@ -196,7 +196,7 @@ class DonorController extends Controller
             'isActived' => $validatedData['isActived'],
         ]);
 
-        return redirect()->route('add_donar')->with('success', 'Loan updated successfully.');
+        return redirect()->route('add_donar')->with('success', 'Donation updated successfully.');
     }
 
     public function destroy_donor($id)
@@ -204,6 +204,6 @@ class DonorController extends Controller
         $Donor = Donor::findOrFail($id);
 
         $Donor->delete();
-        return redirect()->route('add_donar')->with('success', 'Lender deleted successfully.');
+        return redirect()->route('add_donar')->with('success', 'Donation deleted successfully.');
     }
 }

@@ -32,7 +32,7 @@ class TransactionsTypeController extends Controller
         ]);
 
         // Redirect back or to a success page
-        return redirect()->route('add_transaction_type.index')->with('success', 'Class added successfully!');
+        return redirect()->route('add_transaction_type.index')->with('success', 'Transaction Type added successfully!');
     }
 
     public function edit($id)
@@ -62,7 +62,7 @@ class TransactionsTypeController extends Controller
         $transaction->save();
 
         // Redirect to the class list with a success message
-        return redirect()->route('add_transaction_type.index')->with('success', 'Class updated successfully!');
+        return redirect()->route('add_transaction_type.index')->with('success', 'Transaction Type updated successfully!');
     }
 
     public function destroy($id)
@@ -74,6 +74,6 @@ class TransactionsTypeController extends Controller
         $transaction->delete();
 
         // Redirect back to the list of classes with a success message
-        return redirect()->route('add_transaction_type.index')->with('success', 'Class deleted successfully!');
+        return redirect()->route('add_transaction_type.index')->with('success', 'Transaction Type deleted successfully!');
     }
 }

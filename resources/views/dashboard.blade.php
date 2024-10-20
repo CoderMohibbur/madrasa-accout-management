@@ -34,7 +34,7 @@
                                         </svg>
 
                                         <h1 class=" font-black ">150</h1>
-                                    </div>                                
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -64,7 +64,7 @@
                                         </svg>
 
                                         <h1 class=" font-black ">150</h1>
-                                    </div>                                
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -94,7 +94,7 @@
                                         </svg>
 
                                         <h1 class=" font-black ">150</h1>
-                                    </div>                                
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -249,4 +249,8 @@
             </div>
         </div>
     </div>
+
+
+    
+
 </x-app-layout>
