@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Add Expen') }}
+            {{ __('Add Catagory') }}
         </h2>
     </x-slot>
 
@@ -14,11 +14,11 @@
                         <div>
                             <form method="POST" action="{{ isset($expen) ? route('add_catagory.update', $expen->id) : route('add_catagory.store') }}">
                                 @csrf
-                                
+
                                 @if (isset($expen))
                                     @method('PUT') {{-- Use PUT for update --}}
                                 @endif
-                            
+
                                 <!-- Class ID (hidden for update) -->
                                 @if (isset($expen))
                                     <div class="mt-5">
@@ -27,21 +27,21 @@
                                         <x-input-error :messages="$errors->get('id')" class="mt-2" />
                                     </div>
                                 @endif
-                            
+
                                 <!-- Class Name -->
                                 <div class="mt-5">
                                     <x-input-label for="name" :value="__('Add Catagory')" />
                                     <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="isset($expen) ? $expen->name : old('name')" required />
                                     <x-input-error :messages="$errors->get('name')" class="mt-2" />
                                 </div>
-                            
+
                                 <!-- Status -->
                                 <div class="mt-5">
                                     <x-input-label for="status" :value="__('Status')" />
                                     <x-status id="isActived" name="isActived" :value="isset($expen) ? $expen->isActived : old('isActived')" required />
                                     <x-input-error :messages="$errors->get('status')" class="mt-2" />
                                 </div>
-                            
+
                                 <!-- Save/Update Button -->
                                 <div class="flex items-center justify-end mt-4">
                                     <x-primary-button>
@@ -53,7 +53,7 @@
                                     </x-primary-button>
                                 </div>
                             </form>
-                            
+
                         </div>
                         <div class="col-span-3">
                             <table class="border-collapse table-auto w-full text-sm">

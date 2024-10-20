@@ -32,7 +32,7 @@ class AddSectionController extends Controller
         ]);
 
         // Redirect back or to a success page
-        return redirect()->route('Section.index')->with('success', 'Class added successfully!');
+        return redirect()->route('Section.index')->with('success', 'Section added successfully!');
     }
     public function edit($id)
     {
@@ -73,7 +73,7 @@ class AddSectionController extends Controller
         $Section->delete();
 
         // Redirect back to the list of classes with a success message
-        return redirect()->route('Section.index')->with('success', 'Class deleted successfully!');
+        return redirect()->route('Section.index')->with('success', 'Section deleted successfully!');
     }
 
 }

@@ -1,7 +1,7 @@
  <x-app-layout>
      <x-slot name="header">
          <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-             {{ __('Add Lender') }}
+             {{ __('Add Loan') }}
          </h2>
      </x-slot>
 
@@ -67,7 +67,7 @@
                                      <x-input-error :messages="$errors->get('debit')" class="mt-2" />
                                  </div>
                                  <div>
-                                    
+
 
 
                                     <div class="mt-5">

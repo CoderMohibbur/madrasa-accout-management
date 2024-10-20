@@ -115,6 +115,9 @@
                                 <x-dropdown-link :href="route('account.create')" :active="request()->routeIs('account.index')">
                                     {{ __('Add Account') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link :href="route('Chart-Of-Accounts')" :active="request()->routeIs('Chart-Of-Accounts')">
+                                    {{ __('Chart Of Accounts') }}
+                                </x-dropdown-link>
 
 
 

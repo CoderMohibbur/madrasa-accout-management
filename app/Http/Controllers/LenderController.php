@@ -50,7 +50,7 @@ class LenderController extends Controller
             'isDeleted' => 0,
         ]);
 
-        return redirect()->route('lender.index')->with('success', 'Student created successfully.');
+        return redirect()->route('lender.index')->with('success', 'Lender created successfully.');
     }
 
     public function show(Lender $lender)
@@ -89,13 +89,13 @@ class LenderController extends Controller
             'isDeleted' => 0,
         ]);
 
-        return redirect()->route('lender.index')->with('success', 'Student updated successfully.');
+        return redirect()->route('lender.index')->with('success', 'Lender updated successfully.');
     }
 
     public function destroy(Lender $lender)
     {
         $lender->delete();
-        return redirect()->route('lender.index')->with('success', 'Student deleted successfully.');
+        return redirect()->route('lender.index')->with('success', 'Lender deleted successfully.');
     }
 
     public function add_loan()
@@ -119,7 +119,7 @@ class LenderController extends Controller
             'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
         ]);
 
-        // Create a new class and save to the database
+        // Create a new Lender and save to the database
 
         Transactions::create([
             'lender_id' => $validatedData['lender_id'],
@@ -134,7 +134,7 @@ class LenderController extends Controller
         ]);
 
         // Redirect back or to a success page
-        return redirect()->route('add_loan')->with('success', 'Class added successfully!');
+        return redirect()->route('add_loan')->with('success', 'Lender added successfully!');
     }
 
     public function show_loan(Lender $lender)
@@ -183,7 +183,7 @@ class LenderController extends Controller
             'isActived' => $validatedData['isActived'],
         ]);
 
-        return redirect()->route('add_loan')->with('success', 'Loan updated successfully.');
+        return redirect()->route('add_loan')->with('success', 'Lender updated successfully.');
     }
 
     public function destroy_loan($id)
