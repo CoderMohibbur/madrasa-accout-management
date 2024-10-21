@@ -10,7 +10,7 @@ class Lender extends Model
     use HasFactory;
     protected $fillable = ['name', 'phone', 'email','address','bank_detils','users_id','isActived', 'isDeleted'];
 
-    public function Users()
+    public function users()
     {
 
         return $this->belongsTo(User::class);

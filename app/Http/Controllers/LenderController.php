@@ -13,7 +13,7 @@ class LenderController extends Controller
 {
     public function index()
     {
-        $lenders = Lender::all();
+        $lenders = Lender::with('users')->get();
         $classes = User::all();
 
         return view('lender.index', compact('lenders', 'classes'));

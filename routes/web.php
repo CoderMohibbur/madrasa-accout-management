@@ -47,7 +47,7 @@ Route::middleware('auth')->group(function () {
   Route::get('/add-academy/{id}/edit', [AddAcademyController::class, 'edit'])->name('add_academy.edit');
   Route::put('/add-academy/{id}', [AddAcademyController::class, 'update'])->name('add_academy.update');
   Route::delete('/add-academy/{id}', [AddAcademyController::class, 'destroy'])->name('add_academy.destroy');
-  //add-academy conroller
+  //add-fees conroller
   Route::get('/add-fees-type', [AddFessTypeController::class, 'index'])->name('add_fees_type.index');
   Route::post('/add-fees-type', [AddFessTypeController::class, 'store'])->name('add_fees_type.store');
   Route::get('/add-fees-type/{id}/edit', [AddFessTypeController::class, 'edit'])->name('add_fees_type.edit');
@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
 
   // TransactionsController
   Route::get('/add-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.index');
+  Route::get('/list-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.list');
   Route::post('/add-student-fees', [TransactionsController::class, 'store'])->name('add_student_fees.store');
   Route::get('/add-student-fees/{id}/edit', [TransactionsController::class, 'edit'])->name('add_student_fees.edit');
   Route::put('/add-student-fees/{id}', [TransactionsController::class, 'update'])->name('add_student_fees.update');
@@ -113,29 +114,14 @@ Route::middleware('auth')->group(function () {
 
   // TransactionsController
   Route::get('/add-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.index');
-  // Route::post('/add-student-fees', action: [TransactionsController::class, 'bulk_store'])->name('add_student_fees.bulk_store');
   Route::post('/add-student-fees', [TransactionsController::class, 'store'])->name('add_student_fees.store');
   Route::get('/get-students', [TransactionsController::class, 'getStudents'])->name('get.students');
   Route::post('/store-fees', [TransactionsController::class, 'bulkStore'])->name('fees.bulk_store');
-  // Route::get('/fetch-students', [TransactionsController::class, 'fetchStudents']);
 
 
   Route::get('/add-student-fees/{id}/edit', [TransactionsController::class, 'edit'])->name('add_student_fees.edit');
   Route::put('/add-student-fees/{id}', [TransactionsController::class, 'update'])->name('add_student_fees.update');
   Route::delete('/add-student-fees/{id}', [TransactionsController::class, 'destroy'])->name('add_student_fees.destroy');
-
-
-
-
-
-
-
-
-
-
-
-
-  // Route::get('/add-student-fees', [TransactionsController::class, 'all'])->name('add_student_fees.index');
 
 
 });
