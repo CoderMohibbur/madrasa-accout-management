@@ -20,15 +20,17 @@
                         @endif
                         <div class="grid grid-cols-2 gap-10">
                             <div>
-                               <!-- Add Expens Name -->
-                               <div class="mt-5">
-                                <x-input-label for="name" :value="__('Add Expens Name')" />
-                                <x-text-input id="name" class="block mt-1 w-full" type="text" name="name"
-                                    :value="isset($Expen) ? $Expen->name : old('name')" required />
-                                <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                                <!-- Add Expens Name -->
+                                <div class="mt-5">
+                                    <x-input-label for="name" :value="__('Add Expens Name')" />
+                                    <x-text-input id="name" class="block mt-1 w-full" type="text" name="name"
+                                        :value="isset($Expen) ? $Expen->name : old('name')" required />
+                                    <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                                </div>
+
+
                             </div>
-
-
+                            <div>
                                 <!-- Status -->
                                 <div class="mt-5">
                                     <x-input-label for="isActived" :value="__('Active Status')" />
@@ -62,5 +64,3 @@
         </div>
     </div>
 </x-app-layout>
-
-

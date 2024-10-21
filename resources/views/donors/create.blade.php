@@ -29,7 +29,7 @@
                                     <x-input-error :messages="$errors->get('name')" class="mt-2" />
                                 </div>
 
-                                <!-- Fees Type ID -->
+                                {{-- <!-- Fees Type ID -->
                                 <div class="mt-5">
                                     <x-input-label for="fees_type_id" :value="__('Fees Type')" />
                                     <select id="fees_type_id" name="fees_type_id" class="block mt-1 w-full">
@@ -41,7 +41,7 @@
                                         @endforeach
                                     </select>
                                     <x-input-error :messages="$errors->get('fees_type_id')" class="mt-2" />
-                                </div>
+                                </div> --}}
 
                                 <!-- Email -->
                                 <div class="mt-5">
@@ -50,7 +50,8 @@
                                         :value="isset($Donor) ? $Donor->email : old('email')" required />
                                     <x-input-error :messages="$errors->get('email')" class="mt-2" />
                                 </div>
-
+                            </div>
+                            <div>
                                 <!-- Mobile -->
                                 <div class="mt-5">
                                     <x-input-label for="mobile" :value="__('Mobile Number')" />
@@ -58,28 +59,24 @@
                                         :value="isset($Donor) ? $Donor->mobile : old('mobile')" required />
                                     <x-input-error :messages="$errors->get('mobile')" class="mt-2" />
                                 </div>
-
-                            </div>
-
-                            <!-- Status -->
-                            <div class="mt-5">
-                                <x-input-label for="status" :value="__('Status')" />
-                                <x-status id="isActived" name="isActived" :value="isset($Donor) ? $Donor->isActived : old('isActived')" required />
-                                <x-input-error :messages="$errors->get('status')" class="mt-2" />
-                            </div>
-
-                            <!-- Save/Update Button -->
-                            <div class="flex items-center justify-end mt-4">
-                                <x-primary-button>
-                                    @if (isset($Donor))
-                                        {{ __('Update') }}
-                                    @else
-                                        {{ __('Save') }}
-                                    @endif
-                                </x-primary-button>
+                                <!-- Status -->
+                                <div class="mt-5">
+                                    <x-input-label for="status" :value="__('Status')" />
+                                    <x-status id="isActived" name="isActived" :value="isset($Donor) ? $Donor->isActived : old('isActived')" required />
+                                    <x-input-error :messages="$errors->get('status')" class="mt-2" />
+                                </div>
+                                <!-- Save/Update Button -->
+                                <div class="flex items-center justify-end mt-4">
+                                    <x-primary-button>
+                                        @if (isset($Donor))
+                                            {{ __('Update') }}
+                                        @else
+                                            {{ __('Save') }}
+                                        @endif
+                                    </x-primary-button>
+                                </div>
                             </div>
                         </div>
-
                 </div>
                 </form>
             </div>
