@@ -61,6 +61,7 @@ Route::middleware('auth')->group(function () {
   Route::put('/add-student-fees/{id}', [TransactionsController::class, 'update'])->name('add_student_fees.update');
   Route::delete('/add-student-fees/{id}', [TransactionsController::class, 'destroy'])->name('add_student_fees.destroy');
 
+
   //add-transaction conroller
   Route::get('/add-transaction-type', [TransactionsTypeController::class, 'index'])->name('add_transaction_type.index');
   Route::post('/add-transaction-type', [TransactionsTypeController::class, 'store'])->name('add_transaction_type.store');
@@ -82,6 +83,9 @@ Route::middleware('auth')->group(function () {
   Route::delete('/add-registration/{id}', [AddRegistrationFessController::class, 'destroy'])->name('add_registration.destroy');
   // Students
   Route::resource('students', StudentController::class);
+  Route::get('/student-fees', [StudentController::class, 'Student_Fees'])->name('student_fees.show');
+  
+
   // Doner
   Route::resource(name: 'donors', controller: DonorController::class);
   Route::get('/add-donar', [DonorController::class, 'donars'])->name('add_donar');
@@ -131,19 +135,6 @@ Route::middleware('auth')->group(function () {
   Route::get('/add-student-fees/{id}/edit', [TransactionsController::class, 'edit'])->name('add_student_fees.edit');
   Route::put('/add-student-fees/{id}', [TransactionsController::class, 'update'])->name('add_student_fees.update');
   Route::delete('/add-student-fees/{id}', [TransactionsController::class, 'destroy'])->name('add_student_fees.destroy');
-
-
-
-
-
-
-
-
-
-
-
-
-  // Route::get('/add-student-fees', [TransactionsController::class, 'all'])->name('add_student_fees.index');
 
 
 });

@@ -46,6 +46,9 @@
                                 <x-dropdown-link :href="route('add_student_fees.index')" :active="request()->routeIs('add_student_fees.index')">
                                     {{ __('Add Fees ') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link :href="route('student_fees.show')" :active="request()->routeIs('student_fees.show')">
+                                    {{ __('Student Fees ') }}
+                                </x-dropdown-link>
 
 
                             </x-slot>

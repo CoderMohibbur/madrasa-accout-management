@@ -315,16 +315,18 @@ class TransactionsController extends Controller
     }
 
 
-    public function all()
+    public function all(Request $request)
     {
 
-        $transactionss = Transactions::all();
-        $years = AddAcademy::all();
-        $months = AddMonth::all();
-        $classes = AddClass::all();
-        $sections = AddSection::all();
+        $students = Student::where('academic_year_id', $request->academic_year_id)
+        ->where('month_id', $request->month_id)
+        ->where('class_id', $request->class_id)
+        ->where('section_id', $request->section_id)
+        ->get();
 
-        return view('students.add-fees_copy', compact('transactionss', 'years', 'months', 'classes', 'sections', ));
+      $transactions = []; // Fetch transactions based on students and other logic
+
+      return view('students.add-fees_copy', compact('students', 'transactions'));
 
     }
 

@@ -11,7 +11,7 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <x-toast-success />
 
-                    <form method="POST" action="{{ route('fees.bulk_store') }}">
+                    <form id="fees_form" method="POST" action="{{ route('fees.bulk_store') }}">
                         @csrf
 
                         <!-- Academic Year -->
@@ -22,7 +22,7 @@
                         </select>
 
                         <!-- Month -->
-                        <select id="month_id" name="month_id">
+                        <select id="months_id" name="months_id">
                             @foreach ($months as $month)
                                 <option value="{{ $month->id }}">{{ $month->name }}</option>
                             @endforeach
@@ -43,98 +43,90 @@
                         </select>
 
                         <!-- Button to fetch students -->
-                        {{-- <button type="button" onclick="fetchStudents()">Fetch Students</button> --}}
                         <x-primary-button-button onclick="fetchStudents()">
                             {{ __('Search') }}
                         </x-primary-button-button>
-                        </br><br><br>
 
 
+                    </form>
+                    <br><br>
 
-                        <div class="text-center" >
-                            <p class="font-solaiman text-3xl">
+                    <div class="col-span-3" id="myTable">
+                        <div class="text-center bg-gray-100 p-8 rounded-lg shadow-lg">
+                            <p class="font-solaiman text-3xl text-blue-800 font-bold mb-2">
                                 আত-তাওহীদ ইসলামী কমপ্লেক্স
-                              </p>
-                              <p class="font-nikosh text-2xl">
+                            </p>
+                            <p class="font-nikosh text-2xl text-gray-700 mb-2">
                                 পুলেরহাট, সদর, যশোর
-                              </p>
-                              <p class="font-kalpurush text-2xl">
+                            </p>
+                            <p class="font-kalpurush text-2xl text-gray-600 italic">
                                 ছাত্রছাত্রীদের বেতনের হিসাব
-                              </p>
-
-
-
-                            <br><br>
-
-
-
+                            </p>
                         </div>
 
+                        <br><br>
 
-
-                        <br><br><br>
-
-                        <div class="col-span-3">
-                            <table class="border-collapse table-auto w-full text-sm">
-                                <thead>
+                        <table class="border-collapse table-auto w-full text-sm">
+                            <thead>
+                                <tr>
+                                    <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">ক্রমিক নং</th>
+                                    <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">নাম</th>
+                                    <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">বই নং</th>
+                                    <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">বেতন</th>
+                                    <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">বোডিং ফী</th>
+                                    <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">ব্যবস্থাপনা ফী</th>
+                                    <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">অন্যান্য ফী</th>
+                                    <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">সর্বমোট ফী</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-slate-800">
+                                @foreach ($transactionss as $transaction)
                                     <tr>
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
-                                            ক্রমিক নং</th>
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
-                                            নাম </th>
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
-                                            বই নং </th>
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
-                                            বেতন </th>
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
-                                            বোডিং ফী </th>
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
-                                            ব্যবস্থাপনা ফী </th>
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
-                                            অন্যান্য ফী </th>
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
-                                            সর্বমোট ফী </th>
+                                        <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transaction->id }}</td>
+                                        <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transaction->student_name }}</td>
+                                        <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transaction->student_book_number }}</td>
+                                        <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transaction->monthly_fees }}</td>
+                                        <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transaction->boarding_fees }}</td>
+                                        <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transaction->management_fees }}</td>
+                                        <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transaction->other_fees }}</td>
+                                        <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">{{ $transaction->total_fees }}</td>
                                     </tr>
-                                </thead>
-                                <tbody class="bg-white dark:bg-slate-800">
-                                    @foreach ($transactionss as $transactionss)
-                                        <tr>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $class->id }}</td>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $class->student_id }}</td>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $class->student_book_number }}</td>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $class->monthly_fees }}</td>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $class->boarding_fees }}</td>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $class->others_fees }}</td>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $class->total_fees }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                     </div>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        function printTable() {
+            var printContents = document.getElementById('myTable').outerHTML;
+            var styles = `
+                <style>
+                    body { font-family: sans-serif; padding: 20px; }
+                    .text-center { text-align: center; }
+                    .bg-gray-100 { background-color: #f7fafc; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                    th { background-color: #f4f4f4; }
+                    @media print {
+                        body { -webkit-print-color-adjust: exact; }
+                        th { color: #fff; background-color: #4a5568 !important; }
+                        .text-center { text-align: center !important; }
+                        .bg-gray-100 { background-color: #f7fafc !important; }
+                    }
+                </style>
+            `;
+            var win = window.open('', '', 'height=500,width=800');
+            win.document.write('<html><head><title>Print Table</title>');
+            win.document.write(styles);
+            win.document.write('</head><body>');
+            win.document.write(printContents);
+            win.document.write('</body></html>');
+            win.document.close();
+            win.print();
+        }
+    </script>
 </x-app-layout>

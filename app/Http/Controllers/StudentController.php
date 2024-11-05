@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Account;
 use App\Models\Student;
 use App\Models\AddClass;
+use App\Models\AddMonth;
 use App\Models\AddAcademy;
 use App\Models\AddSection;
 use App\Models\AddFessType;
+use App\Models\Transactions;
 use Illuminate\Http\Request;
+use App\Models\TransactionsType;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Storage;
 
 class StudentController extends Controller
@@ -172,4 +177,22 @@ class StudentController extends Controller
         $student->delete();
         return redirect()->route('students.index')->with('success', 'Student deleted successfully.');
     }
+     public function Student_Fees()
+        {
+            // Fetch all classes
+            $transactionss = Transactions::all();
+            $students = Student::all();
+            $accounts = Account::all();
+            $classes = AddClass::all();
+            $sections = AddSection::all();
+            $months = AddMonth::all();
+            $years = AddAcademy::all();
+            $feestypes = AddFessType::all();
+            $transactionss = TransactionsType::all();
+            $users = User::all();
+
+            // Return view with the list of classes
+            return view('students.add-fees_copy', compact('transactionss', 'students', 'accounts', 'classes', 'sections', 'years', 'months', 'transactionss', 'users'));
+    }
+
 }
