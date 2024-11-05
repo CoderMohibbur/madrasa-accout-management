@@ -38,6 +38,25 @@ class TransactionsController extends Controller
 
     }
 
+    public function list()
+    {
+        // Fetch all classes
+        $transactionss = Transactions::all();
+        $students = Student::all();
+        $accounts = Account::all();
+        $classes = AddClass::all();
+        $sections = AddSection::all();
+        $months = AddMonth::all();
+        $years = AddAcademy::all();
+        $feestypes = AddFessType::all();
+        $transactionss = TransactionsType::all();
+        $users = User::all();
+
+        // Return view with the list of classes
+        return view('students.list-fees', compact('transactionss', 'students', 'accounts', 'classes', 'sections', 'years', 'months', 'transactionss', 'users'));
+
+    }
+
     public function fetchStudents(Request $request)
     {
         $academicYearId = $request->input('academic_year_id');
@@ -246,7 +265,7 @@ class TransactionsController extends Controller
             }
         }
 
-        return redirect()->route('add_fees_type.index')->with('success', 'Fees added successfully!');
+        return redirect()->route('add_student_fees.index')->with('success', 'Fees added successfully!');
     }
 
     public function edit($id)
@@ -274,8 +293,6 @@ class TransactionsController extends Controller
             'boarding_fees' => 'numeric',
             'management_fees' => 'numeric',
             'exam_fees' => 'numeric',
-            '
-            ' => 'numeric',
             'total_fees' => 'numeric',
             'debit' => 'numeric',
             'credit' => 'numeric',

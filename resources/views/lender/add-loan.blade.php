@@ -23,7 +23,7 @@
                                  <!-- Lender Name -->
                                  <div class="mt-5">
                                      <x-input-label for="lender_id" :value="__('Lender Name')" />
-                                     <select id="lender_id" name="lender_id" class="block mt-1 w-full">
+                                     <select id="lender_id" name="lender_id" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm w-full">
                                          @foreach ($lenders as $lender)
                                              <option value="{{ $lender->id }}"
                                                  {{ isset($transaction) && $transaction->lender_id == $lender->id ? 'selected' : '' }}>
@@ -36,7 +36,7 @@
                                  <!-- Lender For -->
                                  <div class="mt-5">
                                      <x-input-label for="c_s_1" :value="__('Lender For')" />
-                                     <select id="c_s_1" name="c_s_1" class="block mt-1 w-full" required>
+                                     <select id="c_s_1" name="c_s_1" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm w-full" required>
                                         <option value="" disabled {{ old('c_s_1', isset($transaction) ? $transaction->c_s_1 : '') === '' ? 'selected' : '' }}>Select an option</option>
                                         <option value="Madrasa" {{ old('c_s_1', isset($transaction) ? $transaction->c_s_1 : '') === 'Madrasa' ? 'selected' : '' }}>Madrasa</option>
                                         <option value="Masjid" {{ old('c_s_1', isset($transaction) ? $transaction->c_s_1 : '') === 'Masjid' ? 'selected' : '' }}>Masjid</option>
@@ -67,13 +67,10 @@
                                      <x-input-error :messages="$errors->get('debit')" class="mt-2" />
                                  </div>
                                  <div>
-
-
-
                                     <div class="mt-5">
                                         <!-- Account -->
                                         <x-input-label for="account_id" :value="__('Account')" />
-                                        <select id="account_id" name="account_id" class="block mt-1 w-full">
+                                        <select id="account_id" name="account_id" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm w-full">
                                             @foreach ($accounts as $account)
                                                 <option value="{{ $account->id }}"
                                                     {{ isset($transaction) && $transaction->account_id == $account->id ? 'selected' : '' }}>
@@ -86,7 +83,7 @@
                                  <!-- Status -->
                                  <div class="mt-5">
                                      <x-input-label for="isActived" :value="__('Active Status')" />
-                                     <select id="isActived" name="isActived" class="block mt-1 w-full">
+                                     <select id="isActived" name="isActived" class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm w-full">
                                          <option value="1"
                                              {{ isset($transaction) && $transaction->isActived ? 'selected' : '' }}>
                                              Active
@@ -117,60 +114,60 @@
              <br> <br> <br>
 
              <div class="col-span-3">
-                 <table class="border-collapse table-auto w-full text-sm">
-                     <thead>
-                         <tr>
-                             <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> No.</th>
-                             <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Lender Name</th>
-                             <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Loan For</th>
-                             <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Account</th>
-                             <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Note</th>
-                             <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Debit</th>
-                             <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Credit</th>
-                             <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Transactions Date</th>
-                             <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Total Fees</th>
-                             <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Status</th>
-                             <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> Action</th>
-                         </tr>
-                     </thead>
-                     <tbody class="bg-white dark:bg-slate-800">
-                         @foreach ($transactionss as $transactions)
-                             <tr>
-                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->id }}</td>
-                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->lender->name ?? 'N/A'}}</td>
-                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->c_s_1 }}</td>
-                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->account_id }}</td>
-                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->note }}</td>
-                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->debit }}</td>
-                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->credit }}</td>
-                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->transactions_date }}</td>
-                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $transactions->total_fees }}</td>
-                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                     @if ($transactions->isActived)
-                                         <span class="text-green-500">Active</span>
-                                     @else
-                                         <span class="text-red-500">Inactive</span>
-                                     @endif
-                                 </td>
-                                 <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400 text-center">
-                                     <a href="{{ route('add_loan.edit_loan', $transactions->id) }}">
-                                         <x-primary-button>
-                                             {{ __('Edit') }}
-                                         </x-primary-button>
-                                     </a>
-                                     <form action="{{ route('add_loan.destroy_loan', $transactions->id) }}"
-                                         method="POST" style="display:inline;">
-                                         @csrf
-                                         @method('DELETE')
-                                         <x-danger-button>
-                                             {{ __('Delete') }}
-                                             </x-primary-button>
-                                     </form>
-                                 </td>
-                             </tr>
-                         @endforeach
-                     </tbody>
-                 </table>
+                <div class="overflow-auto rounded-lg shadow-lg">
+                    <table class="border-collapse table-auto w-full text-sm">
+                        <thead class="bg-gray-50 dark:bg-gray-700">
+                            <tr>
+                                <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> No.</th>
+                                <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Lender Name</th>
+                                <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Loan For</th>
+                                <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Account</th>
+                                <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Note</th>
+                                <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Debit</th>
+                                <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Credit</th>
+                                <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Transactions Date</th>
+                                <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Status</th>
+                                <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white dark:bg-slate-800">
+                            @foreach ($transactionss as $transactions)
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                    <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> {{ $transactions->id }}</td>
+                                    <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> {{ $transactions->lender->name ?? 'N/A'}}</td>
+                                    <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> {{ $transactions->c_s_1 }}</td>
+                                    <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> {{ $transactions->account_id }}</td>
+                                    <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> {{ $transactions->note }}</td>
+                                    <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> {{ $transactions->debit }}</td>
+                                    <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> {{ $transactions->credit }}</td>
+                                    <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> {{ $transactions->transactions_date }}</td>
+                                    <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-center">
+                                        @if ($transactions->isActived)
+                                            <span class="text-green-500">Active</span>
+                                        @else
+                                            <span class="text-red-500">Inactive</span>
+                                        @endif
+                                    </td>
+                                    <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-center">
+                                        <a href="{{ route('add_loan.edit_loan', $transactions->id) }}">
+                                            <x-primary-button>
+                                                {{ __('Edit') }}
+                                            </x-primary-button>
+                                        </a>
+                                        <form action="{{ route('add_loan.destroy_loan', $transactions->id) }}"
+                                            method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-danger-button>
+                                                {{ __('Delete') }}
+                                                </x-primary-button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
              </div>
          </div>
      </div>

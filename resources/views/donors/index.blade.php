@@ -8,79 +8,39 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+                <div class="text-gray-900 dark:text-gray-100">
                     <x-toast-success />
                     <div class="grid grid-cols-1 gap-10">
-                        <div>
+                        <div class="overflow-auto rounded-lg shadow-lg">
                             <table class="border-collapse table-auto w-full text-sm">
-                                <thead>
+                                <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
-                                            ID</th>
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">
-                                            Name</th>
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-center">
-                                            Email</th>
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-center">
-                                            mobile</th>
-                                        {{-- <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-center">
-                                            Fees Type</th> --}}
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-center">
-                                            Status</th>
-                                        <th
-                                            class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-center">
-                                            Action</th>
+                                        <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> ID</th>
+                                        <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Name</th>
+                                        <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Email</th>
+                                        <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Mobile</th>
+                                        <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Fees Type</th>
+                                        <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-left text-slate-400 dark:text-slate-200"> Status</th>
+                                        <th class="border-b dark:border-slate-600 font-medium px-4 py-2 text-center text-slate-400 dark:text-slate-200"> Action</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white dark:bg-slate-800">
-                                    @foreach ($Donors as $Donor)  <!-- Corrected variable to $Donor -->
-                                        <tr>
-                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $Donor->id }}  <!-- Corrected variable to $Donor -->
-                                            </td>
-                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $Donor->name }}  <!-- Corrected variable to $Donor -->
-                                            </td>
-                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $Donor->email }}  <!-- Corrected variable to $Donor -->
-                                            </td>
-                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $Donor->mobile }}  <!-- Corrected variable to $Donor -->
-                                            </td>
-                                            {{-- <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                {{ $Donor->fees_type_id }}  <!-- Corrected variable to $Donor -->
-                                            </td> --}}
-                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                @if ($Donor->isActived)  <!-- Corrected variable to $Donor -->
-                                                    <span class="text-green-500">Active</span>
-                                                @else
-                                                    <span class="text-red-500">Inactive</span>
-                                                @endif
-                                            </td>
-                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400 text-center">
-                                                <a href="{{ route('donors.edit', $Donor->id) }}">  <!-- Corrected variable to $Donor -->
-                                                    <x-primary-button>
-                                                        {{ __('Edit') }}
-                                                    </x-primary-button>
-                                                </a>
-                                                <form action="{{ route('donors.destroy', $Donor->id) }}" method="POST" style="display:inline;">  <!-- Corrected variable to $Donor -->
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <x-danger-button>
-                                                        {{ __('Delete') }}
-                                                    </x-primary-button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-
+                                <tbody class="bg-white dark:bg-slate-800"> @foreach ($Donors as $Donor)
+                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                        <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> {{ $Donor->id }} </td>
+                                        <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> {{ $Donor->name }} </td>
+                                        <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> {{ $Donor->email }} </td>
+                                        <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> {{ $Donor->mobile }} </td>
+                                        <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> {{ $Donor->fees_type_id }} </td>
+                                        <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-gray-600 dark:text-gray-400"> @if ($Donor->isActived) <span class="text-green-500">Active</span> @else <span class="text-red-500">Inactive</span> @endif </td>
+                                        <td class="border-b border-gray-100 dark:border-gray-700 px-4 py-2 text-center">
+                                            <a href="{{ route('donors.edit', $Donor->id) }}">
+                                                <x-primary-button> {{ __('Edit') }} </x-primary-button>
+                                            </a>
+                                            <form action="{{ route('donors.destroy', $Donor->id) }}" method="POST" style="display:inline;"> @csrf @method('DELETE')
+                                                <x-danger-button> {{ __('Delete') }} </x-primary-button>
+                                            </form>
+                                        </td>
+                                    </tr> @endforeach </tbody>
                             </table>
                         </div>
                     </div>
