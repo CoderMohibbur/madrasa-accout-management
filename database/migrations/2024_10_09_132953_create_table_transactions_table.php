@@ -6,36 +6,46 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
+
             $table->unsignedBigInteger('student_id')->nullable();
             $table->unsignedBigInteger('doner_id')->nullable();
             $table->unsignedBigInteger('lender_id')->nullable();
+
             $table->unsignedBigInteger('fess_type_id')->nullable();
             $table->unsignedBigInteger('transactions_type_id')->nullable();
+
             $table->string('student_book_number')->nullable();
             $table->string('recipt_no')->nullable();
+
             $table->decimal('monthly_fees', 15, 2)->nullable();
             $table->decimal('boarding_fees', 15, 2)->nullable();
             $table->decimal('management_fees', 15, 2)->nullable();
             $table->decimal('exam_fees', 15, 2)->nullable();
             $table->decimal('others_fees', 15, 2)->nullable();
+
             $table->decimal('total_fees', 15, 2)->nullable();
+
             $table->decimal('debit', 15, 2)->nullable();
             $table->decimal('credit', 15, 2)->nullable();
+
             $table->date('transactions_date')->nullable();
+
             $table->unsignedBigInteger('account_id')->nullable();
+
             $table->unsignedBigInteger('class_id')->nullable();
             $table->unsignedBigInteger('section_id')->nullable();
             $table->unsignedBigInteger('months_id')->nullable();
             $table->unsignedBigInteger('academic_year_id')->nullable();
+
             $table->unsignedBigInteger('created_by_id')->nullable();
+
             $table->string('note')->nullable();
+
+            // custom decimals
             $table->decimal('c_d_1', 15, 2)->nullable();
             $table->decimal('c_d_2', 15, 2)->nullable();
             $table->decimal('c_d_3', 15, 2)->nullable();
@@ -43,6 +53,8 @@ return new class extends Migration
             $table->decimal('c_d_5', 15, 2)->nullable();
             $table->decimal('c_d_6', 15, 2)->nullable();
             $table->decimal('c_d_7', 15, 2)->nullable();
+
+            // custom strings
             $table->string('c_s_1')->nullable();
             $table->string('c_s_2')->nullable();
             $table->string('c_s_3')->nullable();
@@ -51,6 +63,8 @@ return new class extends Migration
             $table->string('c_s_6')->nullable();
             $table->string('c_s_7')->nullable();
             $table->string('c_s_8')->nullable();
+
+            // custom ints
             $table->integer('c_i_1')->nullable();
             $table->integer('c_i_2')->nullable();
             $table->integer('c_i_3')->nullable();
@@ -58,26 +72,36 @@ return new class extends Migration
             $table->integer('c_i_5')->nullable();
             $table->integer('c_i_6')->nullable();
 
-            $table->foreign('student_id')->references('id')->on('students');
-            $table->foreign('doner_id')->references('id')->on('donors');
-            $table->foreign('lender_id')->references('id')->on('lenders');
-            $table->foreign('fess_type_id')->references('id')->on('add_fess_types');
-            $table->foreign('transactions_type_id')->references('id')->on('transactions_types');
-            $table->foreign('section_id')->references('id')->on('add_sections');
-            $table->foreign('academic_year_id')->references('id')->on('add_academies');
-            $table->foreign('account_id')->references('id')->on('accounts');
-            $table->foreign('class_id')->references('id')->on('add_classes');
-            $table->foreign('months_id')->references('id')->on('add_months');
-            $table->foreign('created_by_id')->references('id')->on('users');
-            $table->boolean('isActived')->default(true);;
+            // foreign keys
+            $table->foreign('student_id')->references('id')->on('students')->nullOnDelete();
+            $table->foreign('doner_id')->references('id')->on('donors')->nullOnDelete();
+            $table->foreign('lender_id')->references('id')->on('lenders')->nullOnDelete();
+            $table->foreign('fess_type_id')->references('id')->on('add_fess_types')->nullOnDelete();
+            $table->foreign('transactions_type_id')->references('id')->on('transactions_types')->nullOnDelete();
+
+            $table->foreign('section_id')->references('id')->on('add_sections')->nullOnDelete();
+            $table->foreign('academic_year_id')->references('id')->on('add_academies')->nullOnDelete();
+            $table->foreign('account_id')->references('id')->on('accounts')->nullOnDelete();
+            $table->foreign('class_id')->references('id')->on('add_classes')->nullOnDelete();
+            $table->foreign('months_id')->references('id')->on('add_months')->nullOnDelete();
+            $table->foreign('created_by_id')->references('id')->on('users')->nullOnDelete();
+
+            $table->boolean('isActived')->default(true);
             $table->boolean('isDeleted')->default(false);
+
+            // ✅ Indexes (আপনার Phase E অনুযায়ী)
+            $table->index('transactions_date');
+            $table->index('account_id');
+            $table->index('transactions_type_id');
+            $table->index('student_id');
+            $table->index('doner_id');
+            $table->index('lender_id');
+            $table->index(['academic_year_id', 'class_id', 'section_id', 'months_id'], 'tx_fee_filter_idx');
+
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('transactions');

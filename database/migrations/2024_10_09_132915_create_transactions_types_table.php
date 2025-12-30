@@ -6,23 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('transactions_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->boolean('isActived');
+
+            // ✅ NEW: key system (unique)
+            $table->string('key')->nullable()->unique();
+
+            $table->boolean('isActived')->default(true);
             $table->boolean('isDeleted')->default(false);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('transactions_types');

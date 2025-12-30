@@ -15,8 +15,8 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                     <!-- Students -->
-                     <div class="hidden sm:flex sm:items-center ">
+                    <!-- Students -->
+                    <div class="hidden sm:flex sm:items-center ">
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
@@ -46,22 +46,21 @@
                                 <x-dropdown-link :href="route('add_student_fees.index')" :active="request()->routeIs('add_student_fees.index')">
                                     {{ __('Add Fees ') }}
                                 </x-dropdown-link>
-<<<<<<< HEAD
                                 <x-dropdown-link :href="route('student_fees.show')" :active="request()->routeIs('student_fees.show')">
                                     {{ __('Student Fees ') }}
                                 </x-dropdown-link>
 
 
-=======
+
                                 <x-dropdown-link :href="route('add_student_fees.list')" :active="request()->routeIs('add_student_fees.list')">
                                     {{ __('List Fees ') }}
                                 </x-dropdown-link>
->>>>>>> 749283360fbd9dcce6a6908dc892f688643f41a6
+
                             </x-slot>
                         </x-dropdown>
                     </div>
-                     <!-- Doner -->
-                     <div class="hidden sm:flex sm:items-center ">
+                    <!-- Doner -->
+                    <div class="hidden sm:flex sm:items-center ">
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
@@ -98,44 +97,44 @@
 
                     <div class="hidden sm:flex sm:items-center ">
                         <!-- Lender -->
-                          <x-dropdown>
-                              <x-slot name="trigger">
-                                  <button
-                                      class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-black-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-blue-600 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
-                                      <div>
-                                          <h1>Lender</h1>
-                                      </div>
+                        <x-dropdown>
+                            <x-slot name="trigger">
+                                <button
+                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-black-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-blue-600 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <div>
+                                        <h1>Lender</h1>
+                                    </div>
 
-                                      <div class="ms-1">
-                                          <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
-                                              viewBox="0 0 20 20">
-                                              <path fill-rule="evenodd"
-                                                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                  clip-rule="evenodd" />
-                                          </svg>
-                                      </div>
-                                  </button>
-                              </x-slot>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
 
-                              <x-slot name="content">
-                                  <x-dropdown-link :href="route('lender.index')" :active="request()->routeIs('lender.index')">
-                                      {{ __('List Lender') }}
-                                  </x-dropdown-link>
-                                  <x-dropdown-link :href="route('lender.create')" :active="request()->routeIs('lender.index')">
-                                      {{ __('Add Lender') }}
-                                  </x-dropdown-link>
-                                  <x-dropdown-link :href="route('add_loan')" :active="request()->routeIs('add_loan')">
-                                      {{ __('Add Loan') }}
-                                  </x-dropdown-link>
-                                  <x-dropdown-link :href="route('loan_repayment')" :active="request()->routeIs('loan_repayment')">
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('lender.index')" :active="request()->routeIs('lender.index')">
+                                    {{ __('List Lender') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('lender.create')" :active="request()->routeIs('lender.index')">
+                                    {{ __('Add Lender') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('add_loan')" :active="request()->routeIs('add_loan')">
+                                    {{ __('Add Loan') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('loan_repayment')" :active="request()->routeIs('loan_repayment')">
                                     {{ __(' Loan Repayment') }}
                                 </x-dropdown-link>
-                              </x-slot>
-                          </x-dropdown>
-                      </div>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
 
-                     <!-- Account -->
-                     <div class="hidden sm:flex sm:items-center ">
+                    <!-- Account -->
+                    <div class="hidden sm:flex sm:items-center ">
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
@@ -162,7 +161,7 @@
                                 <x-dropdown-link :href="route('account.create')" :active="request()->routeIs('account.index')">
                                     {{ __('Add Account') }}
                                 </x-dropdown-link>
-                                <x-dropdown-link :href="route('Chart-Of-Accounts')" :active="request()->routeIs('Chart-Of-Accounts')">
+                                <x-dropdown-link :href="route('account.chart')" :active="request()->routeIs('account.chart')">
                                     {{ __('Chart Of Accounts') }}
                                 </x-dropdown-link>
 
@@ -172,8 +171,8 @@
                         </x-dropdown>
                     </div>
 
-                     <!-- Expen -->
-                     <div class="hidden sm:flex sm:items-center ">
+                    <!-- Expen -->
+                    <div class="hidden sm:flex sm:items-center ">
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button
@@ -210,8 +209,8 @@
                             </x-slot>
                         </x-dropdown>
                     </div>
-                     <!-- income -->
-                     <div class="hidden sm:flex sm:items-center ">
+                    <!-- income -->
+                    <div class="hidden sm:flex sm:items-center ">
                         <x-dropdown>
                             <x-slot name="trigger">
                                 <button

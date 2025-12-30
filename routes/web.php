@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DonorController;
 use App\Http\Controllers\ExpensController;
@@ -14,7 +15,9 @@ use App\Http\Controllers\AddSectionController;
 use App\Http\Controllers\AddCatagoryController;
 use App\Http\Controllers\AddFessTypeController;
 use App\Http\Controllers\TransactionsController;
+use App\Http\Controllers\Ajax\QuickCreateController;
 use App\Http\Controllers\TransactionsTypeController;
+use App\Http\Controllers\TransactionCenterController;
 use App\Http\Controllers\AddRegistrationFessController;
 
 Route::get('/', function () {
@@ -55,12 +58,18 @@ Route::middleware('auth')->group(function () {
   Route::delete('/add-fees-type/{id}', [AddFessTypeController::class, 'destroy'])->name('add_fees_type.destroy');
 
   // TransactionsController
+  // Student Fees
   Route::get('/add-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.index');
-  Route::get('/list-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.list');
-  Route::post('/add-student-fees', [TransactionsController::class, 'store'])->name('add_student_fees.store');
-  Route::get('/add-student-fees/{id}/edit', [TransactionsController::class, 'edit'])->name('add_student_fees.edit');
-  Route::put('/add-student-fees/{id}', [TransactionsController::class, 'update'])->name('add_student_fees.update');
-  Route::delete('/add-student-fees/{id}', [TransactionsController::class, 'destroy'])->name('add_student_fees.destroy');
+
+  // ✅ FIX: list-student-fees -> list() হবে (index() নয়)
+  Route::get('/list-student-fees', [TransactionsController::class, 'list'])->name('add_student_fees.list');
+
+  // Bulk fee store
+  Route::post('/store-fees', [TransactionsController::class, 'bulkStore'])->name('fees.bulk_store');
+
+  // Students fetch/partial
+  Route::get('/get-students', [TransactionsController::class, 'getStudents'])->name('get.students');
+  Route::get('/fetch-students', [TransactionsController::class, 'fetchStudents'])->name('students.fetch');
 
 
   //add-transaction conroller
@@ -85,7 +94,7 @@ Route::middleware('auth')->group(function () {
   // Students
   Route::resource('students', StudentController::class);
   Route::get('/student-fees', [StudentController::class, 'Student_Fees'])->name('student_fees.show');
-  
+
 
   // Doner
   Route::resource(name: 'donors', controller: DonorController::class);
@@ -96,7 +105,7 @@ Route::middleware('auth')->group(function () {
   Route::delete('/add-donar/{id}', [DonorController::class, 'destroy_donor'])->name('destroy_donor.destroy_donor');
   //Account
   Route::resource(name: 'account', controller: AccountController::class);
-  Route::get('/Chart-Of-Accounts', [AccountController::class, 'account'])->name('Chart-Of-Accounts');
+  Route::get('/chart-of-accounts', [AccountController::class, 'account'])->name('account.chart');
 
   // Expens
   Route::resource(name: 'expens', controller: ExpensController::class);
@@ -108,21 +117,25 @@ Route::middleware('auth')->group(function () {
   Route::delete('/add-catagory/{id}', [AddCatagoryController::class, 'destroy'])->name('add_catagory.destroy');
   //Income
   Route::resource(name: 'income', controller: IncomeController::class);
-   //Lender
-   Route::resource(name: 'lender', controller: LenderController::class);
-   Route::get('/add-Loan', [LenderController::class, 'add_loan'])->name('add_loan');
-   Route::post('/loan-store', [LenderController::class, 'lonan_store'])->name('loan_store.loan_store');
-   Route::get('/add-Loan/{id}/edit', [LenderController::class, 'edit_loan'])->name('add_loan.edit_loan');
-   Route::put('/add-Loan/{id}', [LenderController::class, 'update_loan'])->name('add_loan.update_loan');
-   Route::delete('/add-Loan/{id}', [LenderController::class, 'destroy_loan'])->name('add_loan.destroy_loan');
+  //Lender
+  Route::resource(name: 'lender', controller: LenderController::class);
+  Route::get('/add-Loan', [LenderController::class, 'add_loan'])->name('add_loan');
+  Route::post('/loan-store', [LenderController::class, 'lonan_store'])->name('loan_store.loan_store');
+  Route::get('/add-Loan/{id}/edit', [LenderController::class, 'edit_loan'])->name('add_loan.edit_loan');
+  Route::put('/add-Loan/{id}', [LenderController::class, 'update_loan'])->name('add_loan.update_loan');
+  Route::delete('/add-Loan/{id}', [LenderController::class, 'destroy_loan'])->name('add_loan.destroy_loan');
 
+  // Transaction Center
+  Route::get('/transaction-center', [TransactionCenterController::class, 'index'])
+    ->name('transactions.center');
+  Route::post('/transactions/quick-store', [TransactionCenterController::class, 'storeQuick'])
+    ->name('transactions.quickStore');
 
-
-   Route::get('/loan-repayment', [LenderController::class, 'loan_repayment'])->name('loan_repayment');
-   Route::post('/loan-repayment-store', [LenderController::class, 'loan_repayment_store'])->name('loan_repayment_store.store');
-   Route::get('/loan-repayment/{id}/edit', [LenderController::class, 'edit_loan_repayment'])->name('edit_loan_repaymen.edit');
-   Route::put('/loan-repayment/{id}', [LenderController::class, 'update_loan_repayment'])->name('update_loan_repayment.update');
-   Route::delete('/loan-repayment/{id}', [LenderController::class, 'destroy_loan_repayment'])->name('destroy_loan_repayment.destroy');
+  Route::get('/loan-repayment', [LenderController::class, 'loan_repayment'])->name('loan_repayment');
+  Route::post('/loan-repayment-store', [LenderController::class, 'loan_repayment_store'])->name('loan_repayment_store.store');
+  Route::get('/loan-repayment/{id}/edit', [LenderController::class, 'edit_loan_repayment'])->name('edit_loan_repaymen.edit');
+  Route::put('/loan-repayment/{id}', [LenderController::class, 'update_loan_repayment'])->name('update_loan_repayment.update');
+  Route::delete('/loan-repayment/{id}', [LenderController::class, 'destroy_loan_repayment'])->name('destroy_loan_repayment.destroy');
 
   // TransactionsController
   Route::get('/add-student-fees', [TransactionsController::class, 'index'])->name('add_student_fees.index');
@@ -135,8 +148,13 @@ Route::middleware('auth')->group(function () {
   Route::put('/add-student-fees/{id}', [TransactionsController::class, 'update'])->name('add_student_fees.update');
   Route::delete('/add-student-fees/{id}', [TransactionsController::class, 'destroy'])->name('add_student_fees.destroy');
 
-
+  // Ajax Quick Create Routes
+  Route::post('/ajax/accounts',  [QuickCreateController::class, 'storeAccount'])->name('ajax.accounts.store');
+  Route::post('/ajax/students',  [QuickCreateController::class, 'storeStudent'])->name('ajax.students.store');
+  Route::post('/ajax/donors',    [QuickCreateController::class, 'storeDonor'])->name('ajax.donors.store');
+  Route::post('/ajax/lenders',   [QuickCreateController::class, 'storeLender'])->name('ajax.lenders.store');
 });
+
 
 
 require __DIR__ . '/auth.php';

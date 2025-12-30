@@ -74,22 +74,20 @@ class DonorController extends Controller
     public function update(Request $request, Donor $Donor)
     {
         // Validate the incoming request data
-        $validatedData = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'mobile' => 'nullable|string|max:15',
-            'fees_type_id' => 'required|exists:add_fess_types,id',
-            'isActived' => 'boolean',
+        $validated = $request->validate([
+            'doner_id' => 'required|exists:donors,id',
+            'account_id' => 'required|exists:accounts,id',
+            'debit' => 'required|numeric|min:0',
+            'transactions_date' => 'required|date',
         ]);
-
 
         // Update the Donor record using the validated data
         $Donor->update([
-            'name' => $validatedData['name'],
-            'mobile' => $validatedData['mobile'],
-            'email' => $validatedData['email'],
-            'fees_type_id' => $validatedData['fees_type_id'],
-            'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
+            'name' => $validated['name'],
+            'mobile' => $validated['mobile'],
+            'email' => $validated['email'],
+            'fees_type_id' => $validated['fees_type_id'],
+            'isActived' => $validated['isActived'] ?? 1, // Set active by default if not provided
         ]);
 
         // Redirect to the Donor list with a success message
@@ -162,7 +160,7 @@ class DonorController extends Controller
         $Donors = Donor::all();
         $accounts = Account::all();
 
-        return view('donors.add-donar', compact('transaction', 'Donors', 'accounts','transactionss'));
+        return view('donors.add-donar', compact('transaction', 'Donors', 'accounts', 'transactionss'));
     }
 
     public function update_donor(Request $request, $id)
