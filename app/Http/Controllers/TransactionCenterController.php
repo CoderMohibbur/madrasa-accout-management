@@ -10,6 +10,7 @@ use App\Models\AddClass;
 use App\Models\AddMonth;
 use App\Models\AddAcademy;
 use App\Models\AddSection;
+use App\Models\AddFessType;
 use App\Models\Transactions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -49,7 +50,8 @@ class TransactionCenterController extends Controller
             $q->where(function ($qq) use ($s) {
                 $qq->where('recipt_no', 'like', "%{$s}%")
                     ->orWhere('student_book_number', 'like', "%{$s}%")
-                    ->orWhere('note', 'like', "%{$s}%");
+                    ->orWhere('note', 'like', "%{$s}%")
+                    ->orWhere('c_s_1', 'like', "%{$s}%"); // title for expense/income
 
                 if (ctype_digit($s)) {
                     $qq->orWhere('id', (int) $s)
@@ -68,15 +70,20 @@ class TransactionCenterController extends Controller
         $accounts = Account::orderBy('name')->get();
         $types    = TransactionsType::orderBy('name')->get();
 
-        $students = Student::orderBy('id', 'desc')->get();
+        $students = Student::query()
+            ->with(['class', 'section', 'academicYear', 'feesType'])
+            ->orderBy('id', 'desc')
+            ->get();
+
         $donors   = Donor::orderBy('id', 'desc')->get();
         $lenders  = Lender::orderBy('id', 'desc')->get();
 
         // Bulk dropdown data
-        $years    = AddAcademy::orderBy('id', 'desc')->get();
-        $months   = AddMonth::orderBy('id', 'asc')->get();
-        $classes  = AddClass::orderBy('id', 'asc')->get();
-        $sections = AddSection::orderBy('id', 'asc')->get();
+        $years     = AddAcademy::orderBy('id', 'desc')->get();
+        $months    = AddMonth::orderBy('id', 'asc')->get();
+        $classes   = AddClass::orderBy('id', 'asc')->get();
+        $sections  = AddSection::orderBy('id', 'asc')->get();
+        $feesTypes = AddFessType::orderBy('id', 'asc')->get();
 
         return view('transactions.center', compact(
             'transactions',
@@ -88,7 +95,8 @@ class TransactionCenterController extends Controller
             'years',
             'months',
             'classes',
-            'sections'
+            'sections',
+            'feesTypes'
         ));
     }
 
@@ -100,7 +108,9 @@ class TransactionCenterController extends Controller
     {
         $count = 0;
         foreach (['student_id', 'doner_id', 'lender_id'] as $k) {
-            if (!empty($data[$k])) $count++;
+            if (!empty($data[$k])) {
+                $count++;
+            }
         }
 
         if ($count > 1) {
@@ -149,11 +159,9 @@ class TransactionCenterController extends Controller
         $type = TransactionsType::query()
             ->when(!empty($names), fn($q) => $q->whereIn('name', $names))
             ->when(empty($names), function ($q) use ($typeKey) {
-                // generic fallback: like by words
                 $like = str_replace('_', ' ', $typeKey);
                 $q->where('name', 'like', '%' . $like . '%');
 
-                // extra: for student_fee -> match student + fee
                 if ($typeKey === 'student_fee') {
                     $q->orWhere(function ($qq) {
                         $qq->where('name', 'like', '%student%')
@@ -166,12 +174,10 @@ class TransactionCenterController extends Controller
         // 3) found -> set key permanently
         if ($type) {
             if (empty($type->key)) {
-                // safe update (in case unique issues)
                 try {
                     $type->key = $typeKey;
                     $type->save();
                 } catch (\Throwable $e) {
-                    // if unique conflict, load existing one
                     $existing = TransactionsType::query()->where('key', $typeKey)->first();
                     if ($existing) return $existing;
                 }
@@ -179,15 +185,17 @@ class TransactionCenterController extends Controller
             return $type;
         }
 
-        // 4) still not found -> create automatically (safe fix)
+        // 4) still not found -> create automatically
         $niceName = ucwords(str_replace('_', ' ', $typeKey));
 
-        return TransactionsType::create([
-            'name'      => $niceName,
-            'key'       => $typeKey,
-            'isActived' => true,
-            'isDeleted' => false,
-        ]);
+        $new = new TransactionsType();
+        $new->name = $niceName;
+        $new->key = $typeKey;
+        $new->isActived = true;
+        $new->isDeleted = false;
+        $new->save();
+
+        return $new;
     }
 
     // =========================
@@ -204,7 +212,7 @@ class TransactionCenterController extends Controller
         // ✅ Always resolve or create type
         $type = $this->resolveTypeOrCreate($typeKey);
 
-        // ✅ base validation
+        // ✅ base validation (all types)
         $baseRules = [
             'type_key'          => 'required|string',
             'account_id'        => 'required|exists:accounts,id',
@@ -217,13 +225,24 @@ class TransactionCenterController extends Controller
 
         if ($typeKey === 'student_fee') {
             $typeRules = [
-                'student_id'          => 'required|exists:students,id',
-                'monthly_fees'        => 'nullable|numeric|min:0',
-                'boarding_fees'       => 'nullable|numeric|min:0',
-                'management_fees'     => 'nullable|numeric|min:0',
-                'exam_fees'           => 'nullable|numeric|min:0',
-                'others_fees'         => 'nullable|numeric|min:0',
-                'total_fees'          => 'nullable|numeric|min:0',
+                'student_id' => 'required|exists:students,id',
+
+                // ✅ meta fields (month required; others optional + fallback)
+                'months_id'        => 'required|exists:add_months,id',
+                'academic_year_id' => 'nullable|exists:add_academies,id',
+                'class_id'         => 'nullable|exists:add_classes,id',
+                'section_id'       => 'nullable|exists:add_sections,id',
+                'fess_type_id'     => 'nullable|exists:add_fess_types,id',
+
+                // ✅ fees (including admission)
+                'admission_fee'   => 'nullable|numeric|min:0',
+                'monthly_fees'    => 'nullable|numeric|min:0',
+                'boarding_fees'   => 'nullable|numeric|min:0',
+                'management_fees' => 'nullable|numeric|min:0',
+                'exam_fees'       => 'nullable|numeric|min:0',
+                'others_fees'     => 'nullable|numeric|min:0',
+                'total_fees'      => 'nullable|numeric|min:0',
+
                 'student_book_number' => 'nullable|string|max:255',
             ];
         } elseif ($typeKey === 'donation') {
@@ -243,13 +262,17 @@ class TransactionCenterController extends Controller
             ];
         } elseif ($typeKey === 'expense') {
             $typeRules = [
-                'title'  => 'required|string|max:255',
-                'amount' => 'required|numeric|min:0.01',
+                'title'       => 'required|string|max:255',
+                'amount'      => 'required|numeric|min:0.01',
+                'catagory_id' => 'nullable|exists:catagories,id',
+                'expens_id'   => 'nullable|exists:expens,id',
             ];
         } elseif ($typeKey === 'income') {
             $typeRules = [
-                'title'  => 'required|string|max:255',
-                'amount' => 'required|numeric|min:0.01',
+                'title'       => 'required|string|max:255',
+                'amount'      => 'required|numeric|min:0.01',
+                'catagory_id' => 'nullable|exists:catagories,id',
+                'income_id'   => 'nullable|exists:incomes,id',
             ];
         } else {
             return back()->with('error', "Unknown type_key: {$typeKey}");
@@ -271,7 +294,7 @@ class TransactionCenterController extends Controller
             'isActived'            => true,
             'isDeleted'            => false,
 
-            'note'     => $validated['note'] ?? null,
+            'note'      => $validated['note'] ?? null,
             'recipt_no' => $validated['recipt_no'] ?? null,
 
             'student_id' => $validated['student_id'] ?? null,
@@ -282,15 +305,37 @@ class TransactionCenterController extends Controller
         // ✅ Type-wise save logic
         if ($typeKey === 'student_fee') {
 
+            // ✅ load student for fallback meta + roll
+            $student = Student::query()
+                ->select('id', 'roll', 'class_id', 'section_id', 'academic_year_id', 'fees_type_id')
+                ->find($validated['student_id']);
+
+            // ✅ meta (required/optional + fallback)
+            $txData['months_id']        = $validated['months_id'];
+            $txData['academic_year_id'] = $validated['academic_year_id'] ?? ($student?->academic_year_id);
+            $txData['class_id']         = $validated['class_id'] ?? ($student?->class_id);
+            $txData['section_id']       = $validated['section_id'] ?? ($student?->section_id);
+            $txData['fess_type_id']     = $validated['fess_type_id'] ?? ($student?->fees_type_id);
+
+            // ✅ Save roll কোথায়? (transactions table এ roll নাই) -> custom int field ব্যবহার
+            $txData['c_i_1'] = $student?->roll;
+
+            // ✅ Admission fee কোথায়? -> custom decimal field ব্যবহার
+            $txData['c_d_1'] = $validated['admission_fee'] ?? null;
+
             $txData['student_book_number'] = $validated['student_book_number'] ?? null;
 
+            // fees parts
             $txData['monthly_fees']    = $validated['monthly_fees'] ?? null;
             $txData['boarding_fees']   = $validated['boarding_fees'] ?? null;
             $txData['management_fees'] = $validated['management_fees'] ?? null;
             $txData['exam_fees']       = $validated['exam_fees'] ?? null;
             $txData['others_fees']     = $validated['others_fees'] ?? null;
 
-            $sum = $this->calcTotalFees($validated);
+            // ✅ total calc: existing helper + admission_fee
+            $admission = (float)($validated['admission_fee'] ?? 0);
+            $sum = $admission + $this->calcTotalFees($validated);
+
             $givenTotal = isset($validated['total_fees']) ? (float)$validated['total_fees'] : 0;
             $total = $givenTotal > 0 ? $givenTotal : $sum;
 
@@ -302,68 +347,88 @@ class TransactionCenterController extends Controller
 
             $txData['total_fees'] = $total;
 
-            // Ledger: cash in
+            // ✅ Ledger: cash in
             $txData['debit']  = $total;
             $txData['credit'] = 0;
+
+            // ✅ ensure other parties null
+            $txData['doner_id']  = null;
+            $txData['lender_id'] = null;
         }
 
         if ($typeKey === 'donation') {
             $amount = (float)$validated['amount'];
+
             $txData['debit']  = $amount;
             $txData['credit'] = 0;
+
+            // clean irrelevant fields
             $txData['total_fees'] = null;
+            $txData['student_id'] = null;
+            $txData['lender_id']  = null;
         }
 
         if ($typeKey === 'loan_taken') {
             $amount = (float)$validated['amount'];
-            $txData['debit']  = $amount;
+
+            $txData['debit']  = $amount; // cash in
             $txData['credit'] = 0;
+
             $txData['total_fees'] = null;
+            $txData['student_id'] = null;
+            $txData['doner_id']   = null;
         }
 
         if ($typeKey === 'loan_repayment') {
             $amount = (float)$validated['amount'];
+
             $txData['debit']  = 0;
-            $txData['credit'] = $amount;
+            $txData['credit'] = $amount; // cash out
+
             $txData['total_fees'] = null;
+            $txData['student_id'] = null;
+            $txData['doner_id']   = null;
         }
 
         if ($typeKey === 'expense') {
             $amount = (float)$validated['amount'];
             $title  = $validated['title'];
 
-            $txData['c_s_1'] = $title; // ✅ title here
+            // ✅ title save
+            $txData['c_s_1']  = $title;
             $txData['debit']  = 0;
             $txData['credit'] = $amount;
 
-            // optional links (যদি পরে dropdown যোগ করেন)
             $txData['catagory_id'] = $validated['catagory_id'] ?? null;
             $txData['expens_id']   = $validated['expens_id'] ?? null;
 
+            // clean irrelevant
+            $txData['total_fees'] = null;
             $txData['student_id'] = null;
             $txData['doner_id']   = null;
             $txData['lender_id']  = null;
         }
 
-
         if ($typeKey === 'income') {
             $amount = (float)$validated['amount'];
             $title  = $validated['title'];
 
-            $txData['c_s_1'] = $title; // ✅ title here
+            $txData['c_s_1']  = $title;
             $txData['debit']  = $amount;
             $txData['credit'] = 0;
 
             $txData['catagory_id'] = $validated['catagory_id'] ?? null;
             $txData['income_id']   = $validated['income_id'] ?? null;
 
+            $txData['total_fees'] = null;
             $txData['student_id'] = null;
             $txData['doner_id']   = null;
             $txData['lender_id']  = null;
         }
 
-
-        Transactions::create($txData);
+        DB::transaction(function () use ($txData) {
+            Transactions::create($txData);
+        });
 
         return redirect()->to('/transaction-center')->with('success', 'Transaction saved successfully!');
     }

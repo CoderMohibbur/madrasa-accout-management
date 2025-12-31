@@ -18,6 +18,15 @@ return new class extends Migration
             $table->unsignedBigInteger('fess_type_id')->nullable();
             $table->unsignedBigInteger('transactions_type_id')->nullable();
 
+            // ✅ FINAL meta fields
+            $table->unsignedBigInteger('class_id')->nullable();
+            $table->unsignedBigInteger('section_id')->nullable();
+            $table->unsignedBigInteger('months_id')->nullable();
+            $table->unsignedBigInteger('academic_year_id')->nullable();
+
+            // ✅ roll add (FINAL 6 fix)
+            $table->unsignedInteger('roll')->nullable();
+
             $table->string('student_book_number')->nullable();
             $table->string('recipt_no')->nullable();
 
@@ -32,23 +41,15 @@ return new class extends Migration
             $table->decimal('debit', 15, 2)->default(0);
             $table->decimal('credit', 15, 2)->default(0);
 
-
             $table->date('transactions_date')->nullable();
 
             $table->unsignedBigInteger('account_id')->nullable();
-
-            $table->unsignedBigInteger('class_id')->nullable();
-            $table->unsignedBigInteger('section_id')->nullable();
-            $table->unsignedBigInteger('months_id')->nullable();
-            $table->unsignedBigInteger('academic_year_id')->nullable();
-
             $table->unsignedBigInteger('created_by_id')->nullable();
 
             // expense and income
             $table->unsignedBigInteger('catagory_id')->nullable();
             $table->unsignedBigInteger('expens_id')->nullable();
             $table->unsignedBigInteger('income_id')->nullable();
-
 
             $table->string('note')->nullable();
 
@@ -93,27 +94,30 @@ return new class extends Migration
             $table->foreign('months_id')->references('id')->on('add_months')->nullOnDelete();
             $table->foreign('created_by_id')->references('id')->on('users')->nullOnDelete();
 
+            // FK for expense and income
+            $table->foreign('catagory_id')->references('id')->on('catagories')->nullOnDelete();
+            $table->foreign('expens_id')->references('id')->on('expens')->nullOnDelete();
+            $table->foreign('income_id')->references('id')->on('incomes')->nullOnDelete();
+
             $table->boolean('isActived')->default(true);
             $table->boolean('isDeleted')->default(false);
 
-            // ✅ Indexes (আপনার Phase E অনুযায়ী)
+            // ✅ Indexes
             $table->index('transactions_date');
             $table->index('account_id');
             $table->index('transactions_type_id');
             $table->index('student_id');
             $table->index('doner_id');
             $table->index('lender_id');
-            $table->index(['academic_year_id', 'class_id', 'section_id', 'months_id'], 'tx_fee_filter_idx');
 
-            // FK for expense and income
-            $table->foreign('catagory_id')->references('id')->on('catagories')->nullOnDelete();
-            $table->foreign('expens_id')->references('id')->on('expens')->nullOnDelete();
-            $table->foreign('income_id')->references('id')->on('incomes')->nullOnDelete();
+            // optional but useful
+            $table->index('roll');
+
+            $table->index(['academic_year_id', 'class_id', 'section_id', 'months_id'], 'tx_fee_filter_idx');
 
             $table->index('catagory_id');
             $table->index('expens_id');
             $table->index('income_id');
-
 
             $table->timestamps();
         });

@@ -18,6 +18,12 @@
                     Transaction Center
                 </a>
 
+
+                <a href="/settings"
+                    class="inline-flex items-center rounded-xl bg-orange-600 px-3 py-2 text-sm text-white hover:bg-slate-800">
+                    Academic Calendar
+                </a>
+
                 <a href="{{ route('reports.transactions') }}"
                     class="inline-flex items-center rounded-xl bg-slate-900 px-3 py-2 text-sm text-white hover:bg-slate-800">
                     Reports

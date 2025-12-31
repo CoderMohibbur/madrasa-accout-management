@@ -175,6 +175,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/ajax/donors', [QuickCreateController::class, 'storeDonor'])->name('ajax.donors.store');
     Route::post('/ajax/lenders', [QuickCreateController::class, 'storeLender'])->name('ajax.lenders.store');
 
+    Route::post('/ajax/{entity}', [QuickCreateController::class, 'store'])
+        ->whereIn('entity', ['students', 'donors', 'lenders', 'accounts']);
+
     // Settings Hub
     Route::get('/settings', [SettingsHubController::class, 'index'])->name('settings.index');
     Route::post('/settings/{entity}', [SettingsHubController::class, 'store'])->name('settings.store');

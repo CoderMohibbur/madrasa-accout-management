@@ -66,12 +66,25 @@
             </div>
 
             <div class="flex items-center gap-2">
+
+                <a href="{{ url('/dashboard') }}"
+                    class="inline-flex items-center rounded-xl bg-red-600 px-3 py-2 text-sm text-white hover:bg-slate-800">
+                    Dashboard
+                </a>
+
                 <a href="{{ url('/chart-of-accounts') }}"
-                    class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                    class="inline-flex items-center rounded-xl bg-green-600 px-3 py-2 text-sm text-white hover:bg-slate-800">
                     Chart of Accounts
                 </a>
+
+                <a href="/settings"
+                    class="inline-flex items-center rounded-xl bg-orange-600 px-3 py-2 text-sm text-white hover:bg-slate-800">
+                    Academic Calendar
+                </a>
+
+
                 <a href="{{ url('/list-student-fees') }}"
-                    class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                    class="inline-flex items-center rounded-xl bg-blue-600 px-3 py-2 text-sm text-white hover:bg-slate-800">
                     Fees List
                 </a>
             </div>
@@ -411,15 +424,22 @@
                                                     @foreach ($students ?? [] as $s)
                                                         @php
                                                             $label =
-                                                                $s->name ??
-                                                                ($s->student_name ??
-                                                                    ($s->full_name ?? 'Student #' . $s->id));
+                                                                $s->full_name ?? ($s->name ?? 'Student #' . $s->id);
+                                                            $label = $s->roll
+                                                                ? $label . ' (Roll: ' . $s->roll . ')'
+                                                                : $label;
                                                         @endphp
                                                         <option value="{{ $s->id }}"
+                                                            data-roll="{{ $s->roll }}"
+                                                            data-class-id="{{ $s->class_id }}"
+                                                            data-section-id="{{ $s->section_id }}"
+                                                            data-academic-year-id="{{ $s->academic_year_id }}"
+                                                            data-fees-type-id="{{ $s->fees_type_id }}"
                                                             @selected($oldSelected('student_id', $s->id, 'student_fee'))>
                                                             {{ $label }}
                                                         </option>
                                                     @endforeach
+
                                                 </select>
 
                                                 <button type="button"
@@ -430,43 +450,171 @@
                                             </div>
                                         </div>
 
+                                        {{-- ✅ Student meta (Auto-fill from student) --}}
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Academic
+                                                    Year</label>
+                                                <select id="select_student_fee_year" name="academic_year_id"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    <option value="">Select year</option>
+                                                    @foreach ($years ?? [] as $y)
+                                                        <option value="{{ $y->id }}"
+                                                            @selected($oldSelected('academic_year_id', $y->id, 'student_fee'))>
+                                                            {{ $y->name ?? 'Year #' . $y->id }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Month</label>
+                                                <select id="select_student_fee_month" name="months_id"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    <option value="">Select month</option>
+                                                    @foreach ($months ?? [] as $m)
+                                                        <option value="{{ $m->id }}"
+                                                            @selected($oldSelected('months_id', $m->id, 'student_fee'))>
+                                                            {{ $m->name ?? 'Month #' . $m->id }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Monthly</label>
-                                                <input type="number" step="0.01" name="monthly_fees"
-                                                    value="{{ $oldFor('monthly_fees', 'student_fee') }}"
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Class</label>
+                                                <select id="select_student_fee_class" name="class_id"
                                                     class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    <option value="">Select class</option>
+                                                    @foreach ($classes ?? [] as $c)
+                                                        <option value="{{ $c->id }}"
+                                                            @selected($oldSelected('class_id', $c->id, 'student_fee'))>
+                                                            {{ $c->name ?? 'Class #' . $c->id }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
                                             </div>
+
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Boarding</label>
-                                                <input type="number" step="0.01" name="boarding_fees"
-                                                    value="{{ $oldFor('boarding_fees', 'student_fee') }}"
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Section</label>
+                                                <select id="select_student_fee_section" name="section_id"
                                                     class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    <option value="">Select section</option>
+                                                    @foreach ($sections ?? [] as $sec)
+                                                        <option value="{{ $sec->id }}"
+                                                            @selected($oldSelected('section_id', $sec->id, 'student_fee'))>
+                                                            {{ $sec->name ?? 'Section #' . $sec->id }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
                                             </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-2">
                                             <div>
-                                                <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Management</label>
-                                                <input type="number" step="0.01" name="management_fees"
-                                                    value="{{ $oldFor('management_fees', 'student_fee') }}"
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Fees
+                                                    Type</label>
+                                                <select id="select_student_fee_fess_type" name="fess_type_id"
                                                     class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    <option value="">Select fees type</option>
+                                                    @foreach ($feesTypes ?? [] as $ft)
+                                                        <option value="{{ $ft->id }}"
+                                                            @selected($oldSelected('fess_type_id', $ft->id, 'student_fee'))>
+                                                            {{ $ft->name ?? 'Type #' . $ft->id }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
                                             </div>
+
                                             <div>
-                                                <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Exam</label>
-                                                <input type="number" step="0.01" name="exam_fees"
-                                                    value="{{ $oldFor('exam_fees', 'student_fee') }}"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Roll
+                                                    (Auto)</label>
+                                                <input id="student_fee_roll" type="text" readonly
+                                                    class="w-full rounded-xl border-slate-200 text-sm bg-slate-50 focus:border-slate-400 focus:ring-slate-200"
+                                                    placeholder="Auto from student">
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Others</label>
-                                            <input type="number" step="0.01" name="others_fees"
-                                                value="{{ $oldFor('others_fees', 'student_fee') }}"
+                                            <label class="block text-xs font-medium text-slate-600 mb-1">Student Book
+                                                Number</label>
+                                            <input type="text" name="student_book_number"
+                                                value="{{ $oldFor('student_book_number', 'student_fee') }}"
                                                 class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
                                         </div>
+
+                                        {{-- ✅ Fees breakdown (RESTORED) --}}
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Admission
+                                                    Fee</label>
+                                                <input type="number" step="0.01" min="0"
+                                                    name="admission_fee"
+                                                    value="{{ $oldFor('admission_fee', 'student_fee') }}"
+                                                    class="tc-fee-input w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Monthly
+                                                    Fee</label>
+                                                <input type="number" step="0.01" min="0"
+                                                    name="monthly_fees"
+                                                    value="{{ $oldFor('monthly_fees', 'student_fee') }}"
+                                                    class="tc-fee-input w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Boarding
+                                                    Fee</label>
+                                                <input type="number" step="0.01" min="0"
+                                                    name="boarding_fees"
+                                                    value="{{ $oldFor('boarding_fees', 'student_fee') }}"
+                                                    class="tc-fee-input w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Management
+                                                    Fee</label>
+                                                <input type="number" step="0.01" min="0"
+                                                    name="management_fees"
+                                                    value="{{ $oldFor('management_fees', 'student_fee') }}"
+                                                    class="tc-fee-input w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Exam
+                                                    Fee</label>
+                                                <input type="number" step="0.01" min="0" name="exam_fees"
+                                                    value="{{ $oldFor('exam_fees', 'student_fee') }}"
+                                                    class="tc-fee-input w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Others</label>
+                                                <input type="number" step="0.01" min="0"
+                                                    name="others_fees"
+                                                    value="{{ $oldFor('others_fees', 'student_fee') }}"
+                                                    class="tc-fee-input w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-600 mb-1">Total Fee
+                                                (Auto)</label>
+                                            <input id="tc_single_total" type="number" step="0.01" min="0"
+                                                name="total_fees" value="{{ $oldFor('total_fees', 'student_fee') }}"
+                                                class="w-full rounded-xl border-slate-200 text-sm bg-slate-50 focus:border-slate-400 focus:ring-slate-200"
+                                                readonly>
+                                            <p class="text-[11px] text-slate-500 mt-1">Auto calculated from all fee
+                                                fields.</p>
+                                        </div>
+
 
                                         <div>
                                             <label
@@ -958,7 +1106,8 @@
 
                                     <div>
                                         <label class="block text-xs font-medium text-slate-600 mb-1">Note</label>
-                                        <input type="text" name="note" value="{{ $oldFor('note', 'income') }}"
+                                        <input type="text" name="note"
+                                            value="{{ $oldFor('note', 'income') }}"
                                             class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
                                     </div>
 
@@ -1008,20 +1157,140 @@
                                     </div>
 
                                     {{-- Students extra --}}
-                                    <div x-show="modalEntity==='students'" x-cloak class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Mobile</label>
-                                            <input type="text" x-model="modalForm.mobile"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200"
-                                                placeholder="01xxxxxxxxx">
+                                    <div x-show="modalEntity==='students'" x-cloak class="space-y-2">
+
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">First
+                                                    Name</label>
+                                                <input type="text" x-model="modalForm.first_name"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Last
+                                                    Name</label>
+                                                <input type="text" x-model="modalForm.last_name"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Email</label>
-                                            <input type="email" x-model="modalForm.email"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200"
-                                                placeholder="email@example.com">
+
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">DOB</label>
+                                                <input type="date" x-model="modalForm.dob"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Age</label>
+                                                <input type="number" x-model="modalForm.age"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
                                         </div>
+
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Roll</label>
+                                                <input type="number" x-model="modalForm.roll"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Scholarship
+                                                    Amount</label>
+                                                <input type="number" step="0.01"
+                                                    x-model="modalForm.scholarship_amount"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Mobile</label>
+                                                <input type="text" x-model="modalForm.mobile"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Email</label>
+                                                <input type="email" x-model="modalForm.email"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Fees
+                                                    Type</label>
+                                                <select x-model="modalForm.fees_type_id"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    <option value="">Select</option>
+                                                    @foreach ($feesTypes ?? [] as $ft)
+                                                        <option value="{{ $ft->id }}">
+                                                            {{ $ft->name ?? 'Type #' . $ft->id }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Academic
+                                                    Year</label>
+                                                <select x-model="modalForm.academic_year_id"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    <option value="">Select</option>
+                                                    @foreach ($years ?? [] as $y)
+                                                        <option value="{{ $y->id }}">
+                                                            {{ $y->name ?? 'Year #' . $y->id }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Class</label>
+                                                <select x-model="modalForm.class_id"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    <option value="">Select</option>
+                                                    @foreach ($classes ?? [] as $c)
+                                                        <option value="{{ $c->id }}">
+                                                            {{ $c->name ?? 'Class #' . $c->id }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Section</label>
+                                                <select x-model="modalForm.section_id"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    <option value="">Select</option>
+                                                    @foreach ($sections ?? [] as $sec)
+                                                        <option value="{{ $sec->id }}">
+                                                            {{ $sec->name ?? 'Section #' . $sec->id }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-600 mb-1">Photo
+                                                (optional)</label>
+                                            <input type="file" accept="image/*"
+                                                @change="modalForm.photo = $event.target.files[0]"
+                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                        </div>
+
+                                        <label class="inline-flex items-center gap-2 text-xs text-slate-700 mt-1">
+                                            <input type="checkbox" x-model="modalForm.isActived"
+                                                class="rounded border-slate-300">
+                                            Active
+                                        </label>
                                     </div>
+
+
 
                                     {{-- Donors extra --}}
                                     <div x-show="modalEntity==='donors'" x-cloak class="grid grid-cols-2 gap-2">
@@ -1122,6 +1391,7 @@
     {{-- Page JS (vanilla + Alpine) --}}
 
     {{-- modal --}}
+
     <script>
         function transactionCenterQuickAdd(initialTab = 'student_fee', initialFeeMode = 'single') {
             return {
@@ -1137,15 +1407,35 @@
                 modalErrors: [],
                 saving: false,
 
+                // ✅ FULL modal form (students + others)
                 modalForm: {
+                    // common
                     name: '',
                     mobile: '',
                     email: '',
+
+                    // lenders
                     phone: '',
                     address: '',
                     bank_detils: '',
+
+                    // accounts
                     account_number: '',
                     account_details: '',
+
+                    // ✅ students
+                    first_name: '',
+                    last_name: '',
+                    dob: '',
+                    age: '',
+                    roll: '',
+                    scholarship_amount: '',
+                    fees_type_id: '',
+                    academic_year_id: '',
+                    class_id: '',
+                    section_id: '',
+                    isActived: true,
+                    photo: null,
                 },
 
                 openModal(entity, targetSelectId) {
@@ -1155,15 +1445,31 @@
                     this.modalErrors = [];
                     this.saving = false;
 
+                    // ✅ reset full
                     this.modalForm = {
                         name: '',
                         mobile: '',
                         email: '',
+
                         phone: '',
                         address: '',
                         bank_detils: '',
+
                         account_number: '',
                         account_details: '',
+
+                        first_name: '',
+                        last_name: '',
+                        dob: '',
+                        age: '',
+                        roll: '',
+                        scholarship_amount: '',
+                        fees_type_id: '',
+                        academic_year_id: '',
+                        class_id: '',
+                        section_id: '',
+                        isActived: true,
+                        photo: null,
                     };
 
                     this.modalOpen = true;
@@ -1177,6 +1483,19 @@
                     this.saving = false;
                 },
 
+                _studentLabelFromData(data) {
+                    // best label for select option
+                    const label =
+                        data?.label ||
+                        data?.name ||
+                        data?.full_name ||
+                        data?.student_name ||
+                        (data?.first_name ? `${data.first_name} ${data.last_name || ''}`.trim() : null) ||
+                        (data?.id ? `Student #${data.id}` : '#');
+
+                    return label;
+                },
+
                 async submitModal() {
                     this.modalErrors = [];
                     this.saving = true;
@@ -1184,37 +1503,85 @@
                     const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
                         '{{ csrf_token() }}';
 
-                    let payload = {
-                        name: this.modalForm.name
-                    };
-
-                    if (this.modalEntity === 'students' || this.modalEntity === 'donors') {
-                        payload.mobile = this.modalForm.mobile;
-                        payload.email = this.modalForm.email;
-                    }
-
-                    if (this.modalEntity === 'lenders') {
-                        payload.phone = this.modalForm.phone;
-                        payload.email = this.modalForm.email;
-                        payload.address = this.modalForm.address;
-                        payload.bank_detils = this.modalForm.bank_detils;
-                    }
-
-                    if (this.modalEntity === 'accounts') {
-                        payload.account_number = this.modalForm.account_number;
-                        payload.account_details = this.modalForm.account_details;
-                    }
+                    const endpoint = `/ajax/${this.modalEntity}`;
 
                     try {
-                        const res = await fetch(`/ajax/${this.modalEntity}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': csrf,
-                            },
-                            body: JSON.stringify(payload),
-                        });
+                        let res;
+
+                        // ✅ STUDENTS => FormData (photo support)
+                        if (this.modalEntity === 'students') {
+                            const fd = new FormData();
+
+                            // build a safe display name
+                            const autoName = `${this.modalForm.first_name || ''} ${this.modalForm.last_name || ''}`
+                                .trim();
+                            const finalName = (this.modalForm.name || autoName || '').trim();
+
+                            fd.append('name', finalName);
+
+                            fd.append('first_name', this.modalForm.first_name || '');
+                            fd.append('last_name', this.modalForm.last_name || '');
+                            fd.append('dob', this.modalForm.dob || '');
+                            fd.append('age', this.modalForm.age || '');
+                            fd.append('roll', this.modalForm.roll || '');
+                            fd.append('scholarship_amount', this.modalForm.scholarship_amount || '');
+
+                            fd.append('mobile', this.modalForm.mobile || '');
+                            fd.append('email', this.modalForm.email || '');
+
+                            fd.append('fees_type_id', this.modalForm.fees_type_id || '');
+                            fd.append('academic_year_id', this.modalForm.academic_year_id || '');
+                            fd.append('class_id', this.modalForm.class_id || '');
+                            fd.append('section_id', this.modalForm.section_id || '');
+
+                            fd.append('isActived', this.modalForm.isActived ? '1' : '0');
+
+                            if (this.modalForm.photo instanceof File) {
+                                fd.append('photo', this.modalForm.photo);
+                            }
+
+                            res = await fetch(endpoint, {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': csrf,
+                                },
+                                body: fd,
+                            });
+
+                        } else {
+                            // ✅ others => JSON
+                            let payload = {
+                                name: this.modalForm.name
+                            };
+
+                            if (this.modalEntity === 'donors') {
+                                payload.mobile = this.modalForm.mobile;
+                                payload.email = this.modalForm.email;
+                            }
+
+                            if (this.modalEntity === 'lenders') {
+                                payload.phone = this.modalForm.phone;
+                                payload.email = this.modalForm.email;
+                                payload.address = this.modalForm.address;
+                                payload.bank_detils = this.modalForm.bank_detils;
+                            }
+
+                            if (this.modalEntity === 'accounts') {
+                                payload.account_number = this.modalForm.account_number;
+                                payload.account_details = this.modalForm.account_details;
+                            }
+
+                            res = await fetch(endpoint, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': csrf,
+                                },
+                                body: JSON.stringify(payload),
+                            });
+                        }
 
                         const data = await res.json().catch(() => ({}));
 
@@ -1235,14 +1602,32 @@
                         selects.forEach(sel => {
                             const opt = document.createElement('option');
                             opt.value = data.id;
-                            opt.textContent = data.name || (`#${data.id}`);
+
+                            if (this.modalEntity === 'students') {
+                                opt.textContent = this._studentLabelFromData(data);
+
+                                // ✅ set dataset so single fee auto-fill works
+                                opt.dataset.roll = data.roll ?? '';
+                                opt.dataset.classId = data.class_id ?? '';
+                                opt.dataset.sectionId = data.section_id ?? '';
+                                opt.dataset.academicYearId = data.academic_year_id ?? '';
+                                opt.dataset.feesTypeId = data.fees_type_id ?? '';
+
+                            } else {
+                                opt.textContent = data.name || (`#${data.id}`);
+                            }
+
                             sel.appendChild(opt);
                         });
 
                         // ✅ auto-select target select if provided
                         if (this.modalTargetSelectId) {
                             const target = document.getElementById(this.modalTargetSelectId);
-                            if (target) target.value = String(data.id);
+                            if (target) {
+                                target.value = String(data.id);
+                                // ✅ trigger change (student meta auto-fill)
+                                target.dispatchEvent(new Event('change'));
+                            }
                         }
 
                         this.closeModal();
@@ -1254,6 +1639,72 @@
                 },
             }
         }
+    </script>
+
+
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const studentSel = document.getElementById('select_student_fee_student');
+            if (!studentSel) return;
+
+            const rollInput = document.getElementById('student_fee_roll');
+
+            const setIfEmpty = (el, val) => {
+                if (!el || !val) return;
+                if (!el.value) el.value = String(val);
+            };
+
+            const applyMeta = () => {
+                const opt = studentSel.selectedOptions?.[0];
+                if (!opt) return;
+
+                if (rollInput) rollInput.value = opt.dataset.roll || '';
+
+                setIfEmpty(document.getElementById('select_student_fee_year'), opt.dataset.academicYearId);
+                setIfEmpty(document.getElementById('select_student_fee_class'), opt.dataset.classId);
+                setIfEmpty(document.getElementById('select_student_fee_section'), opt.dataset.sectionId);
+                setIfEmpty(document.getElementById('select_student_fee_fess_type'), opt.dataset.feesTypeId);
+            };
+
+            studentSel.addEventListener('change', applyMeta);
+            applyMeta(); // page load (old selected থাকলে)
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Single fee form target: hidden _tc_fee_mode=single
+            const mode = document.querySelector('input[name="_tc_fee_mode"][value="single"]');
+            const form = mode ? mode.closest('form') : null;
+            if (!form) return;
+
+            const feeNames = ['admission_fee', 'monthly_fees', 'boarding_fees', 'management_fees', 'exam_fees',
+                'others_fees'
+            ];
+            const totalEl = form.querySelector('input[name="total_fees"]');
+
+            const getNum = (name) => {
+                const el = form.querySelector(`input[name="${name}"]`);
+                return el ? (parseFloat(el.value || 0) || 0) : 0;
+            };
+
+            const calc = () => {
+                let sum = 0;
+                feeNames.forEach(n => sum += getNum(n));
+                if (totalEl) totalEl.value = sum > 0 ? sum.toFixed(2) : '';
+            };
+
+            // bind
+            feeNames.forEach(name => {
+                const el = form.querySelector(`input[name="${name}"]`);
+                if (el) el.addEventListener('input', calc);
+            });
+
+            // initial
+            calc();
+        });
     </script>
 
 
