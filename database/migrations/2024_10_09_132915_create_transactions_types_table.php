@@ -13,7 +13,8 @@ return new class extends Migration
             $table->string('name');
 
             // ✅ NEW: key system (unique)
-            $table->string('key')->nullable()->unique();
+            $table->string('key', 50)->nullable()->unique();
+
 
             $table->boolean('isActived')->default(true);
             $table->boolean('isDeleted')->default(false);

@@ -14,7 +14,11 @@ return new class extends Migration
         Schema::create('add_fess_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->boolean('isActived');
+
+            // ✅ REQUIRED (আপনার error fix)
+            $table->decimal('amount', 12, 2)->default(0);
+
+            $table->boolean('isActived')->default(true);
             $table->boolean('isDeleted')->default(false);
             $table->timestamps();
         });

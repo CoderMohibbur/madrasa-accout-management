@@ -5,15 +5,18 @@ use App\Http\Controllers\DonorController;
 use App\Http\Controllers\ExpensController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\LenderController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AddClassController;
 use App\Http\Controllers\AddMonthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AddAcademyController;
 use App\Http\Controllers\AddSectionController;
 use App\Http\Controllers\AddCatagoryController;
 use App\Http\Controllers\AddFessTypeController;
+use App\Http\Controllers\SettingsHubController;
 use App\Http\Controllers\TransactionsController;
 use App\Http\Controllers\Ajax\QuickCreateController;
 use App\Http\Controllers\TransactionsTypeController;
@@ -23,10 +26,29 @@ use App\Http\Controllers\AddRegistrationFessController;
 Route::get('/', function () {
   return view('welcome');
 });
+
 // dashboard Route
-Route::get('/dashboard', function () {
-  return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::middleware(['auth', 'verified'])->group(function () {
+
+  // ✅ Dashboard (Phase 6)
+  Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->name('dashboard');
+
+  // ✅ Transaction Center
+  Route::get('/transaction-center', [TransactionCenterController::class, 'index'])
+    ->name('transactions.center');
+
+  Route::post('/transactions/quick-store', [TransactionCenterController::class, 'storeQuick'])
+    ->name('transactions.quickStore');
+
+  // ✅ Reports
+  Route::get('/reports/transactions', [ReportController::class, 'transactions'])
+    ->name('reports.transactions');
+
+  Route::get('/reports/transactions.csv', [ReportController::class, 'transactionsCsv'])
+    ->name('reports.transactions.csv');
+});
+
 // Profile Route
 Route::middleware('auth')->group(function () {
   Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -153,6 +175,22 @@ Route::middleware('auth')->group(function () {
   Route::post('/ajax/students',  [QuickCreateController::class, 'storeStudent'])->name('ajax.students.store');
   Route::post('/ajax/donors',    [QuickCreateController::class, 'storeDonor'])->name('ajax.donors.store');
   Route::post('/ajax/lenders',   [QuickCreateController::class, 'storeLender'])->name('ajax.lenders.store');
+  // ✅ AJAX: Load Students (HTML partial রিটার্ন করবে)
+  Route::get('/fees/get-students', [TransactionsController::class, 'getStudents'])
+    ->name('get.students');
+
+  // ✅ Bulk save
+  Route::post('/fees/bulk-store', [TransactionsController::class, 'bulkStore'])
+    ->name('fees.bulk_store');
+
+
+
+  Route::get('/settings', [SettingsHubController::class, 'index'])->name('settings.index');
+
+  Route::post('/settings/{entity}', [SettingsHubController::class, 'store'])->name('settings.store');
+  Route::put('/settings/{entity}/{id}', [SettingsHubController::class, 'update'])->name('settings.update');
+  Route::patch('/settings/{entity}/{id}/toggle', [SettingsHubController::class, 'toggle'])->name('settings.toggle');
+  Route::delete('/settings/{entity}/{id}', [SettingsHubController::class, 'destroy'])->name('settings.destroy');
 });
 
 

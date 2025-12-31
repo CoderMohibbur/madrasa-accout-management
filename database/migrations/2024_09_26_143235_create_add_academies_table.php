@@ -13,12 +13,14 @@ return new class extends Migration
     {
         Schema::create('add_academies', function (Blueprint $table) {
             $table->id();
-            $table->string('year');
-            $table->string('academic_years');
+
+            $table->string('year');           // "2025"
+            $table->string('academic_years'); // "2025-2026"
             $table->date('starting_date');
             $table->date('ending_date');
-            $table->boolean('isActived');
-            $table->boolean('isDeleted')->default(false);            
+
+            $table->boolean('isActived')->default(true);
+            $table->boolean('isDeleted')->default(false);
             $table->timestamps();
         });
     }

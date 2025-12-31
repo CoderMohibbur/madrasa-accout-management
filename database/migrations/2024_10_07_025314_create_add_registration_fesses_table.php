@@ -13,14 +13,24 @@ return new class extends Migration
     {
         Schema::create('add_registration_fesses', function (Blueprint $table) {
             $table->id();
-            $table->decimal('monthly_fee', 15, 2);
-            $table->decimal('boarding_fee', 15, 2);
-            $table->decimal('management_fee', 15, 2);
-            $table->decimal('examination_fee', 15, 2);
-            $table->decimal('other', 15, 2);
-            $table->unsignedBigInteger('class_id')->nullable();
-            $table->foreign('class_id')->references('id')->on('add_classes');
-            $table->boolean('isActived');
+
+            // ✅ Optional but recommended for Settings list title
+            $table->string('name')->nullable();
+
+            $table->decimal('monthly_fee', 15, 2)->default(0);
+            $table->decimal('boarding_fee', 15, 2)->default(0);
+            $table->decimal('management_fee', 15, 2)->default(0);
+            $table->decimal('examination_fee', 15, 2)->default(0);
+            $table->decimal('other', 15, 2)->default(0);
+
+            $table->foreignId('class_id')->nullable()
+                ->constrained('add_classes')
+                ->nullOnDelete();
+
+            // ✅ one row per class (if you want)
+            $table->unique('class_id');
+
+            $table->boolean('isActived')->default(true);
             $table->boolean('isDeleted')->default(false);
             $table->timestamps();
         });

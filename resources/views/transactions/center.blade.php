@@ -314,7 +314,13 @@
 
                 {{-- RIGHT PANEL (Quick Add) --}}
                 <aside class="col-span-12 lg:col-span-4">
-                    <div x-data="transactionCenterQuickAdd(@js($activeTab))"
+
+                    @php
+                        $activeTab = old('type_key', 'student_fee');
+                        $feeMode = old('_tc_fee_mode', 'single');
+                    @endphp
+
+                    <div x-data="transactionCenterQuickAdd(@js($activeTab), @js($feeMode))"
                         class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
                         <div class="px-4 py-3 border-b border-slate-200">
                             <h3 class="text-sm font-semibold text-slate-800">Quick Add</h3>
@@ -357,135 +363,188 @@
                         <div class="p-4 space-y-4">
 
                             {{-- Student Fee --}}
-                            <div x-show="tab==='student_fee'" x-cloak>
-                                <form method="POST" action="{{ url('/transactions/quick-store') }}"
-                                    class="space-y-3">
-                                    @csrf
-                                    <input type="hidden" name="type_key" value="student_fee">
+                            <div x-show="tab==='student_fee'" x-cloak class="space-y-3">
 
-                                    <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Student</label>
-                                        <div class="flex items-center gap-2">
-                                            <select id="select_student_fee_student" data-entity-select="students"
-                                                name="student_id"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                                <option value="">Select student</option>
-                                                @foreach ($students ?? [] as $s)
-                                                    @php
-                                                        $label =
-                                                            $s->name ??
-                                                            ($s->student_name ??
-                                                                ($s->full_name ?? 'Student #' . $s->id));
-                                                    @endphp
-                                                    <option value="{{ $s->id }}" @selected($oldSelected('student_id', $s->id, 'student_fee'))>
-                                                        {{ $label }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            <button type="button"
-                                                @click="openModal('students', 'select_student_fee_student')"
-                                                class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
-                                                + Add
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label
-                                                class="block text-xs font-medium text-slate-600 mb-1">Monthly</label>
-                                            <input type="number" step="0.01" name="monthly_fees"
-                                                value="{{ $oldFor('monthly_fees', 'student_fee') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                        </div>
-                                        <div>
-                                            <label
-                                                class="block text-xs font-medium text-slate-600 mb-1">Boarding</label>
-                                            <input type="number" step="0.01" name="boarding_fees"
-                                                value="{{ $oldFor('boarding_fees', 'student_fee') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                        </div>
-                                        <div>
-                                            <label
-                                                class="block text-xs font-medium text-slate-600 mb-1">Management</label>
-                                            <input type="number" step="0.01" name="management_fees"
-                                                value="{{ $oldFor('management_fees', 'student_fee') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Exam</label>
-                                            <input type="number" step="0.01" name="exam_fees"
-                                                value="{{ $oldFor('exam_fees', 'student_fee') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Others</label>
-                                        <input type="number" step="0.01" name="others_fees"
-                                            value="{{ $oldFor('others_fees', 'student_fee') }}"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Account</label>
-                                        <div class="flex items-center gap-2">
-                                            {{-- ✅ FIX: id + data-entity-select --}}
-                                            <select id="select_student_fee_account" data-entity-select="accounts"
-                                                name="account_id"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                                <option value="">Select account</option>
-                                                @foreach ($accounts ?? [] as $acc)
-                                                    <option value="{{ $acc->id }}" @selected($oldSelected('account_id', $acc->id, 'student_fee'))>
-                                                        {{ $acc->name ?? 'Account #' . $acc->id }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            {{-- ✅ FIX: target select id passed --}}
-                                            <button type="button"
-                                                @click="openModal('accounts', 'select_student_fee_account')"
-                                                class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
-                                                + Add
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-2">
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Date</label>
-                                            <input type="date" name="transactions_date"
-                                                value="{{ $oldFor('transactions_date', 'student_fee') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Receipt
-                                                No</label>
-                                            <input type="text" name="recipt_no"
-                                                value="{{ $oldFor('recipt_no', 'student_fee') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Note</label>
-                                        <input type="text" name="note"
-                                            value="{{ $oldFor('note', 'student_fee') }}"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                    </div>
-
-                                    <button type="submit"
-                                        class="w-full rounded-xl bg-slate-900 text-white text-sm px-4 py-2 hover:bg-slate-800">
-                                        Save Fee
+                                {{-- ✅ Sub Tabs (default: single) --}}
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button type="button" @click="feeMode='single'"
+                                        class="rounded-xl border px-3 py-2 text-xs"
+                                        :class="feeMode === 'single' ? 'bg-slate-900 text-white border-slate-900' :
+                                            'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'">
+                                        Single Student
                                     </button>
 
-                                    <p class="text-[11px] text-slate-500">
-                                        (Phase 2) backend route:
-                                        <code class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded">
-                                            POST /transactions/quick-store
-                                        </code>
-                                    </p>
-                                </form>
+                                    <button type="button" @click="feeMode='bulk'"
+                                        class="rounded-xl border px-3 py-2 text-xs"
+                                        :class="feeMode === 'bulk' ? 'bg-slate-900 text-white border-slate-900' :
+                                            'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'">
+                                        Bulk Students
+                                    </button>
+                                </div>
+
+                                {{-- =========================
+        SINGLE (Phase 2 Quick Store)
+    ========================== --}}
+                                <div x-show="feeMode==='single'" x-cloak
+                                    class="rounded-xl border border-slate-200 bg-white p-3">
+                                    <div class="mb-2">
+                                        <div class="text-sm font-semibold text-slate-800">Single Fee</div>
+                                        <div class="text-xs text-slate-500">One student fee entry</div>
+                                    </div>
+
+                                    <form method="POST" action="{{ url('/transactions/quick-store') }}"
+                                        class="space-y-3">
+                                        @csrf
+                                        <input type="hidden" name="type_key" value="student_fee">
+                                        {{-- ✅ keep mode on validation error --}}
+                                        <input type="hidden" name="_tc_fee_mode" value="single">
+
+                                        {{-- আপনার existing single form (একদম একই) --}}
+                                        <div>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 mb-1">Student</label>
+                                            <div class="flex items-center gap-2">
+                                                <select id="select_student_fee_student" data-entity-select="students"
+                                                    name="student_id"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    <option value="">Select student</option>
+                                                    @foreach ($students ?? [] as $s)
+                                                        @php
+                                                            $label =
+                                                                $s->name ??
+                                                                ($s->student_name ??
+                                                                    ($s->full_name ?? 'Student #' . $s->id));
+                                                        @endphp
+                                                        <option value="{{ $s->id }}"
+                                                            @selected($oldSelected('student_id', $s->id, 'student_fee'))>
+                                                            {{ $label }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+
+                                                <button type="button"
+                                                    @click="openModal('students', 'select_student_fee_student')"
+                                                    class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
+                                                    + Add
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Monthly</label>
+                                                <input type="number" step="0.01" name="monthly_fees"
+                                                    value="{{ $oldFor('monthly_fees', 'student_fee') }}"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Boarding</label>
+                                                <input type="number" step="0.01" name="boarding_fees"
+                                                    value="{{ $oldFor('boarding_fees', 'student_fee') }}"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Management</label>
+                                                <input type="number" step="0.01" name="management_fees"
+                                                    value="{{ $oldFor('management_fees', 'student_fee') }}"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Exam</label>
+                                                <input type="number" step="0.01" name="exam_fees"
+                                                    value="{{ $oldFor('exam_fees', 'student_fee') }}"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-600 mb-1">Others</label>
+                                            <input type="number" step="0.01" name="others_fees"
+                                                value="{{ $oldFor('others_fees', 'student_fee') }}"
+                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                        </div>
+
+                                        <div>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 mb-1">Account</label>
+                                            <div class="flex items-center gap-2">
+                                                <select id="select_student_fee_account" data-entity-select="accounts"
+                                                    name="account_id"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    <option value="">Select account</option>
+                                                    @foreach ($accounts ?? [] as $acc)
+                                                        <option value="{{ $acc->id }}"
+                                                            @selected($oldSelected('account_id', $acc->id, 'student_fee'))>
+                                                            {{ $acc->name ?? 'Account #' . $acc->id }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+
+                                                <button type="button"
+                                                    @click="openModal('accounts', 'select_student_fee_account')"
+                                                    class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
+                                                    + Add
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                                                <input type="date" name="transactions_date"
+                                                    value="{{ $oldFor('transactions_date', 'student_fee') }}"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-slate-600 mb-1">Receipt
+                                                    No</label>
+                                                <input type="text" name="recipt_no"
+                                                    value="{{ $oldFor('recipt_no', 'student_fee') }}"
+                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-medium text-slate-600 mb-1">Note</label>
+                                            <input type="text" name="note"
+                                                value="{{ $oldFor('note', 'student_fee') }}"
+                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                        </div>
+
+                                        <button type="submit"
+                                            class="w-full rounded-xl bg-slate-900 text-white text-sm px-4 py-2 hover:bg-slate-800">
+                                            Save Fee
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {{-- =========================
+        BULK (Phase 4)
+    ========================== --}}
+                                <div x-show="feeMode==='bulk'" x-cloak
+                                    class="rounded-xl border border-slate-200 bg-white p-3">
+                                    <div class="mb-2">
+                                        <div class="text-sm font-semibold text-slate-800">Bulk Fees</div>
+                                        <div class="text-xs text-slate-500">Class/Section/Month wise bulk entry</div>
+                                    </div>
+
+                                    @include('transactions.partials.forms.student_fee_bulk', [
+                                        'years' => $years ?? [],
+                                        'months' => $months ?? [],
+                                        'classes' => $classes ?? [],
+                                        'sections' => $sections ?? [],
+                                        'accounts' => $accounts ?? [],
+                                    ])
+                                </div>
+
                             </div>
+
+
 
                             {{-- Donation --}}
                             <div x-show="tab==='donation'" x-cloak>
@@ -1064,9 +1123,10 @@
 
     {{-- modal --}}
     <script>
-        function transactionCenterQuickAdd(activeTab) {
+        function transactionCenterQuickAdd(initialTab = 'student_fee', initialFeeMode = 'single') {
             return {
-                tab: activeTab || 'student_fee',
+                tab: initialTab,
+                feeMode: initialFeeMode,
                 tabClass: 'rounded-xl border border-slate-200 bg-white px-2 py-2 hover:bg-slate-50',
                 activeTabClass: 'rounded-xl border border-slate-900 bg-slate-900 text-white px-2 py-2 hover:bg-slate-800',
 
@@ -1242,5 +1302,5 @@
         }
     </style>
 
-    
+
 </x-app-layout>

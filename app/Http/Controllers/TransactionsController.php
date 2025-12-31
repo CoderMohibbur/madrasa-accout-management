@@ -149,25 +149,52 @@ class TransactionsController extends Controller
 
     public function getStudents(Request $request)
     {
-        $academicYearId = $request->academic_year_id;
-        $classId        = $request->class_id;
-        $sectionId      = $request->section_id;
-        $monthId        = $request->months_id;
+        $data = $request->validate([
+            'academic_year_id' => ['required', 'exists:add_academies,id'],
+            'class_id'         => ['required', 'exists:add_classes,id'],
+            'section_id'       => ['required', 'exists:add_sections,id'],
+            'months_id'        => ['required', 'exists:add_months,id'],
+        ]);
 
-        $students = Student::where('academic_year_id', $academicYearId)
+        $academicYearId = $data['academic_year_id'];
+        $classId        = $data['class_id'];
+        $sectionId      = $data['section_id'];
+        $monthId        = $data['months_id'];
+
+        // ✅ Students
+        $students = Student::query()
+            ->where('academic_year_id', $academicYearId)
             ->where('class_id', $classId)
             ->where('section_id', $sectionId)
             ->get();
 
-        $transactions = Transactions::whereIn('student_id', $students->pluck('id'))
+        // ✅ Student Fee type id (key system)
+        $studentFeeTypeId = TransactionsType::query()
+            ->where('key', 'student_fee')
+            ->value('id');
+
+        // fallback (যদি key না থাকে)
+        $studentFeeTypeId = $studentFeeTypeId ?: 1;
+
+        // ✅ Existing transactions ONLY for student_fee
+        $tx = Transactions::query()
+            ->whereIn('student_id', $students->pluck('id'))
             ->where('academic_year_id', $academicYearId)
             ->where('class_id', $classId)
             ->where('section_id', $sectionId)
             ->where('months_id', $monthId)
+            ->where('transactions_type_id', $studentFeeTypeId)
+            ->orderByDesc('transactions_date')
+            ->orderByDesc('id')
             ->get()
+            ->groupBy('student_id')
+            ->map->first()
             ->keyBy('student_id');
 
-        return view('students.partials.students_list', compact('students', 'transactions'));
+        return view('students.partials.students_list', [
+            'students'     => $students,
+            'transactions' => $tx,
+        ]);
     }
 
     public function store(Request $request)
@@ -265,142 +292,117 @@ class TransactionsController extends Controller
 
     public function bulkStore(Request $request)
     {
-        $rules = [
-            'student_ids'            => 'required|array|min:1',
-            'student_ids.*'          => 'required|exists:students,id',
+        $data = $request->validate([
+            'academic_year_id'      => ['required', 'exists:add_academies,id'],
+            'class_id'              => ['required', 'exists:add_classes,id'],
+            'section_id'            => ['required', 'exists:add_sections,id'],
+            'months_id'             => ['required', 'exists:add_months,id'],
+            'account_id'            => ['required', 'exists:accounts,id'],
+            'transactions_date'     => ['nullable', 'date'],
 
-            'fess_type_id'           => 'nullable|exists:add_fess_types,id',
-            'transactions_type_id'   => 'nullable|exists:transactions_types,id',
+            'student_ids'           => ['required', 'array'],
+            'student_ids.*'         => ['required', 'exists:students,id'],
 
-            'account_id'             => 'required|exists:accounts,id',
-            'transactions_date'      => 'nullable|date',
+            'student_book_number'   => ['nullable', 'array'],
+            'student_book_number.*' => ['nullable', 'string', 'max:255'],
 
-            'student_book_number'    => 'nullable|array',
-            'student_book_number.*'  => 'nullable|string|max:255',
-            'recipt_no'              => 'nullable|array',
-            'recipt_no.*'            => 'nullable|string|max:255',
+            'recipt_no'             => ['nullable', 'array'],
+            'recipt_no.*' => ['nullable', 'string', 'max:255'],
 
-            'monthly_fees'           => 'nullable|array',
-            'monthly_fees.*'         => 'nullable|numeric|min:0',
-            'boarding_fees'          => 'nullable|array',
-            'boarding_fees.*'        => 'nullable|numeric|min:0',
-            'management_fees'        => 'nullable|array',
-            'management_fees.*'      => 'nullable|numeric|min:0',
-            'exam_fees'              => 'nullable|array',
-            'exam_fees.*'            => 'nullable|numeric|min:0',
-            'others_fees'            => 'nullable|array',
-            'others_fees.*'          => 'nullable|numeric|min:0',
-            'total_fees'             => 'nullable|array',
-            'total_fees.*'           => 'nullable|numeric|min:0',
+            'monthly_fees'          => ['nullable', 'array'],
+            'monthly_fees.*'        => ['nullable', 'numeric'],
+            'boarding_fees'         => ['nullable', 'array'],
+            'boarding_fees.*'       => ['nullable', 'numeric'],
+            'management_fees'       => ['nullable', 'array'],
+            'management_fees.*'     => ['nullable', 'numeric'],
+            'exam_fees'             => ['nullable', 'array'],
+            'exam_fees.*'           => ['nullable', 'numeric'],
+            'others_fees'           => ['nullable', 'array'],
+            'others_fees.*'         => ['nullable', 'numeric'],
+            'total_fees'            => ['nullable', 'array'],
+            'total_fees.*'          => ['nullable', 'numeric'],
 
-            'note'                   => 'nullable|array',
-            'note.*'                 => 'nullable|string|max:500',
+            'debit'                 => ['nullable', 'array'],
+            'debit.*'               => ['nullable', 'numeric'],
+            'credit'                => ['nullable', 'array'],
+            'credit.*'              => ['nullable', 'numeric'],
 
-            'class_id'               => 'required|exists:add_classes,id',
-            'section_id'             => 'required|exists:add_sections,id',
-            'months_id'              => 'required|exists:add_months,id',
-            'academic_year_id'       => 'required|exists:add_academies,id',
-        ];
+            'note'                  => ['nullable', 'array'],
+            'note.*'                => ['nullable', 'string', 'max:500'],
+        ]);
 
-        $validated = $request->validate($rules);
+        $studentFeeTypeId = TransactionsType::query()
+            ->where('key', 'student_fee')
+            ->value('id');
 
-        $studentIds = $validated['student_ids'];
+        $studentFeeTypeId = $studentFeeTypeId ?: 1;
 
-        $classId        = $validated['class_id'];
-        $sectionId      = $validated['section_id'];
-        $monthsId       = $validated['months_id'];
-        $academicYearId = $validated['academic_year_id'];
+        $txDate = $data['transactions_date'] ?? now()->toDateString();
+        $userId = auth()->id();
 
-        $accountId = $validated['account_id'];
+        foreach ($data['student_ids'] as $i => $studentId) {
 
-        // ✅ type key system (student_fee)
-        $studentFeeTypeId = $this->typeIdByKey('student_fee');
-        $transactionsTypeId = $studentFeeTypeId ?? ($validated['transactions_type_id'] ?? null);
+            $monthly     = (float)($request->monthly_fees[$i] ?? 0);
+            $boarding    = (float)($request->boarding_fees[$i] ?? 0);
+            $management  = (float)($request->management_fees[$i] ?? 0);
+            $exam        = (float)($request->exam_fees[$i] ?? 0);
+            $others      = (float)($request->others_fees[$i] ?? 0);
 
-        if (!$transactionsTypeId) {
-            throw ValidationException::withMessages([
-                'transactions_type_id' => 'transactions type set করা নেই। transactions_types টেবিলে student_fee টাইপ/কি সেট করুন অথবা request এ transactions_type_id পাঠান।',
-            ]);
-        }
+            $computedTotal = $monthly + $boarding + $management + $exam + $others;
+            $total = $request->total_fees[$i] ?? $computedTotal;
+            $total = (float)$total;
 
-        $txDate = $validated['transactions_date']
-            ? Carbon::parse($validated['transactions_date'])->toDateString()
-            : Carbon::today()->toDateString();
-
-        $createdById = auth()->id();
-
-        // arrays (safe)
-        $studentBookNumber = $request->input('student_book_number', []);
-        $reciptNo          = $request->input('recipt_no', []);
-        $monthlyFees       = $request->input('monthly_fees', []);
-        $boardingFees      = $request->input('boarding_fees', []);
-        $managementFees    = $request->input('management_fees', []);
-        $examFees          = $request->input('exam_fees', []);
-        $othersFees        = $request->input('others_fees', []);
-        $totalFees         = $request->input('total_fees', []);
-        $notes             = $request->input('note', []);
-
-        foreach ($studentIds as $index => $studentId) {
-
-            $data = [
-                'student_id'           => $studentId,
-                'doner_id'             => null,
-                'lender_id'            => null,
-
-                'fess_type_id'         => $validated['fess_type_id'] ?? null,
-                'transactions_type_id' => $transactionsTypeId,
-
-                'student_book_number'  => $studentBookNumber[$index] ?? null,
-                'recipt_no'            => $reciptNo[$index] ?? null,
-
-                'monthly_fees'         => $monthlyFees[$index] ?? null,
-                'boarding_fees'        => $boardingFees[$index] ?? null,
-                'management_fees'      => $managementFees[$index] ?? null,
-                'exam_fees'            => $examFees[$index] ?? null,
-                'others_fees'          => $othersFees[$index] ?? null,
-
-                'total_fees'           => $totalFees[$index] ?? null,
-
-                'transactions_date'    => $txDate,
-                'account_id'           => $accountId,
-
-                'class_id'             => $classId,
-                'section_id'           => $sectionId,
-                'months_id'            => $monthsId,
-                'academic_year_id'     => $academicYearId,
-
-                'created_by_id'        => $createdById,
-                'note'                 => $notes[$index] ?? null,
-
-                'isActived'            => true,
-            ];
-
-            // total calc
-            if (!isset($data['total_fees']) || $data['total_fees'] === null || $data['total_fees'] === '') {
-                $data['total_fees'] = $this->calcTotalFees($data);
+            // ✅ Optional: empty row skip (যদি সব 0 হয়)
+            $hasAny = ($total > 0) || !empty($request->note[$i] ?? null) || !empty($request->recipt_no[$i] ?? null);
+            if (!$hasAny) {
+                continue;
             }
 
-            // ledger rule
-            $data['debit']  = (float)$data['total_fees'];
-            $data['credit'] = 0;
+            // ✅ Default debit/credit (incoming money)
+            $debit  = $request->debit[$i]  ?? $total;
+            $credit = $request->credit[$i] ?? 0;
 
-            // Find existing transaction
-            $existing = Transactions::where('student_id', $studentId)
-                ->where('class_id', $classId)
-                ->where('section_id', $sectionId)
-                ->where('months_id', $monthsId)
-                ->where('academic_year_id', $academicYearId)
-                ->first();
+            Transactions::updateOrCreate(
+                [
+                    'student_id'           => $studentId,
+                    'transactions_type_id' => $studentFeeTypeId,
+                    'academic_year_id'     => $data['academic_year_id'],
+                    'class_id'             => $data['class_id'],
+                    'section_id'           => $data['section_id'],
+                    'months_id'            => $data['months_id'],
+                ],
+                [
+                    // ✅ Integrity: only 1 party
+                    'doner_id'            => null,
+                    'lender_id'           => null,
 
-            if ($existing) {
-                $existing->update($data);
-            } else {
-                Transactions::create($data);
-            }
+                    'student_book_number' => $request->student_book_number[$i] ?? null,
+                    'recipt_no'           => $request->recipt_no[$i] ?? null,
+
+                    'monthly_fees'        => $monthly,
+                    'boarding_fees'       => $boarding,
+                    'management_fees'     => $management,
+                    'exam_fees'           => $exam,
+                    'others_fees'         => $others,
+                    'total_fees'          => $total,
+
+                    'debit'               => $debit,
+                    'credit'              => $credit,
+
+                    'transactions_date'   => $txDate,
+                    'account_id'          => $data['account_id'],
+                    'created_by_id'       => $userId,
+
+                    'note'                => $request->note[$i] ?? null,
+                    'isActived'           => 1,
+                    'isDeleted'           => 0,
+                ]
+            );
         }
 
-        return redirect()->route('add_student_fees.index')->with('success', 'Fees added successfully!');
+        return back()->with('success', 'Student fees saved successfully!');
     }
+
 
     public function edit($id)
     {

@@ -13,7 +13,8 @@ return new class extends Migration {
         Schema::create('add_sections', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->boolean('isActived');
+
+            $table->boolean('isActived')->default(true);
             $table->boolean('isDeleted')->default(false);
             $table->timestamps();
         });
