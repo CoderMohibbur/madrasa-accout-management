@@ -32,6 +32,9 @@ class Transactions extends Model
         'months_id',
         'academic_year_id',
         'created_by_id',
+        'catagory_id',
+        'expens_id',
+        'income_id',
         'note',
         'c_d_1',
         'c_d_2',
@@ -170,5 +173,10 @@ class Transactions extends Model
     public function createdBy()
     {
         return $this->users();
+    }
+
+    public function getTitleAttribute()
+    {
+        return $this->c_s_1;
     }
 }

@@ -1,13 +1,13 @@
-@php $pageTitle = 'Create Expense Head'; @endphp
+@php $pageTitle = 'Edit Income Head'; @endphp
 
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="font-semibold text-xl text-slate-800 leading-tight">{{ $pageTitle }}</h2>
-                <p class="text-xs text-slate-500 mt-1">This is only a title list. Amount will be saved in Transactions.</p>
+                <p class="text-xs text-slate-500 mt-1">Update title/category/status</p>
             </div>
-            <a href="{{ route('expens.index') }}" class="text-sm text-slate-700 hover:underline">Back</a>
+            <a href="{{ route('income.index') }}" class="text-sm text-slate-700 hover:underline">Back</a>
         </div>
     </x-slot>
 
@@ -22,14 +22,14 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('expens.store') }}" class="space-y-4">
+                <form method="POST" action="{{ route('income.update', $income->id) }}" class="space-y-4">
                     @csrf
+                    @method('PUT')
 
                     <div>
                         <label class="block text-xs font-medium text-slate-600 mb-1">Name</label>
-                        <input type="text" name="name" value="{{ old('name') }}"
-                               class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200"
-                               placeholder="e.g., Electricity Bill">
+                        <input type="text" name="name" value="{{ old('name', $income->name) }}"
+                               class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
                     </div>
 
                     <div>
@@ -37,18 +37,21 @@
                         <select name="catagory_id" class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
                             <option value="">-- None --</option>
                             @foreach(($categories ?? []) as $c)
-                                <option value="{{ $c->id }}" @selected((string)old('catagory_id')===(string)$c->id)>{{ $c->name }}</option>
+                                <option value="{{ $c->id }}"
+                                    @selected((string)old('catagory_id', $income->catagory_id)===(string)$c->id)>
+                                    {{ $c->name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
 
                     <label class="inline-flex items-center gap-2">
-                        <input type="checkbox" name="isActived" value="1" @checked(old('isActived', true))>
+                        <input type="checkbox" name="isActived" value="1" @checked(old('isActived', $income->isActived))>
                         <span class="text-sm text-slate-700">Active</span>
                     </label>
 
                     <button type="submit" class="w-full rounded-xl bg-slate-900 text-white text-sm px-4 py-2 hover:bg-slate-800">
-                        Save
+                        Update
                     </button>
                 </form>
             </div>

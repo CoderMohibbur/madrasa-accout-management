@@ -29,8 +29,9 @@ return new class extends Migration
 
             $table->decimal('total_fees', 15, 2)->nullable();
 
-            $table->decimal('debit', 15, 2)->nullable();
-            $table->decimal('credit', 15, 2)->nullable();
+            $table->decimal('debit', 15, 2)->default(0);
+            $table->decimal('credit', 15, 2)->default(0);
+
 
             $table->date('transactions_date')->nullable();
 
@@ -42,6 +43,12 @@ return new class extends Migration
             $table->unsignedBigInteger('academic_year_id')->nullable();
 
             $table->unsignedBigInteger('created_by_id')->nullable();
+
+            // expense and income
+            $table->unsignedBigInteger('catagory_id')->nullable();
+            $table->unsignedBigInteger('expens_id')->nullable();
+            $table->unsignedBigInteger('income_id')->nullable();
+
 
             $table->string('note')->nullable();
 
@@ -97,6 +104,16 @@ return new class extends Migration
             $table->index('doner_id');
             $table->index('lender_id');
             $table->index(['academic_year_id', 'class_id', 'section_id', 'months_id'], 'tx_fee_filter_idx');
+
+            // FK for expense and income
+            $table->foreign('catagory_id')->references('id')->on('catagories')->nullOnDelete();
+            $table->foreign('expens_id')->references('id')->on('expens')->nullOnDelete();
+            $table->foreign('income_id')->references('id')->on('incomes')->nullOnDelete();
+
+            $table->index('catagory_id');
+            $table->index('expens_id');
+            $table->index('income_id');
+
 
             $table->timestamps();
         });

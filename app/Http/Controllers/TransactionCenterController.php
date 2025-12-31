@@ -157,7 +157,7 @@ class TransactionCenterController extends Controller
                 if ($typeKey === 'student_fee') {
                     $q->orWhere(function ($qq) {
                         $qq->where('name', 'like', '%student%')
-                           ->where('name', 'like', '%fee%');
+                            ->where('name', 'like', '%fee%');
                     });
                 }
             })
@@ -272,7 +272,7 @@ class TransactionCenterController extends Controller
             'isDeleted'            => false,
 
             'note'     => $validated['note'] ?? null,
-            'recipt_no'=> $validated['recipt_no'] ?? null,
+            'recipt_no' => $validated['recipt_no'] ?? null,
 
             'student_id' => $validated['student_id'] ?? null,
             'doner_id'   => $validated['doner_id'] ?? null,
@@ -332,33 +332,36 @@ class TransactionCenterController extends Controller
             $amount = (float)$validated['amount'];
             $title  = $validated['title'];
 
-            $txData['note'] = trim(($title ? "[Expense] {$title} " : '') . ($txData['note'] ?? ''));
-
+            $txData['c_s_1'] = $title; // ✅ title here
             $txData['debit']  = 0;
             $txData['credit'] = $amount;
-            $txData['total_fees'] = null;
 
-            // no party
+            // optional links (যদি পরে dropdown যোগ করেন)
+            $txData['catagory_id'] = $validated['catagory_id'] ?? null;
+            $txData['expens_id']   = $validated['expens_id'] ?? null;
+
             $txData['student_id'] = null;
             $txData['doner_id']   = null;
             $txData['lender_id']  = null;
         }
+
 
         if ($typeKey === 'income') {
             $amount = (float)$validated['amount'];
             $title  = $validated['title'];
 
-            $txData['note'] = trim(($title ? "[Income] {$title} " : '') . ($txData['note'] ?? ''));
-
+            $txData['c_s_1'] = $title; // ✅ title here
             $txData['debit']  = $amount;
             $txData['credit'] = 0;
-            $txData['total_fees'] = null;
 
-            // no party
+            $txData['catagory_id'] = $validated['catagory_id'] ?? null;
+            $txData['income_id']   = $validated['income_id'] ?? null;
+
             $txData['student_id'] = null;
             $txData['doner_id']   = null;
             $txData['lender_id']  = null;
         }
+
 
         Transactions::create($txData);
 

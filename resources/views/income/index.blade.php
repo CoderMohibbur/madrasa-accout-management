@@ -1,65 +1,85 @@
+@php $pageTitle = 'Income Heads'; @endphp
+
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('List Income') }}
-        </h2>
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="font-semibold text-xl text-slate-800 leading-tight">{{ $pageTitle }}</h2>
+                <p class="text-xs text-slate-500 mt-1">Settings → Income title list (amount goes to Transactions)</p>
+            </div>
+
+            <a href="{{ route('income.create') }}"
+               class="inline-flex items-center rounded-xl bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800">
+                + Add Income
+            </a>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <x-toast-success />
-                    <div class="grid grid-cols-1 gap-10">
-                        <div>
-                            <table class="border-collapse table-auto w-full text-sm">
-                                <thead>
-                                    <tr>
-                                        <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left"> ID</th>
-                                        <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-left">List Income Name</th>
-                                        <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-center"> Status</th>
-                                        <th class="border-b dark:border-slate-600 font-medium p-4 pl-8 pt-0 pb-3 text-slate-400 dark:text-slate-200 text-center"> Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white dark:bg-slate-800">
-                                    @foreach ($Incomes as $Income)
-                                        <tr>
-                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $Income->id }}</td>
-                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400"> {{ $Income->name }}</td>
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            @if (session('success'))
+                <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 text-sm">
+                    {{ session('success') }}
+                </div>
+            @endif
 
+            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-slate-50 text-slate-600 text-xs uppercase">
+                            <tr>
+                                <th class="px-4 py-3 text-left">Name</th>
+                                <th class="px-4 py-3 text-left">Status</th>
+                                <th class="px-4 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
 
-                                            <td class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400">
-                                                @if ($Income->isActived)
-                                                    <span class="text-green-500">Active</span>
-                                                @else
-                                                    <span class="text-red-500">Inactive</span>
-                                                @endif
-                                            </td>
-                                            <td
-                                                class="border-b border-slate-100 dark:border-slate-700 p-4 pl-8 text-slate-500 dark:text-slate-400 text-center">
-                                                <a href="{{ route('income.edit', $Income->id) }}">
-                                                    <x-primary-button>
-                                                        {{ __('Edit') }}
-                                                    </x-primary-button>
-                                                </a>
-                                                <form action="{{ route('income.destroy', $Income->id) }}"
-                                                    method="POST" style="display:inline;">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <x-danger-button>
-                                                        {{ __('Delete') }}
-                                                        </x-primary-button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                        <tbody class="divide-y divide-slate-100">
+                            @forelse($incomes as $i)
+                                <tr class="hover:bg-slate-50/70">
+                                    <td class="px-4 py-3">
+                                        <div class="font-medium text-slate-900">{{ $i->name }}</div>
+                                        <div class="text-xs text-slate-500">#{{ $i->id }}</div>
+                                    </td>
+
+                                    <td class="px-4 py-3">
+                                        @if($i->isActived)
+                                            <span class="inline-flex items-center rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs text-emerald-800">Active</span>
+                                        @else
+                                            <span class="inline-flex items-center rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 text-xs text-rose-800">Inactive</span>
+                                        @endif
+                                    </td>
+
+                                    <td class="px-4 py-3 text-right whitespace-nowrap">
+                                        <a href="{{ route('income.edit', $i->id) }}"
+                                           class="text-xs rounded-lg border border-slate-200 bg-white px-2 py-1 hover:bg-slate-50">
+                                            Edit
+                                        </a>
+
+                                        <form action="{{ route('income.destroy', $i->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                onclick="return confirm('Delete this income head?')"
+                                                class="text-xs rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 text-rose-700 hover:bg-rose-100">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="px-4 py-10 text-center text-slate-500">No income heads found.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="px-4 py-3 border-t border-slate-200">
+                    {{ $incomes->links() }}
                 </div>
             </div>
         </div>
     </div>
 </x-app-layout>
-

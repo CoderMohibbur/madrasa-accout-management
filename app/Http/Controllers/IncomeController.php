@@ -2,91 +2,72 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\income;
+use App\Models\Income;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class IncomeController extends Controller
 {
     public function index()
     {
-        // Fetch all years
-        $Incomes = income::all();
+        $incomes = Income::query()
+            ->notDeleted()
+            ->orderBy('name')
+            ->paginate(20);
 
-        // Return view with the list of years
-        return view('income.index', compact('Incomes'));
-
+        return view('income.index', compact('incomes'));
     }
-    // Show the form for creating a new student
+
     public function create()
     {
-
-        $Incomes = income::all(); // Fetch all available fees types
-
-        return view('income.create', compact('Incomes'));
+        $categories = DB::table('catagories')->orderBy('name')->get();
+        return view('income.create', compact('categories'));
     }
+
     public function store(Request $request)
     {
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'isActived' => 'boolean',
+        $data = $request->validate([
+            'name'       => 'required|string|max:255',
+            'catagory_id'=> 'nullable|exists:catagories,id',
+            'isActived'  => 'nullable|boolean',
         ]);
 
-
-        // Create a new student record using the validated data
-        income::create([
-            'name' => $validatedData['name'],
-            'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
-            'isDeleted' => 0, // Set as not deleted by default
+        Income::create([
+            'name'       => $data['name'],
+            'catagory_id'=> $data['catagory_id'] ?? null,
+            'isActived'  => (bool)($data['isActived'] ?? true),
+            'isDeleted'  => false,
         ]);
 
-        // Redirect to the students list with a success message
-        return redirect()->route('income.index')->with('success', 'income created successfully.');
+        return redirect()->route('income.index')->with('success', 'Income head created successfully.');
     }
 
-    // Display the specified student
-    public function show(income $Income)
+    public function edit(Income $income)
     {
-        return view('income.create', data: compact( 'Income'));
+        $categories = DB::table('catagories')->orderBy('name')->get();
+        return view('income.edit', compact('income', 'categories'));
     }
-    public function edit($id)
+
+    public function update(Request $request, Income $income)
     {
-        // Find the class by ID
-        $Income = income::findOrFail($id);
-        $Incomes = income::all();
-
-        // Return view with the class details for editing
-
-
-
-     return view('income.create', compact('Income'));
-
-    }
-    public function update(Request $request, income $Income)
-    {
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'isActived' => 'boolean',
+        $data = $request->validate([
+            'name'       => 'required|string|max:255',
+            'catagory_id'=> 'nullable|exists:catagories,id',
+            'isActived'  => 'nullable|boolean',
         ]);
 
-
-        // Update the student record using the validated data
-        $Income->update([
-            'name' => $validatedData['name'],
-            'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
+        $income->update([
+            'name'       => $data['name'],
+            'catagory_id'=> $data['catagory_id'] ?? null,
+            'isActived'  => (bool)($data['isActived'] ?? true),
         ]);
 
-        // Redirect to the students list with a success message
-        return redirect()->route('income.index')->with('success', 'income updated successfully.');
+        return redirect()->route('income.index')->with('success', 'Income head updated successfully.');
     }
 
-    // Remove the specified student from storage
-    public function destroy(income $income)
+    public function destroy(Income $income)
     {
-        $income->delete();
-        return redirect()->route('income.index')->with('success', 'income deleted successfully.');
+        $income->update(['isDeleted' => true]);
+        return redirect()->route('income.index')->with('success', 'Income head deleted.');
     }
-
-
 }

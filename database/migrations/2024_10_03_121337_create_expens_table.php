@@ -6,23 +6,26 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('expens', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->boolean('isActived');
+
+            // ✅ only this (column + FK)
+            $table->foreignId('catagory_id')
+                ->nullable()
+                ->constrained('catagories')   // আপনার টেবিল নাম যদি catagories হয়
+                ->nullOnDelete();
+
+            $table->boolean('isActived')->default(true);
             $table->boolean('isDeleted')->default(false);
             $table->timestamps();
+
+            $table->index(['isActived', 'isDeleted']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('expens');
