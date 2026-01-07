@@ -31,7 +31,7 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -43,8 +43,13 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
-        Auth::login($user);
+        // ❌ Auto login বন্ধ
+        // Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        // ✅ Login page এ পাঠিয়ে দিন + email prefill
+        return redirect()
+            ->route('login')
+            ->with('status', 'Registration successful. Please login.')
+            ->withInput($request->only('email'));
     }
 }
