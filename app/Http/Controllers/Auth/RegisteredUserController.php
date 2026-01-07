@@ -39,17 +39,20 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+
+            // ✅ Admin approval না হওয়া পর্যন্ত inactive (migration ছাড়াই)
+            'email_verified_at' => null,
         ]);
 
-        event(new Registered($user));
+        // ❌ এটা দিলে email verify link দিয়ে user নিজেই active হয়ে যাবে, তাই বাদ
+        // event(new Registered($user));
 
-        // ❌ Auto login বন্ধ
+        // ❌ auto login বন্ধ
         // Auth::login($user);
 
-        // ✅ Login page এ পাঠিয়ে দিন + email prefill
         return redirect()
             ->route('login')
-            ->with('status', 'Registration successful. Please login.')
-            ->withInput($request->only('email'));
+            ->with('status', 'Registration successful! আপনার একাউন্ট অ্যাডমিন approval দিলে তারপর লগইন করতে পারবেন।')
+            ->withInput(['email' => $request->email]); // ✅ login form এ email বসে যাবে
     }
 }
