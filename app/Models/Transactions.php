@@ -158,11 +158,6 @@ class Transactions extends Model
         return $this->belongsTo(AddMonth::class, 'months_id');
     }
 
-    public function month()
-    {
-        return $this->months();
-    }
-
     public function users()
     {
         return $this->belongsTo(User::class, 'created_by_id');
@@ -176,5 +171,9 @@ class Transactions extends Model
     public function getTitleAttribute()
     {
         return $this->c_s_1;
+    }
+    public function month()
+    {
+        return $this->belongsTo(\App\Models\AddMonth::class, 'months_id');
     }
 }

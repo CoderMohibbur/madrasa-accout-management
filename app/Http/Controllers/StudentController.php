@@ -10,189 +10,381 @@ use App\Models\AddAcademy;
 use App\Models\AddSection;
 use App\Models\AddFessType;
 use App\Models\Transactions;
-use Illuminate\Http\Request;
 use App\Models\TransactionsType;
-use Illuminate\Foundation\Auth\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class StudentController extends Controller
 {
-    public function index()
+    /**
+     * ✅ Phase-1/2 rule: NEVER hardcode transactions_type_id
+     * Always key -> id mapping
+     */
+    private function typeIdByKey(string $key): int
     {
-        // Fetch all years
-        $students = Student::all();
+        static $cache = [];
 
-        // Return view with the list of years
-        return view('students.index', compact('students'));
+        if (isset($cache[$key])) {
+            return $cache[$key];
+        }
 
+        $id = TransactionsType::query()->where('key', $key)->value('id');
+
+        if (!$id) {
+            abort(500, "TransactionsType key not found: {$key}. Please seed transaction types with keys.");
+        }
+
+        return $cache[$key] = (int) $id;
     }
-    // Show the form for creating a new student
+
+    /**
+     * ✅ Phase 3: Student List + Filters
+     * Filters: academic_year_id, class_id, section_id, is_boarding(0/1), search
+     */
+    public function index(Request $request)
+    {
+        $q = Student::query()
+            ->with(['class', 'section', 'academicYear', 'feesType'])
+            ->where('isDeleted', false);
+
+        // Filters
+        if ($request->filled('academic_year_id')) {
+            $q->where('academic_year_id', $request->academic_year_id);
+        }
+        if ($request->filled('class_id')) {
+            $q->where('class_id', $request->class_id);
+        }
+        if ($request->filled('section_id')) {
+            $q->where('section_id', $request->section_id);
+        }
+
+        // ✅ safer (so "0" works)
+        if ($request->has('is_boarding') && $request->is_boarding !== '') {
+            $q->where('is_boarding', (int) $request->is_boarding); // 0/1
+        }
+
+        if ($request->filled('search')) {
+            $s = trim($request->search);
+            $q->where(function ($qq) use ($s) {
+                $qq->where('full_name', 'like', "%{$s}%")
+                    ->orWhere('father_name', 'like', "%{$s}%")
+                    ->orWhere('mobile', 'like', "%{$s}%")
+                    ->orWhere('roll', 'like', "%{$s}%")
+                    ->orWhere('email', 'like', "%{$s}%");
+            });
+        }
+
+        $students = $q->orderByDesc('id')->paginate(20)->withQueryString();
+
+        // Dropdowns (Phase 1/2 style)
+        $classes = AddClass::query()->where('isDeleted', false)->orderBy('name')->get();
+        $sections = AddSection::query()->where('isDeleted', false)->orderBy('name')->get();
+        $fees_types = AddFessType::query()->where('isDeleted', false)->orderBy('name')->get();
+        $academic_years = AddAcademy::query()->where('isDeleted', false)->orderByDesc('id')->get();
+
+        return view('students.index', compact(
+            'students',
+            'classes',
+            'sections',
+            'fees_types',
+            'academic_years'
+        ));
+    }
+
+    /**
+     * ✅ Admission Form
+     */
     public function create()
     {
-        // Retrieve all necessary data from the database for the form
-        $classes = AddClass::all(); // Fetch all available classes
-        $sections = AddSection::all(); // Fetch all available sections
-        $fees_types = AddFessType::all(); // Fetch all available fees types
-        $academic_years = AddAcademy::all(); // Fetch all available academic years
+        $classes = AddClass::query()->where('isDeleted', false)->orderBy('name')->get();
+        $sections = AddSection::query()->where('isDeleted', false)->orderBy('name')->get();
+        $fees_types = AddFessType::query()->where('isDeleted', false)->orderBy('name')->get();
+        $academic_years = AddAcademy::query()->where('isDeleted', false)->orderByDesc('id')->get();
 
-        // Pass the data to the view
         return view('students.create', compact('classes', 'sections', 'fees_types', 'academic_years'));
     }
+
+    /**
+     * ✅ Store Admission
+     */
     public function store(Request $request)
     {
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'dob' => 'required|date',
-            'roll' => 'required|integer',
-            'email' => 'nullable|email|max:255',
-            'mobile' => 'required|string|max:15',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Adjust as per needs
-            'age' => 'required|integer|min:3|max:100',
-            'fees_type_id' => 'required|exists:add_fess_types,id',
-            'class_id' => 'required|exists:add_classes,id',
-            'section_id' => 'required|exists:add_sections,id',
-            'academic_year_id' => 'required|exists:add_academies,id',
-            'scholarship_amount' => 'required|numeric',
-            'isActived' => 'boolean',
+        $validated = $request->validate([
+            'full_name' => ['required', 'string', 'max:255'],
+            'father_name' => ['nullable', 'string', 'max:255'],
+            'dob' => ['nullable', 'date'],
+
+            'class_id' => ['required', 'exists:add_classes,id'],
+            'section_id' => ['required', 'exists:add_sections,id'],
+            'academic_year_id' => ['required', 'exists:add_academies,id'],
+
+            'roll' => [
+                'required',
+                'integer',
+                'min:1',
+                // ✅ prevent duplicates per year+class+section+roll
+                Rule::unique('students', 'roll')->where(function ($q) use ($request) {
+                    return $q->where('academic_year_id', $request->academic_year_id)
+                        ->where('class_id', $request->class_id)
+                        ->where('section_id', $request->section_id)
+                        ->where('isDeleted', false);
+                }),
+            ],
+
+            'email' => ['nullable', 'email', 'max:255'],
+            'mobile' => ['required', 'string', 'max:20'],
+            'address' => ['nullable', 'string'],
+
+            'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+            'age' => ['nullable', 'string', 'max:50'],
+
+            'fees_type_id' => ['nullable', 'exists:add_fess_types,id'],
+            'scholarship_amount' => ['nullable', 'numeric', 'min:0'],
+
+            // Boarding
+            'is_boarding' => ['nullable', 'boolean'],
+            'boarding_start_date' => ['nullable', 'date'],
+            'boarding_end_date' => ['nullable', 'date', 'after_or_equal:boarding_start_date'],
+            'boarding_note' => ['nullable', 'string'],
+
+            'isActived' => ['nullable', 'boolean'],
         ]);
 
-        // Handle the file upload if a photo is provided
         if ($request->hasFile('photo')) {
-            $photoPath = $request->file('photo')->store('photos', 'public'); // Store in 'storage/app/public/photos'
-        } else {
-            $photoPath = null;
+            $validated['photo'] = $request->file('photo')->store('students', 'public');
         }
 
-        // Create a new student record using the validated data
-        Student::create([
-            'first_name' => $validatedData['first_name'],
-            'last_name' => $validatedData['last_name'],
-            'full_name' => $validatedData['first_name'] . ' ' . $validatedData['last_name'], // Combine first and last name
-            'dob' => $validatedData['dob'],
-            'roll' => $validatedData['roll'],
-            'email' => $validatedData['email'],
-            'mobile' => $validatedData['mobile'],
-            'photo' => $photoPath, // Save the uploaded photo path
-            'age' => $validatedData['age'],
-            'fees_type_id' => $validatedData['fees_type_id'],
-            'class_id' => $validatedData['class_id'],
-            'section_id' => $validatedData['section_id'],
-            'academic_year_id' => $validatedData['academic_year_id'],
-            'scholarship_amount' => $validatedData['scholarship_amount'],
-            'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
-            'isDeleted' => 0, // Set as not deleted by default
-        ]);
+        $validated['is_boarding'] = $request->boolean('is_boarding');
 
-        // Redirect to the students list with a success message
-        return redirect()->route('students.index')->with('success', 'Student created successfully.');
+        if (!$validated['is_boarding']) {
+            $validated['boarding_start_date'] = null;
+            $validated['boarding_end_date'] = null;
+            $validated['boarding_note'] = null;
+        }
+
+        $validated['isActived'] = $request->boolean('isActived', true);
+        $validated['isDeleted'] = false;
+
+        $student = DB::transaction(function () use ($validated) {
+            return Student::create($validated);
+        });
+
+        return redirect()->route('students.show', $student)->with('success', 'Student admitted successfully.');
     }
 
-    // Display the specified student
-    public function show(Student $student)
+    /**
+     * ✅ Student Profile + Fee history + Tx history (Phase-3 Final)
+     */
+    public function show(Request $request, Student $student)
     {
-        return view('students.show', data: compact('student'));
-    }
-    public function edit($id)
-    {
-        // Find the class by ID
-        $student = Student::findOrFail($id);
-        $classes = AddClass::all(); // Fetch all available classes
-        $sections = AddSection::all(); // Fetch all available sections
-        $fees_types = AddFessType::all(); // Fetch all available fees types
-        $academic_years = AddAcademy::all(); // Fetch all available academic years
+        $student->load(['class', 'section', 'academicYear', 'feesType']);
 
-        // Return view with the class details for editing
-        return view('students.create', compact('student', 'classes', 'sections', 'fees_types', 'academic_years'))->with('success', 'Student updated successfully.');
+        // ✅ Date range (default: current month)
+        $from = $request->filled('from')
+            ? Carbon::parse($request->from)->startOfDay()
+            : now()->startOfMonth()->startOfDay();
+
+        $to = $request->filled('to')
+            ? Carbon::parse($request->to)->endOfDay()
+            : now()->endOfMonth()->endOfDay();
+
+        // ✅ Phase-1 rule: key -> id (no hardcode)
+        $studentFeeTypeId = $this->typeIdByKey('student_fee');
+
+        // ✅ Base query for student fee transactions
+        $feeTxBase = Transactions::query()
+            ->where('student_id', $student->id)
+            ->where('transactions_type_id', $studentFeeTypeId);
+
+        // ✅ Student fee = CREDIT (clean & correct)
+        $feeTotalPaid = (float) (clone $feeTxBase)->sum(DB::raw('COALESCE(credit,0)'));
+
+        $feePaidInRange = (float) (clone $feeTxBase)
+            ->whereBetween('transactions_date', [$from->toDateString(), $to->toDateString()])
+            ->sum(DB::raw('COALESCE(credit,0)'));
+
+        // Due tracking not implemented yet (Advanced phase)
+        $feeTotalDue = 0.0;
+        $feeDueInRange = 0.0;
+
+        // ✅ Month-wise fee history (for profile view)
+        $feeHistory = (clone $feeTxBase)
+            ->select([
+                'months_id',
+                DB::raw('MAX(transactions_date) as last_date'),
+                DB::raw('SUM(COALESCE(credit,0)) as total_paid'),
+            ])
+            ->whereNotNull('months_id')
+            ->groupBy('months_id')
+            ->orderBy('months_id')
+            ->with('month') // Transactions model must have month() relation
+            ->get();
+
+        // ✅ IMPORTANT: your show.blade.php expects $recentStudentTx
+        // So we provide it (latest 10, no date filter)
+        $recentStudentTx = Transactions::query()
+            ->with(['type', 'account', 'month'])
+            ->where('student_id', $student->id)
+            ->orderByDesc('transactions_date')
+            ->orderByDesc('id')
+            ->take(10)
+            ->get();
+
+        // ✅ Full transaction history (date range + paginate)
+        $txs = Transactions::query()
+            ->with(['type', 'account', 'month'])
+            ->where('student_id', $student->id)
+            ->whereBetween('transactions_date', [$from->toDateString(), $to->toDateString()])
+            ->orderByDesc('transactions_date')
+            ->orderByDesc('id')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('students.show', compact(
+            'student',
+            'from',
+            'to',
+            'feeTotalPaid',
+            'feePaidInRange',
+            'feeTotalDue',
+            'feeDueInRange',
+            'feeHistory',
+            'recentStudentTx',
+            'txs'
+        ));
     }
+
+    /**
+     * (Optional) Edit/Update kept consistent (so old links won't break)
+     */
+    public function edit(Student $student)
+    {
+        $classes = AddClass::query()->where('isDeleted', false)->orderBy('name')->get();
+        $sections = AddSection::query()->where('isDeleted', false)->orderBy('name')->get();
+        $fees_types = AddFessType::query()->where('isDeleted', false)->orderBy('name')->get();
+        $academic_years = AddAcademy::query()->where('isDeleted', false)->orderByDesc('id')->get();
+
+        return view('students.create', compact('student', 'classes', 'sections', 'fees_types', 'academic_years'));
+    }
+
     public function update(Request $request, Student $student)
     {
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'dob' => 'required|date',
-            'roll' => 'required|integer',
-            'email' => 'nullable|email|max:255',
-            'mobile' => 'required|string|max:15',
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Adjust as per needs
-            'age' => 'required|integer|min:3|max:100',
-            'fees_type_id' => 'required|exists:add_fess_types,id',
-            'class_id' => 'required|exists:add_classes,id',
-            'section_id' => 'required|exists:add_sections,id',
-            'academic_year_id' => 'required|exists:add_academies,id',
-            'scholarship_amount' => 'required|numeric',
-            'isActived' => 'boolean',
+        $validated = $request->validate([
+            'full_name' => ['required', 'string', 'max:255'],
+            'father_name' => ['nullable', 'string', 'max:255'],
+            'dob' => ['nullable', 'date'],
+
+            'class_id' => ['required', 'exists:add_classes,id'],
+            'section_id' => ['required', 'exists:add_sections,id'],
+            'academic_year_id' => ['required', 'exists:add_academies,id'],
+
+            'roll' => [
+                'required',
+                'integer',
+                'min:1',
+                Rule::unique('students', 'roll')
+                    ->ignore($student->id)
+                    ->where(function ($q) use ($request) {
+                        return $q->where('academic_year_id', $request->academic_year_id)
+                            ->where('class_id', $request->class_id)
+                            ->where('section_id', $request->section_id)
+                            ->where('isDeleted', false);
+                    }),
+            ],
+
+            'email' => ['nullable', 'email', 'max:255'],
+            'mobile' => ['required', 'string', 'max:20'],
+            'address' => ['nullable', 'string'],
+
+            'photo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+            'age' => ['nullable', 'string', 'max:50'],
+
+            'fees_type_id' => ['nullable', 'exists:add_fess_types,id'],
+            'scholarship_amount' => ['nullable', 'numeric', 'min:0'],
+
+            'is_boarding' => ['nullable', 'boolean'],
+            'boarding_start_date' => ['nullable', 'date'],
+            'boarding_end_date' => ['nullable', 'date', 'after_or_equal:boarding_start_date'],
+            'boarding_note' => ['nullable', 'string'],
+
+            'isActived' => ['nullable', 'boolean'],
         ]);
 
-        // Handle the file upload if a photo is provided
         if ($request->hasFile('photo')) {
-            // Delete the old photo if exists
             if ($student->photo) {
-                Storage::disk('public')->delete($student->photo); // Delete old photo from storage
+                Storage::disk('public')->delete($student->photo);
             }
-            // Store the new photo
-            $photoPath = $request->file('photo')->store('photos', 'public');
-        } else {
-            $photoPath = $student->photo; // Keep the old photo if no new one is provided
+            $validated['photo'] = $request->file('photo')->store('students', 'public');
         }
 
-        // Update the student record using the validated data
-        $student->update([
-            'first_name' => $validatedData['first_name'],
-            'last_name' => $validatedData['last_name'],
-            'full_name' => $validatedData['first_name'] . ' ' . $validatedData['last_name'], // Combine first and last name
-            'dob' => $validatedData['dob'],
-            'roll' => $validatedData['roll'],
-            'email' => $validatedData['email'],
-            'mobile' => $validatedData['mobile'],
-            'photo' => $photoPath, // Save the updated photo path
-            'age' => $validatedData['age'],
-            'fees_type_id' => $validatedData['fees_type_id'],
-            'class_id' => $validatedData['class_id'],
-            'section_id' => $validatedData['section_id'],
-            'academic_year_id' => $validatedData['academic_year_id'],
-            'scholarship_amount' => $validatedData['scholarship_amount'],
-            'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
-        ]);
+        $validated['is_boarding'] = $request->boolean('is_boarding');
+        if (!$validated['is_boarding']) {
+            $validated['boarding_start_date'] = null;
+            $validated['boarding_end_date'] = null;
+            $validated['boarding_note'] = null;
+        }
 
-        // Redirect to the students list with a success message
-        return redirect()->route('students.index')->with('success', 'Student updated successfully.');
+        // ✅ normalize boolean like store()
+        $validated['isActived'] = $request->boolean('isActived', (bool) $student->isActived);
+
+        DB::transaction(function () use ($student, $validated) {
+            $student->update($validated);
+        });
+
+        return redirect()->route('students.show', $student)->with('success', 'Student updated successfully.');
     }
 
-    // Remove the specified student from storage
+    /**
+     * ✅ Safer destroy: do not hard delete if transactions exist
+     * Use isDeleted flag (so Transaction Center history doesn’t break)
+     */
     public function destroy(Student $student)
     {
-        if ($student->photo) {
-            // The photo is stored in the 'public' disk, in a folder called 'photos'
-            $photoPath = storage_path('app/public/' . $student->photo);
+        $hasTx = Transactions::query()->where('student_id', $student->id)->exists();
 
-            // Check if the photo exists before attempting to delete
-            if (file_exists($photoPath)) {
-                unlink($photoPath); // Delete the file
-            }
+        if ($hasTx) {
+            $student->update([
+                'isDeleted' => true,
+                'isActived' => false,
+            ]);
+            return redirect()->route('students.index')->with('success', 'Student archived (has transactions).');
+        }
+
+        if ($student->photo) {
+            Storage::disk('public')->delete($student->photo);
         }
 
         $student->delete();
+
         return redirect()->route('students.index')->with('success', 'Student deleted successfully.');
     }
-     public function Student_Fees()
-        {
-            // Fetch all classes
-            $transactionss = Transactions::all();
-            $students = Student::all();
-            $accounts = Account::all();
-            $classes = AddClass::all();
-            $sections = AddSection::all();
-            $months = AddMonth::all();
-            $years = AddAcademy::all();
-            $feestypes = AddFessType::all();
-            $transactionss = TransactionsType::all();
-            $users = User::all();
 
-            // Return view with the list of classes
-            return view('students.add-fees_copy', compact('transactionss', 'students', 'accounts', 'classes', 'sections', 'years', 'months', 'transactionss', 'users'));
+    // Keep legacy method untouched (optional)
+    public function Student_Fees()
+    {
+        $transactions = Transactions::all();
+        $students = Student::all();
+        $accounts = Account::all();
+        $classes = AddClass::all();
+        $sections = AddSection::all();
+        $months = AddMonth::all();
+        $years = AddAcademy::all();
+        $feestypes = AddFessType::all();
+        $transactionTypes = TransactionsType::all();
+
+        return view('students.add-fees_copy', compact(
+            'transactions',
+            'students',
+            'accounts',
+            'classes',
+            'sections',
+            'years',
+            'months',
+            'feestypes',
+            'transactionTypes'
+        ));
     }
-
 }

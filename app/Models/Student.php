@@ -16,13 +16,24 @@ class Student extends Model
         'roll',
         'email',
         'mobile',
+        'address',
         'photo',
         'age',
+
         'fees_type_id',
         'class_id',
         'section_id',
         'academic_year_id',
+
         'scholarship_amount',
+
+        // ✅ Boarding
+        'is_boarding',
+        'boarding_start_date',
+        'boarding_end_date',
+        'boarding_note',
+
+        // ✅ Status flags
         'isActived',
         'isDeleted',
     ];
@@ -31,6 +42,11 @@ class Student extends Model
         'dob' => 'date',
         'roll' => 'integer',
         'scholarship_amount' => 'decimal:2',
+
+        'is_boarding' => 'boolean',
+        'boarding_start_date' => 'date',
+        'boarding_end_date' => 'date',
+
         'isActived' => 'boolean',
         'isDeleted' => 'boolean',
     ];
@@ -45,7 +61,7 @@ class Student extends Model
         return $this->full_name;
     }
 
-    // ✅ Proper relations (Transaction Center uses these)
+    // ✅ Relations (Transaction Center + Profile)
     public function feesType()
     {
         return $this->belongsTo(AddFessType::class, 'fees_type_id');
@@ -64,6 +80,33 @@ class Student extends Model
     public function academicYear()
     {
         return $this->belongsTo(AddAcademy::class, 'academic_year_id');
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transactions::class, 'student_id');
+    }
+
+    /**
+     * ✅ Scopes (Controllers clean থাকবে + consistent filtering)
+     */
+    public function scopeActive($q)
+    {
+        return $q->where('isActived', true)->where('isDeleted', false);
+    }
+
+    public function scopeBoarding($q, ?bool $value = true)
+    {
+        if ($value === null) return $q;
+        return $q->where('is_boarding', $value);
+    }
+
+    public function scopeFilterAcademic($q, $yearId = null, $classId = null, $sectionId = null)
+    {
+        if ($yearId)   $q->where('academic_year_id', $yearId);
+        if ($classId)  $q->where('class_id', $classId);
+        if ($sectionId)$q->where('section_id', $sectionId);
+        return $q;
     }
 
     // ✅ Backward compatibility (পুরোনো কোড ভাঙবে না)

@@ -40,6 +40,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/transaction-center', [TransactionCenterController::class, 'index'])
         ->name('transactions.center');
 
+    Route::post('/transaction-center/students/quick', [TransactionCenterController::class, 'quickStudentStore'])
+        ->name('transaction-center.students.quick');
+
     // ✅ Phase 2: Class Default Fees AJAX
     Route::get('/ajax/class-default-fees', [TransactionCenterController::class, 'classDefaultFees'])
         ->name('ajax.class_default_fees');
