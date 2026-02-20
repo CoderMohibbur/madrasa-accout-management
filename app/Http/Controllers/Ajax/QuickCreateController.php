@@ -8,26 +8,97 @@ use App\Models\Student;
 use App\Models\Donor;
 use App\Models\Lender;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Database\QueryException;
 
 class QuickCreateController extends Controller
 {
     /**
      * ✅ One endpoint for Alpine modal: POST /ajax/{entity}
-     * entity = students | donors | lenders | accounts
+     * entity = students | donors | lenders | accounts | catagories | expens | incomes
      */
     public function store(Request $request, string $entity)
     {
         $entity = Str::lower($entity);
 
         return match ($entity) {
-            'accounts' => $this->storeAccount($request),
-            'students' => $this->storeStudent($request),
-            'donors'   => $this->storeDonor($request),
-            'lenders'  => $this->storeLender($request),
-            default    => response()->json(['message' => 'Unknown entity'], 422),
+            'accounts'   => $this->storeAccount($request),
+            'students'   => $this->storeStudent($request),
+            'donors'     => $this->storeDonor($request),
+            'lenders'    => $this->storeLender($request),
+
+            // ✅ NEW (Fix: Expense/Income modal + Add)
+            'catagories' => $this->storeSimpleNameTable($request, 'catagories'),
+            'expens'     => $this->storeSimpleNameTable($request, 'expens'),
+            'incomes'    => $this->storeSimpleNameTable($request, 'incomes'),
+
+            default      => response()->json(['message' => 'Unknown entity'], 422),
         };
+    }
+
+    /**
+     * ✅ Generic simple insert: catagories/expens/incomes
+     * - Accepts JSON: {name: "..."}
+     * - Inserts into table (name/title column auto-detect)
+     * - Sets isActived/isDeleted if exists
+     */
+    protected function storeSimpleNameTable(Request $request, string $table)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:190'],
+        ]);
+
+        if (!Schema::hasTable($table)) {
+            return response()->json(['message' => "Table not found: {$table}"], 422);
+        }
+
+        // detect name column
+        $nameCol = null;
+        if (Schema::hasColumn($table, 'name')) {
+            $nameCol = 'name';
+        } elseif (Schema::hasColumn($table, 'title')) {
+            $nameCol = 'title';
+        } else {
+            return response()->json(['message' => "No name/title column in table: {$table}"], 422);
+        }
+
+        $now = now();
+
+        $payload = [
+            $nameCol => $data['name'],
+        ];
+
+        // flags if exist
+        if (Schema::hasColumn($table, 'isActived')) $payload['isActived'] = 1;
+        if (Schema::hasColumn($table, 'isDeleted')) $payload['isDeleted'] = 0;
+
+        // common user columns if exist (prevent NOT NULL issues)
+        $uid = auth()->id() ?: 1;
+        foreach (['users_id', 'user_id', 'created_by_id'] as $col) {
+            if (Schema::hasColumn($table, $col) && !array_key_exists($col, $payload)) {
+                $payload[$col] = $uid;
+            }
+        }
+
+        // timestamps if exist
+        if (Schema::hasColumn($table, 'created_at')) $payload['created_at'] = $now;
+        if (Schema::hasColumn($table, 'updated_at')) $payload['updated_at'] = $now;
+
+        try {
+            $id = DB::table($table)->insertGetId($payload);
+        } catch (QueryException $e) {
+            return response()->json([
+                'message' => 'DB insert failed',
+                'error'   => $e->getMessage(),
+            ], 422);
+        }
+
+        return response()->json([
+            'id'   => $id,
+            'name' => $data['name'],
+        ], 201);
     }
 
     /**
@@ -86,10 +157,10 @@ class QuickCreateController extends Controller
     }
 
     /**
-     * ✅ Student quick create (supports FULL modal + photo)
-     * Accepts:
-     * - Full mode: first_name required (from your modal)
-     * - Fallback mode: name only (older/simple create)
+     * ✅ Student quick create
+     * Supports:
+     * - Full mode: if first_name provided
+     * - Fallback: name only
      */
     public function storeStudent(Request $request)
     {
@@ -128,10 +199,7 @@ class QuickCreateController extends Controller
             if ($displayName === '') $displayName = $autoName;
             if ($displayName === '') $displayName = 'Student';
 
-            // your table: full_name exists
             $this->fillIfColumn($student, 'full_name', $displayName);
-
-            // also try common columns if exist
             $this->fillIfColumn($student, 'name', $displayName);
             $this->fillIfColumn($student, 'student_name', $displayName);
 
@@ -158,7 +226,6 @@ class QuickCreateController extends Controller
             if ($request->hasFile('photo')) {
                 $path = $request->file('photo')->store('students', 'public');
 
-                // try common columns
                 $this->fillIfColumn($student, 'photo', $path);
                 $this->fillIfColumn($student, 'photo_path', $path);
                 $this->fillIfColumn($student, 'image', $path);
@@ -167,7 +234,6 @@ class QuickCreateController extends Controller
 
             $student->save();
 
-            // ✅ return meta for select dataset auto-fill
             return response()->json([
                 'id'               => $student->id,
                 'name'             => $student->full_name ?? $displayName,
@@ -180,7 +246,7 @@ class QuickCreateController extends Controller
             ], 201);
         }
 
-        // ✅ fallback: name only (your previous simple create)
+        // ✅ fallback: name only
         $data = $request->validate([
             'name'   => ['required', 'string', 'max:255'],
             'mobile' => ['nullable', 'string', 'max:30'],
@@ -189,6 +255,9 @@ class QuickCreateController extends Controller
 
         $s = new Student();
         $this->fillIfColumn($s, 'full_name', $data['name']);
+        $this->fillIfColumn($s, 'name', $data['name']);
+        $this->fillIfColumn($s, 'student_name', $data['name']);
+
         $this->fillIfColumn($s, 'mobile', $data['mobile'] ?? null);
         $this->fillIfColumn($s, 'email', $data['email'] ?? null);
 
@@ -209,7 +278,7 @@ class QuickCreateController extends Controller
     }
 
     /**
-     * ✅ Donor quick create (your previous logic kept)
+     * ✅ Donor quick create
      */
     public function storeDonor(Request $request)
     {
@@ -240,7 +309,7 @@ class QuickCreateController extends Controller
     }
 
     /**
-     * ✅ Lender quick create (your required fields kept + users_id set)
+     * ✅ Lender quick create
      */
     public function storeLender(Request $request)
     {

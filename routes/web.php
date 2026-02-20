@@ -1,28 +1,28 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AddAcademyController;
+use App\Http\Controllers\AddCatagoryController;
+use App\Http\Controllers\AddClassController;
+use App\Http\Controllers\AddFessTypeController;
+use App\Http\Controllers\AddMonthController;
+use App\Http\Controllers\AddRegistrationFessController;
+use App\Http\Controllers\AddSectionController;
+use App\Http\Controllers\Ajax\QuickCreateController;
+use App\Http\Controllers\BoardingController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonorController;
 use App\Http\Controllers\ExpensController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\LenderController;
-use App\Http\Controllers\ReportController;
-use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\AddClassController;
-use App\Http\Controllers\AddMonthController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AddAcademyController;
-use App\Http\Controllers\AddSectionController;
-use App\Http\Controllers\AddCatagoryController;
-use App\Http\Controllers\AddFessTypeController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SettingsHubController;
-use App\Http\Controllers\TransactionsController;
-use App\Http\Controllers\Ajax\QuickCreateController;
-use App\Http\Controllers\TransactionsTypeController;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TransactionCenterController;
-use App\Http\Controllers\AddRegistrationFessController;
+use App\Http\Controllers\TransactionsController;
+use App\Http\Controllers\TransactionsTypeController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -43,9 +43,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/transaction-center/students/quick', [TransactionCenterController::class, 'quickStudentStore'])
         ->name('transaction-center.students.quick');
 
+    // Boarding list
+    Route::get('/boarding/students', [BoardingController::class, 'index'])
+        ->name('boarding.students.index');
+
     // ✅ Phase 2: Class Default Fees AJAX
     Route::get('/ajax/class-default-fees', [TransactionCenterController::class, 'classDefaultFees'])
         ->name('ajax.class_default_fees');
+
+    Route::patch('/students/{student}/boarding', [StudentController::class, 'updateBoarding'])
+        ->name('students.boarding.update');
+
+    Route::get('/boarding/students', [BoardingController::class, 'index'])
+        ->name('boarding.students.index');
 
     // ✅ Transaction actions (Print / Edit / Delete)
     Route::get('/transactions/{transaction}/receipt', [TransactionCenterController::class, 'receipt'])
@@ -202,8 +212,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/ajax/donors', [QuickCreateController::class, 'storeDonor'])->name('ajax.donors.store');
     Route::post('/ajax/lenders', [QuickCreateController::class, 'storeLender'])->name('ajax.lenders.store');
 
-    Route::post('/ajax/{entity}', [QuickCreateController::class, 'store'])
-        ->whereIn('entity', ['students', 'donors', 'lenders', 'accounts']);
+Route::post('/ajax/{entity}', [QuickCreateController::class, 'store'])
+    ->whereIn('entity', ['students', 'donors', 'lenders', 'accounts', 'catagories', 'expens', 'incomes']);
 
     // Settings Hub
     Route::get('/settings', [SettingsHubController::class, 'index'])->name('settings.index');

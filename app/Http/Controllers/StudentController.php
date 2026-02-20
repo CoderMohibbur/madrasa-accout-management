@@ -257,6 +257,46 @@ class StudentController extends Controller
         ));
     }
 
+
+
+
+    public function updateBoarding(Request $request, Student $student)
+    {
+        // deleted student protection (Phase 1–5 style)
+        if ((bool)($student->isDeleted ?? false) === true) {
+            return back()->with('error', 'Deleted student can not be updated.');
+        }
+
+        $validated = $request->validate([
+            'is_boarding' => ['required', 'boolean'],
+            'boarding_start_date' => ['nullable', 'date'],
+            'boarding_end_date' => ['nullable', 'date', 'after_or_equal:boarding_start_date'],
+            'boarding_note' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $isBoarding = $request->boolean('is_boarding');
+
+        $data = [
+            'is_boarding' => $isBoarding,
+        ];
+
+        if ($isBoarding) {
+            $data['boarding_start_date'] = $validated['boarding_start_date'] ?? Carbon::now()->toDateString();
+            $data['boarding_end_date']   = $validated['boarding_end_date'] ?? null;
+            $data['boarding_note']       = $validated['boarding_note'] ?? null;
+        } else {
+            $data['boarding_start_date'] = null;
+            $data['boarding_end_date']   = null;
+            $data['boarding_note']       = null;
+        }
+
+        DB::transaction(function () use ($student, $data) {
+            $student->update($data);
+        });
+
+        return back()->with('success', 'Boarding status updated.');
+    }
+
     /**
      * (Optional) Edit/Update kept consistent (so old links won't break)
      */

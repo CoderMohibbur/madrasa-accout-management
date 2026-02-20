@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Database\Seeders\BoardingDefaultsSeeder;
 use Database\Seeders\MadrasaDemoSeeder;
 use Database\Seeders\TransactionsTypeSeeder;
 use Illuminate\Database\Seeder;
@@ -18,7 +18,8 @@ class DatabaseSeeder extends Seeder
         // ✅ Transaction types MUST seed (Phase 1)
         $this->call([
             TransactionsTypeSeeder::class,
-             MadrasaDemoSeeder::class,
+            MadrasaDemoSeeder::class,
+            BoardingDefaultsSeeder::class,
         ]);
 
         User::factory()->create([
