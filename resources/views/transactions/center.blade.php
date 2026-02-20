@@ -2,19 +2,37 @@
 @php
     $pageTitle = 'Transaction Center';
 
-    // Helpers (safe)
+    // ✅ Consistent UI input styles (light/dark)
+    $inputClass =
+        'w-full rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500';
+    $selectClass = $inputClass;
+    $readonlyClass =
+        'w-full rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-sm text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500';
+
+    // ✅ Ledger-aware helpers (Phase 1): IN = credit, OUT = debit
     $getAmount = function ($tx) {
-        $d = (float) ($tx->debit ?? 0);
-        $c = (float) ($tx->credit ?? 0);
-        return $d > 0 ? $d : $c;
+        $in = (float) ($tx->credit ?? 0); // IN
+        $out = (float) ($tx->debit ?? 0); // OUT
+        return $in > 0 ? $in : $out;
+    };
+
+    $getDirection = function ($tx) {
+        $in = (float) ($tx->credit ?? 0);
+        return $in > 0 ? 'IN' : 'OUT';
     };
 
     $getParty = function ($tx) {
-        // Relationship এখনো confirm না—safe fallback
-        // If you later add relations: student/donor/lender -> it will auto show.
+        // Student name
         $studentName =
-            data_get($tx, 'student.name') ??
-            (data_get($tx, 'student.student_name') ?? data_get($tx, 'student.full_name'));
+            data_get($tx, 'student.full_name') ??
+            (data_get($tx, 'student.name') ?? data_get($tx, 'student.student_name'));
+
+        // legacy fallback (first_name/last_name থাকলে)
+        if (!$studentName) {
+            $fn = data_get($tx, 'student.first_name');
+            $ln = data_get($tx, 'student.last_name');
+            $studentName = trim(($fn ?? '') . ' ' . ($ln ?? '')) ?: null;
+        }
 
         $donorName =
             data_get($tx, 'donor.name') ?? (data_get($tx, 'donor.donor_name') ?? data_get($tx, 'donor.doner_name'));
@@ -45,7 +63,7 @@
         return ['label' => '-', 'name' => '-'];
     };
 
-    // ✅ Phase 2.6: Active tab + per-tab old value helpers
+    // ✅ Active tab + per-tab old helpers
     $activeTab = old('type_key', 'student_fee');
 
     $oldFor = function ($key, $tab, $default = '') use ($activeTab) {
@@ -59,32 +77,31 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between gap-4">
             <div>
-                <h2 class="font-semibold text-xl text-slate-800 leading-tight">{{ $pageTitle }}</h2>
+                <h2 class="font-semibold text-xl text-slate-800 dark:text-slate-100 leading-tight">{{ $pageTitle }}
+                </h2>
                 <p class="text-xs text-slate-500 mt-1">All transactions in one place — filter + review + quick add</p>
             </div>
 
-            <div class="flex items-center gap-2">
-
+            <div class="flex items-center gap-2 flex-wrap justify-end">
                 <a href="{{ url('/dashboard') }}"
-                    class="inline-flex items-center rounded-xl bg-red-600 px-3 py-2 text-sm text-white hover:bg-slate-800">
+                    class="inline-flex items-center rounded-xl bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700">
                     Dashboard
                 </a>
 
                 <a href="{{ url('/chart-of-accounts') }}"
-                    class="inline-flex items-center rounded-xl bg-green-600 px-3 py-2 text-sm text-white hover:bg-slate-800">
+                    class="inline-flex items-center rounded-xl bg-green-600 px-3 py-2 text-sm text-white hover:bg-green-700">
                     Chart of Accounts
                 </a>
 
                 <a href="/settings"
-                    class="inline-flex items-center rounded-xl bg-orange-600 px-3 py-2 text-sm text-white hover:bg-slate-800">
+                    class="inline-flex items-center rounded-xl bg-orange-600 px-3 py-2 text-sm text-white hover:bg-orange-700">
                     Academic Calendar
                 </a>
 
-
                 <a href="{{ url('/list-student-fees') }}"
-                    class="inline-flex items-center rounded-xl bg-blue-600 px-3 py-2 text-sm text-white hover:bg-slate-800">
+                    class="inline-flex items-center rounded-xl bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700">
                     Fees List
                 </a>
             </div>
@@ -93,10 +110,9 @@
 
     <div class="py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {{-- Layout: main + right panel --}}
             <div class="grid grid-cols-12 gap-4">
 
-                {{-- MAIN (Filters + Table) --}}
+                {{-- MAIN --}}
                 <section class="col-span-12 lg:col-span-8">
 
                     @if (session('success'))
@@ -112,25 +128,25 @@
                         </div>
                     @endif
 
-                    {{-- Filters bar --}}
+                    {{-- Filters --}}
                     <form method="GET" action="{{ url('/transaction-center') }}" data-filter-form
-                        class="bg-white border border-slate-200 rounded-2xl shadow-sm p-4">
+                        class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm p-4">
                         <div class="flex flex-col gap-3">
-                            <div class="flex items-center justify-between">
-                                <h3 class="text-sm font-semibold text-slate-800">Filters</h3>
+                            <div class="flex items-center justify-between gap-3">
+                                <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Filters</h3>
 
                                 <div class="flex items-center gap-2">
                                     <button type="button" data-range="today"
-                                        class="text-xs rounded-lg border border-slate-200 bg-white px-2 py-1 hover:bg-slate-50">
+                                        class="text-xs rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-2 py-1 hover:bg-slate-50 dark:hover:bg-white/5">
                                         Today
                                     </button>
                                     <button type="button" data-range="month"
-                                        class="text-xs rounded-lg border border-slate-200 bg-white px-2 py-1 hover:bg-slate-50">
+                                        class="text-xs rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-2 py-1 hover:bg-slate-50 dark:hover:bg-white/5">
                                         This Month
                                     </button>
 
                                     <a href="{{ url('/transaction-center') }}"
-                                        class="text-xs rounded-lg border border-slate-200 bg-white px-2 py-1 hover:bg-slate-50">
+                                        class="text-xs rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-2 py-1 hover:bg-slate-50 dark:hover:bg-white/5">
                                         Reset
                                     </a>
                                 </div>
@@ -138,21 +154,23 @@
 
                             <div class="grid grid-cols-12 gap-3">
                                 <div class="col-span-12 sm:col-span-3">
-                                    <label class="block text-xs font-medium text-slate-600 mb-1">From</label>
+                                    <label
+                                        class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">From</label>
                                     <input type="date" name="from" value="{{ request('from') }}"
-                                        class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                        class="{{ $inputClass }}">
                                 </div>
 
                                 <div class="col-span-12 sm:col-span-3">
-                                    <label class="block text-xs font-medium text-slate-600 mb-1">To</label>
+                                    <label
+                                        class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">To</label>
                                     <input type="date" name="to" value="{{ request('to') }}"
-                                        class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                        class="{{ $inputClass }}">
                                 </div>
 
                                 <div class="col-span-12 sm:col-span-3">
-                                    <label class="block text-xs font-medium text-slate-600 mb-1">Account</label>
-                                    <select name="account_id"
-                                        class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                    <label
+                                        class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Account</label>
+                                    <select name="account_id" class="{{ $selectClass }}">
                                         <option value="">All accounts</option>
                                         @foreach ($accounts ?? [] as $acc)
                                             <option value="{{ $acc->id }}" @selected((string) $acc->id === (string) request('account_id'))>
@@ -163,9 +181,9 @@
                                 </div>
 
                                 <div class="col-span-12 sm:col-span-3">
-                                    <label class="block text-xs font-medium text-slate-600 mb-1">Type</label>
-                                    <select name="type_id"
-                                        class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                    <label
+                                        class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Type</label>
+                                    <select name="type_id" class="{{ $selectClass }}">
                                         <option value="">All types</option>
                                         @foreach ($types ?? [] as $t)
                                             <option value="{{ $t->id }}" @selected((string) $t->id === (string) request('type_id'))>
@@ -176,10 +194,10 @@
                                 </div>
 
                                 <div class="col-span-12 sm:col-span-9">
-                                    <label class="block text-xs font-medium text-slate-600 mb-1">Search</label>
+                                    <label
+                                        class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Search</label>
                                     <input type="text" name="search" value="{{ request('search') }}"
-                                        placeholder="Receipt no / note / keyword…"
-                                        class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                        placeholder="Receipt no / note / keyword…" class="{{ $inputClass }}">
                                 </div>
 
                                 <div class="col-span-12 sm:col-span-3 flex items-end">
@@ -193,9 +211,11 @@
                     </form>
 
                     {{-- Table --}}
-                    <div class="mt-4 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200">
-                            <h3 class="text-sm font-semibold text-slate-800">Transactions</h3>
+                    <div
+                        class="mt-4 bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                        <div
+                            class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-white/10">
+                            <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Transactions</h3>
                             <div class="text-xs text-slate-500">
                                 Showing
                                 {{ method_exists($transactions ?? null, 'total') ? $transactions->total() : (is_countable($transactions ?? []) ? count($transactions) : 0) }}
@@ -204,7 +224,8 @@
 
                         <div class="overflow-x-auto">
                             <table class="min-w-full text-sm">
-                                <thead class="bg-slate-50 text-slate-600 text-xs uppercase">
+                                <thead
+                                    class="bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-300 text-xs uppercase">
                                     <tr>
                                         <th class="px-4 py-3 text-left">Date</th>
                                         <th class="px-4 py-3 text-left">Type</th>
@@ -214,11 +235,12 @@
                                         <th class="px-4 py-3 text-right">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-slate-100">
+                                <tbody class="divide-y divide-slate-100 dark:divide-white/10">
                                     @forelse(($transactions ?? []) as $tx)
                                         @php
                                             $party = $getParty($tx);
                                             $amount = $getAmount($tx);
+                                            $dir = $getDirection($tx);
 
                                             $typeName =
                                                 data_get($tx, 'type.name') ??
@@ -232,34 +254,33 @@
                                                 data_get($tx, 'account.name') ??
                                                 ($tx->account_id ?? null ? 'Account #' . $tx->account_id : '-');
 
-                                            $isDebit = ((float) ($tx->debit ?? 0)) > 0;
+                                            $isIn = ((float) ($tx->credit ?? 0)) > 0; // ✅ IN = credit
                                         @endphp
-                                        <tr class="hover:bg-slate-50/70">
+
+                                        <tr class="hover:bg-slate-50/70 dark:hover:bg-white/5">
                                             <td class="px-4 py-3 whitespace-nowrap">
-                                                <div class="font-medium text-slate-800">
+                                                <div class="font-medium text-slate-800 dark:text-slate-100">
                                                     {{ $tx->transactions_date ?? '-' }}
                                                 </div>
-                                                <div class="text-xs text-slate-500">
-                                                    #{{ $tx->id }}
-                                                </div>
+                                                <div class="text-xs text-slate-500">#{{ $tx->id }}</div>
                                             </td>
 
                                             <td class="px-4 py-3">
                                                 <span
-                                                    class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs">
+                                                    class="inline-flex items-center rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-2 py-1 text-xs text-slate-700 dark:text-slate-200">
                                                     {{ $typeName }}
                                                 </span>
                                             </td>
 
                                             <td class="px-4 py-3">
-                                                <div class="font-medium text-slate-800">
-                                                    {{ $party['name'] }}
-                                                </div>
+                                                <div class="font-medium text-slate-800 dark:text-slate-100">
+                                                    {{ $party['name'] }}</div>
                                                 <div class="text-xs text-slate-500">{{ $party['label'] }}</div>
                                             </td>
 
                                             <td class="px-4 py-3">
-                                                <div class="text-slate-800">{{ $accountName }}</div>
+                                                <div class="text-slate-800 dark:text-slate-100">{{ $accountName }}
+                                                </div>
                                                 <div class="text-xs text-slate-500">
                                                     {{ $tx->recipt_no ? 'Receipt: ' . $tx->recipt_no : ($tx->student_book_number ? 'Book: ' . $tx->student_book_number : '') }}
                                                 </div>
@@ -267,40 +288,59 @@
 
                                             <td class="px-4 py-3 text-right whitespace-nowrap">
                                                 <div
-                                                    class="font-semibold {{ $isDebit ? 'text-emerald-700' : 'text-rose-700' }}">
+                                                    class="font-semibold {{ $isIn ? 'text-emerald-700' : 'text-rose-700' }}">
                                                     {{ number_format((float) $amount, 2) }}
                                                 </div>
                                                 <div class="text-xs text-slate-500">
-                                                    {{ $isDebit ? 'Debit' : 'Credit' }}
+                                                    {{ $dir }}
                                                 </div>
                                             </td>
 
-                                            {{-- ✅ Phase 2.6: Actions route-safe --}}
                                             <td class="px-4 py-3 text-right whitespace-nowrap">
                                                 <div class="inline-flex items-center gap-2">
                                                     @if (\Illuminate\Support\Facades\Route::has('transactions.receipt'))
                                                         <a href="{{ route('transactions.receipt', $tx->id) }}"
-                                                            class="text-xs rounded-lg border border-slate-200 bg-white px-2 py-1 hover:bg-slate-50">
+                                                            target="_blank"
+                                                            class="text-xs rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-2 py-1 hover:bg-slate-50 dark:hover:bg-white/5">
                                                             Print
                                                         </a>
                                                     @else
                                                         <button type="button" disabled
-                                                            class="text-xs rounded-lg border border-slate-200 bg-white px-2 py-1 opacity-50 cursor-not-allowed"
-                                                            title="Phase 6 এ Receipt/Print আসবে">
+                                                            class="text-xs rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-2 py-1 opacity-50 cursor-not-allowed"
+                                                            title="Receipt/Print route missing">
                                                             Print
                                                         </button>
                                                     @endif
 
                                                     @if (\Illuminate\Support\Facades\Route::has('transactions.edit'))
                                                         <a href="{{ route('transactions.edit', $tx->id) }}"
-                                                            class="text-xs rounded-lg border border-slate-200 bg-white px-2 py-1 hover:bg-slate-50">
+                                                            class="text-xs rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-2 py-1 hover:bg-slate-50 dark:hover:bg-white/5">
                                                             Edit
                                                         </a>
                                                     @else
                                                         <button type="button" disabled
-                                                            class="text-xs rounded-lg border border-slate-200 bg-white px-2 py-1 opacity-50 cursor-not-allowed"
-                                                            title="Phase 5 এ Edit flow আসবে">
+                                                            class="text-xs rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-2 py-1 opacity-50 cursor-not-allowed"
+                                                            title="Edit route missing">
                                                             Edit
+                                                        </button>
+                                                    @endif
+
+                                                    @if (\Illuminate\Support\Facades\Route::has('transactions.destroy'))
+                                                        <form method="POST"
+                                                            action="{{ route('transactions.destroy', $tx->id) }}"
+                                                            onsubmit="return confirm('Are you sure you want to delete this transaction?')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit"
+                                                                class="text-xs rounded-lg border border-rose-200 bg-rose-50 px-2 py-1 text-rose-700 hover:bg-rose-100">
+                                                                Delete
+                                                            </button>
+                                                        </form>
+                                                    @else
+                                                        <button type="button" disabled
+                                                            class="text-xs rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-2 py-1 opacity-50 cursor-not-allowed"
+                                                            title="Delete route missing">
+                                                            Delete
                                                         </button>
                                                     @endif
                                                 </div>
@@ -318,29 +358,27 @@
                         </div>
 
                         @if (method_exists($transactions ?? null, 'links'))
-                            <div class="px-4 py-3 border-t border-slate-200">
+                            <div class="px-4 py-3 border-t border-slate-200 dark:border-white/10">
                                 {{ $transactions->links() }}
                             </div>
                         @endif
                     </div>
                 </section>
 
-                {{-- RIGHT PANEL (Quick Add) --}}
+                {{-- RIGHT PANEL --}}
                 <aside class="col-span-12 lg:col-span-4">
-
                     @php
                         $activeTab = old('type_key', 'student_fee');
                         $feeMode = old('_tc_fee_mode', 'single');
                     @endphp
 
                     <div x-data="transactionCenterQuickAdd(@js($activeTab), @js($feeMode))"
-                        class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-                        <div class="px-4 py-3 border-b border-slate-200">
-                            <h3 class="text-sm font-semibold text-slate-800">Quick Add</h3>
+                        class="bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden">
+                        <div class="px-4 py-3 border-b border-slate-200 dark:border-white/10">
+                            <h3 class="text-sm font-semibold text-slate-800 dark:text-slate-100">Quick Add</h3>
                             <p class="text-xs text-slate-500 mt-1">Add transactions without leaving this page</p>
                         </div>
 
-                        {{-- ✅ Phase 2.6: errors box inside right panel --}}
                         @if ($errors->any())
                             <div
                                 class="mx-4 mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-rose-800 text-xs">
@@ -378,48 +416,44 @@
                             {{-- Student Fee --}}
                             <div x-show="tab==='student_fee'" x-cloak class="space-y-3">
 
-                                {{-- ✅ Sub Tabs (default: single) --}}
+                                {{-- Sub Tabs --}}
                                 <div class="grid grid-cols-2 gap-2">
                                     <button type="button" @click="feeMode='single'"
                                         class="rounded-xl border px-3 py-2 text-xs"
                                         :class="feeMode === 'single' ? 'bg-slate-900 text-white border-slate-900' :
-                                            'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'">
+                                            'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5'">
                                         Single Student
                                     </button>
 
                                     <button type="button" @click="feeMode='bulk'"
                                         class="rounded-xl border px-3 py-2 text-xs"
                                         :class="feeMode === 'bulk' ? 'bg-slate-900 text-white border-slate-900' :
-                                            'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'">
+                                            'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5'">
                                         Bulk Students
                                     </button>
                                 </div>
 
-                                {{-- =========================
-        SINGLE (Phase 2 Quick Store)
-    ========================== --}}
+                                {{-- SINGLE --}}
                                 <div x-show="feeMode==='single'" x-cloak
-                                    class="rounded-xl border border-slate-200 bg-white p-3">
+                                    class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950 p-3">
                                     <div class="mb-2">
-                                        <div class="text-sm font-semibold text-slate-800">Single Fee</div>
+                                        <div class="text-sm font-semibold text-slate-800 dark:text-slate-100">Single
+                                            Fee</div>
                                         <div class="text-xs text-slate-500">One student fee entry</div>
                                     </div>
 
-                                    <form method="POST" action="{{ url('/transactions/quick-store') }}"
-                                        class="space-y-3">
+                                    <form id="tc_single_fee_form" method="POST"
+                                        action="{{ url('/transactions/quick-store') }}" class="space-y-3">
                                         @csrf
                                         <input type="hidden" name="type_key" value="student_fee">
-                                        {{-- ✅ keep mode on validation error --}}
                                         <input type="hidden" name="_tc_fee_mode" value="single">
 
-                                        {{-- আপনার existing single form (একদম একই) --}}
                                         <div>
                                             <label
-                                                class="block text-xs font-medium text-slate-600 mb-1">Student</label>
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Student</label>
                                             <div class="flex items-center gap-2">
                                                 <select id="select_student_fee_student" data-entity-select="students"
-                                                    name="student_id"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    name="student_id" class="{{ $selectClass }}">
                                                     <option value="">Select student</option>
                                                     @foreach ($students ?? [] as $s)
                                                         @php
@@ -439,24 +473,23 @@
                                                             {{ $label }}
                                                         </option>
                                                     @endforeach
-
                                                 </select>
 
                                                 <button type="button"
                                                     @click="openModal('students', 'select_student_fee_student')"
-                                                    class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
+                                                    class="shrink-0 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-white/5">
                                                     + Add
                                                 </button>
                                             </div>
                                         </div>
 
-                                        {{-- ✅ Student meta (Auto-fill from student) --}}
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
-                                                <label class="block text-xs font-medium text-slate-600 mb-1">Academic
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Academic
                                                     Year</label>
                                                 <select id="select_student_fee_year" name="academic_year_id"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $selectClass }}">
                                                     <option value="">Select year</option>
                                                     @foreach ($years ?? [] as $y)
                                                         <option value="{{ $y->id }}"
@@ -469,9 +502,10 @@
 
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Month</label>
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Month
+                                                    <span class="text-rose-600">*</span></label>
                                                 <select id="select_student_fee_month" name="months_id"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $selectClass }}">
                                                     <option value="">Select month</option>
                                                     @foreach ($months ?? [] as $m)
                                                         <option value="{{ $m->id }}"
@@ -485,10 +519,18 @@
 
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
-                                                <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Class</label>
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <label
+                                                        class="block text-xs font-medium text-slate-600 dark:text-slate-300">Class</label>
+
+                                                    <button type="button" id="tc_apply_class_defaults"
+                                                        class="text-[11px] rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-2 py-1 hover:bg-slate-50 dark:hover:bg-white/5">
+                                                        Apply Defaults
+                                                    </button>
+                                                </div>
+
                                                 <select id="select_student_fee_class" name="class_id"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $selectClass }}">
                                                     <option value="">Select class</option>
                                                     @foreach ($classes ?? [] as $c)
                                                         <option value="{{ $c->id }}"
@@ -497,13 +539,17 @@
                                                         </option>
                                                     @endforeach
                                                 </select>
+
+                                                <p id="tc_defaults_status" class="text-[11px] text-slate-500 mt-1">
+                                                </p>
+
                                             </div>
 
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Section</label>
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Section</label>
                                                 <select id="select_student_fee_section" name="section_id"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $selectClass }}">
                                                     <option value="">Select section</option>
                                                     @foreach ($sections ?? [] as $sec)
                                                         <option value="{{ $sec->id }}"
@@ -517,10 +563,11 @@
 
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
-                                                <label class="block text-xs font-medium text-slate-600 mb-1">Fees
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Fees
                                                     Type</label>
                                                 <select id="select_student_fee_fess_type" name="fess_type_id"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $selectClass }}">
                                                     <option value="">Select fees type</option>
                                                     @foreach ($feesTypes ?? [] as $ft)
                                                         <option value="{{ $ft->id }}"
@@ -532,97 +579,103 @@
                                             </div>
 
                                             <div>
-                                                <label class="block text-xs font-medium text-slate-600 mb-1">Roll
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Roll
                                                     (Auto)</label>
                                                 <input id="student_fee_roll" type="text" readonly
-                                                    class="w-full rounded-xl border-slate-200 text-sm bg-slate-50 focus:border-slate-400 focus:ring-slate-200"
-                                                    placeholder="Auto from student">
+                                                    class="{{ $readonlyClass }}" placeholder="Auto from student">
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Student Book
-                                                Number</label>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Student
+                                                Book Number</label>
                                             <input type="text" name="student_book_number"
                                                 value="{{ $oldFor('student_book_number', 'student_fee') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                class="{{ $inputClass }}">
                                         </div>
 
-                                        {{-- ✅ Fees breakdown (RESTORED) --}}
+                                        {{-- Fees breakdown (all optional) --}}
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
-                                                <label class="block text-xs font-medium text-slate-600 mb-1">Admission
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Admission
                                                     Fee</label>
                                                 <input type="number" step="0.01" min="0"
                                                     name="admission_fee"
                                                     value="{{ $oldFor('admission_fee', 'student_fee') }}"
-                                                    class="tc-fee-input w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                            </div>
-
-                                            <div>
-                                                <label class="block text-xs font-medium text-slate-600 mb-1">Monthly
-                                                    Fee</label>
-                                                <input type="number" step="0.01" min="0"
-                                                    name="monthly_fees"
-                                                    value="{{ $oldFor('monthly_fees', 'student_fee') }}"
-                                                    class="tc-fee-input w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                            </div>
-
-                                            <div>
-                                                <label class="block text-xs font-medium text-slate-600 mb-1">Boarding
-                                                    Fee</label>
-                                                <input type="number" step="0.01" min="0"
-                                                    name="boarding_fees"
-                                                    value="{{ $oldFor('boarding_fees', 'student_fee') }}"
-                                                    class="tc-fee-input w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                            </div>
-
-                                            <div>
-                                                <label class="block text-xs font-medium text-slate-600 mb-1">Management
-                                                    Fee</label>
-                                                <input type="number" step="0.01" min="0"
-                                                    name="management_fees"
-                                                    value="{{ $oldFor('management_fees', 'student_fee') }}"
-                                                    class="tc-fee-input w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                            </div>
-
-                                            <div>
-                                                <label class="block text-xs font-medium text-slate-600 mb-1">Exam
-                                                    Fee</label>
-                                                <input type="number" step="0.01" min="0" name="exam_fees"
-                                                    value="{{ $oldFor('exam_fees', 'student_fee') }}"
-                                                    class="tc-fee-input w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="tc-fee-input {{ $inputClass }}">
                                             </div>
 
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Others</label>
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Monthly
+                                                    Fee</label>
+                                                <input type="number" step="0.01" min="0"
+                                                    name="monthly_fees"
+                                                    value="{{ $oldFor('monthly_fees', 'student_fee') }}"
+                                                    class="tc-fee-input {{ $inputClass }}">
+                                            </div>
+
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Boarding
+                                                    Fee</label>
+                                                <input type="number" step="0.01" min="0"
+                                                    name="boarding_fees"
+                                                    value="{{ $oldFor('boarding_fees', 'student_fee') }}"
+                                                    class="tc-fee-input {{ $inputClass }}">
+                                            </div>
+
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Management
+                                                    Fee</label>
+                                                <input type="number" step="0.01" min="0"
+                                                    name="management_fees"
+                                                    value="{{ $oldFor('management_fees', 'student_fee') }}"
+                                                    class="tc-fee-input {{ $inputClass }}">
+                                            </div>
+
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Exam
+                                                    Fee</label>
+                                                <input type="number" step="0.01" min="0" name="exam_fees"
+                                                    value="{{ $oldFor('exam_fees', 'student_fee') }}"
+                                                    class="tc-fee-input {{ $inputClass }}">
+                                            </div>
+
+                                            <div>
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Others</label>
                                                 <input type="number" step="0.01" min="0"
                                                     name="others_fees"
                                                     value="{{ $oldFor('others_fees', 'student_fee') }}"
-                                                    class="tc-fee-input w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="tc-fee-input {{ $inputClass }}">
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Total Fee
-                                                (Auto)</label>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Total
+                                                Fee (Auto)</label>
                                             <input id="tc_single_total" type="number" step="0.01" min="0"
                                                 name="total_fees" value="{{ $oldFor('total_fees', 'student_fee') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm bg-slate-50 focus:border-slate-400 focus:ring-slate-200"
-                                                readonly>
-                                            <p class="text-[11px] text-slate-500 mt-1">Auto calculated from all fee
-                                                fields.</p>
+                                                class="{{ $readonlyClass }}" readonly>
+                                            <p class="text-[11px] text-slate-500 mt-1">
+                                                Auto calculated. Ledger: Student Fee = <b>IN (credit)</b>.
+                                            </p>
                                         </div>
-
 
                                         <div>
                                             <label
-                                                class="block text-xs font-medium text-slate-600 mb-1">Account</label>
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Account
+                                                <span class="text-rose-600">*</span></label>
                                             <div class="flex items-center gap-2">
                                                 <select id="select_student_fee_account" data-entity-select="accounts"
-                                                    name="account_id"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    name="account_id" class="{{ $selectClass }}">
                                                     <option value="">Select account</option>
                                                     @foreach ($accounts ?? [] as $acc)
                                                         <option value="{{ $acc->id }}"
@@ -634,7 +687,7 @@
 
                                                 <button type="button"
                                                     @click="openModal('accounts', 'select_student_fee_account')"
-                                                    class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
+                                                    class="shrink-0 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-white/5">
                                                     + Add
                                                 </button>
                                             </div>
@@ -643,25 +696,27 @@
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Date</label>
                                                 <input type="date" name="transactions_date"
                                                     value="{{ $oldFor('transactions_date', 'student_fee') }}"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $inputClass }}">
                                             </div>
                                             <div>
-                                                <label class="block text-xs font-medium text-slate-600 mb-1">Receipt
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Receipt
                                                     No</label>
                                                 <input type="text" name="recipt_no"
                                                     value="{{ $oldFor('recipt_no', 'student_fee') }}"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $inputClass }}">
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Note</label>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Note</label>
                                             <input type="text" name="note"
                                                 value="{{ $oldFor('note', 'student_fee') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                class="{{ $inputClass }}">
                                         </div>
 
                                         <button type="submit"
@@ -671,42 +726,44 @@
                                     </form>
                                 </div>
 
-                                {{-- =========================
-        BULK (Phase 4)
-    ========================== --}}
+                                {{-- BULK --}}
                                 <div x-show="feeMode==='bulk'" x-cloak
-                                    class="rounded-xl border border-slate-200 bg-white p-3">
+                                    class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-950 p-3">
                                     <div class="mb-2">
-                                        <div class="text-sm font-semibold text-slate-800">Bulk Fees</div>
+                                        <div class="text-sm font-semibold text-slate-800 dark:text-slate-100">Bulk Fees
+                                        </div>
                                         <div class="text-xs text-slate-500">Class/Section/Month wise bulk entry</div>
                                     </div>
 
-                                    @include('transactions.partials.forms.student_fee_bulk', [
-                                        'years' => $years ?? [],
-                                        'months' => $months ?? [],
-                                        'classes' => $classes ?? [],
-                                        'sections' => $sections ?? [],
-                                        'accounts' => $accounts ?? [],
-                                    ])
+                                    @if (view()->exists('transactions.partials.forms.student_fee_bulk'))
+                                        @include('transactions.partials.forms.student_fee_bulk', [
+                                            'years' => $years ?? [],
+                                            'months' => $months ?? [],
+                                            'classes' => $classes ?? [],
+                                            'sections' => $sections ?? [],
+                                            'accounts' => $accounts ?? [],
+                                        ])
+                                    @else
+                                        <div class="text-xs text-slate-500">
+                                            Bulk form not added yet (transactions.partials.forms.student_fee_bulk).
+                                        </div>
+                                    @endif
                                 </div>
 
                             </div>
 
-
-
                             {{-- Donation --}}
                             <div x-show="tab==='donation'" x-cloak>
-                                <form method="POST" action="{{ url('/transactions/quick-store') }}"
-                                    class="space-y-3">
+                                <form method="POST" action="{{ url('/transactions/quick-store') }}" class="space-y-3">
                                     @csrf
                                     <input type="hidden" name="type_key" value="donation">
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Donor</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Donor</label>
                                         <div class="flex items-center gap-2">
                                             <select id="select_donation_donor" data-entity-select="donors"
-                                                name="doner_id"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                name="doner_id" class="{{ $selectClass }}">
                                                 <option value="">Select donor</option>
                                                 @foreach ($donors ?? [] as $d)
                                                     @php
@@ -721,28 +778,27 @@
                                             </select>
                                             <button type="button"
                                                 @click="openModal('donors', 'select_donation_donor')"
-                                                class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
+                                                class="shrink-0 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-white/5">
                                                 + Add
                                             </button>
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Amount</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Amount</label>
                                         <input type="number" step="0.01" name="amount"
-                                            value="{{ $oldFor('amount', 'donation') }}"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                        <p class="text-[11px] text-slate-500 mt-1">Will be saved as Debit (cash in).
-                                        </p>
+                                            value="{{ $oldFor('amount', 'donation') }}" class="{{ $inputClass }}">
+                                        <p class="text-[11px] text-slate-500 mt-1">Ledger: Donation = <b>IN
+                                                (credit)</b>.</p>
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Account</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Account</label>
                                         <div class="flex items-center gap-2">
-                                            {{-- ✅ FIX: id + data-entity-select --}}
                                             <select id="select_donation_account" data-entity-select="accounts"
-                                                name="account_id"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                name="account_id" class="{{ $selectClass }}">
                                                 <option value="">Select account</option>
                                                 @foreach ($accounts ?? [] as $acc)
                                                     <option value="{{ $acc->id }}" @selected($oldSelected('account_id', $acc->id, 'donation'))>
@@ -752,7 +808,7 @@
                                             </select>
                                             <button type="button"
                                                 @click="openModal('accounts', 'select_donation_account')"
-                                                class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
+                                                class="shrink-0 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-white/5">
                                                 + Add
                                             </button>
                                         </div>
@@ -760,25 +816,27 @@
 
                                     <div class="grid grid-cols-2 gap-2">
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Date</label>
                                             <input type="date" name="transactions_date"
                                                 value="{{ $oldFor('transactions_date', 'donation') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                class="{{ $inputClass }}">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Receipt
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Receipt
                                                 No</label>
                                             <input type="text" name="recipt_no"
                                                 value="{{ $oldFor('recipt_no', 'donation') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                class="{{ $inputClass }}">
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Note</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Note</label>
                                         <input type="text" name="note"
-                                            value="{{ $oldFor('note', 'donation') }}"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            value="{{ $oldFor('note', 'donation') }}" class="{{ $inputClass }}">
                                     </div>
 
                                     <button type="submit"
@@ -790,58 +848,60 @@
 
                             {{-- Loan Taken --}}
                             <div x-show="tab==='loan_taken'" x-cloak>
-                                <form method="POST" action="{{ url('/transactions/quick-store') }}"
-                                    class="space-y-3">
+                                <form method="POST" action="{{ url('/transactions/quick-store') }}" class="space-y-3">
                                     @csrf
                                     <input type="hidden" name="type_key" value="loan_taken">
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Lender</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Lender</label>
                                         <div class="flex items-center gap-2">
                                             <select id="select_loan_taken_lender" data-entity-select="lenders"
-                                                name="lender_id"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                name="lender_id" class="{{ $selectClass }}">
                                                 <option value="">Select lender</option>
                                                 @foreach ($lenders ?? [] as $l)
                                                     @php $label = $l->name ?? ($l->lender_name ?? 'Lender #' . $l->id); @endphp
-                                                    <option value="{{ $l->id }}" @selected($oldSelected('lender_id', $l->id, 'loan_taken'))>
+                                                    <option value="{{ $l->id }}"
+                                                        @selected($oldSelected('lender_id', $l->id, 'loan_taken'))>
                                                         {{ $label }}
                                                     </option>
                                                 @endforeach
                                             </select>
                                             <button type="button"
                                                 @click="openModal('lenders', 'select_loan_taken_lender')"
-                                                class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
+                                                class="shrink-0 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-white/5">
                                                 + Add
                                             </button>
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Amount</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Amount</label>
                                         <input type="number" step="0.01" name="amount"
                                             value="{{ $oldFor('amount', 'loan_taken') }}"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                        <p class="text-[11px] text-slate-500 mt-1">Loan taken = Debit (cash in).</p>
+                                            class="{{ $inputClass }}">
+                                        <p class="text-[11px] text-slate-500 mt-1">Ledger: Loan Taken = <b>IN
+                                                (credit)</b>.</p>
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Account</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Account</label>
                                         <div class="flex items-center gap-2">
-                                            {{-- ✅ FIX: id + data-entity-select --}}
                                             <select id="select_loan_taken_account" data-entity-select="accounts"
-                                                name="account_id"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                name="account_id" class="{{ $selectClass }}">
                                                 <option value="">Select account</option>
                                                 @foreach ($accounts ?? [] as $acc)
-                                                    <option value="{{ $acc->id }}" @selected($oldSelected('account_id', $acc->id, 'loan_taken'))>
+                                                    <option value="{{ $acc->id }}"
+                                                        @selected($oldSelected('account_id', $acc->id, 'loan_taken'))>
                                                         {{ $acc->name ?? 'Account #' . $acc->id }}
                                                     </option>
                                                 @endforeach
                                             </select>
                                             <button type="button"
                                                 @click="openModal('accounts', 'select_loan_taken_account')"
-                                                class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
+                                                class="shrink-0 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-white/5">
                                                 + Add
                                             </button>
                                         </div>
@@ -849,25 +909,28 @@
 
                                     <div class="grid grid-cols-2 gap-2">
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Date</label>
                                             <input type="date" name="transactions_date"
                                                 value="{{ $oldFor('transactions_date', 'loan_taken') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                class="{{ $inputClass }}">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Receipt
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Receipt
                                                 No</label>
                                             <input type="text" name="recipt_no"
                                                 value="{{ $oldFor('recipt_no', 'loan_taken') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                class="{{ $inputClass }}">
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Note</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Note</label>
                                         <input type="text" name="note"
                                             value="{{ $oldFor('note', 'loan_taken') }}"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            class="{{ $inputClass }}">
                                     </div>
 
                                     <button type="submit"
@@ -879,58 +942,60 @@
 
                             {{-- Loan Repayment --}}
                             <div x-show="tab==='loan_repayment'" x-cloak>
-                                <form method="POST" action="{{ url('/transactions/quick-store') }}"
-                                    class="space-y-3">
+                                <form method="POST" action="{{ url('/transactions/quick-store') }}" class="space-y-3">
                                     @csrf
                                     <input type="hidden" name="type_key" value="loan_repayment">
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Lender</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Lender</label>
                                         <div class="flex items-center gap-2">
                                             <select id="select_loan_repayment_lender" data-entity-select="lenders"
-                                                name="lender_id"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                name="lender_id" class="{{ $selectClass }}">
                                                 <option value="">Select lender</option>
                                                 @foreach ($lenders ?? [] as $l)
                                                     @php $label = $l->name ?? ($l->lender_name ?? 'Lender #' . $l->id); @endphp
-                                                    <option value="{{ $l->id }}" @selected($oldSelected('lender_id', $l->id, 'loan_repayment'))>
+                                                    <option value="{{ $l->id }}"
+                                                        @selected($oldSelected('lender_id', $l->id, 'loan_repayment'))>
                                                         {{ $label }}
                                                     </option>
                                                 @endforeach
                                             </select>
                                             <button type="button"
                                                 @click="openModal('lenders', 'select_loan_repayment_lender')"
-                                                class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
+                                                class="shrink-0 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-white/5">
                                                 + Add
                                             </button>
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Amount</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Amount</label>
                                         <input type="number" step="0.01" name="amount"
                                             value="{{ $oldFor('amount', 'loan_repayment') }}"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                        <p class="text-[11px] text-slate-500 mt-1">Repayment = Credit (cash out).</p>
+                                            class="{{ $inputClass }}">
+                                        <p class="text-[11px] text-slate-500 mt-1">Ledger: Repayment = <b>OUT
+                                                (debit)</b>.</p>
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Account</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Account</label>
                                         <div class="flex items-center gap-2">
-                                            {{-- ✅ FIX: id + data-entity-select --}}
                                             <select id="select_loan_repayment_account" data-entity-select="accounts"
-                                                name="account_id"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                name="account_id" class="{{ $selectClass }}">
                                                 <option value="">Select account</option>
                                                 @foreach ($accounts ?? [] as $acc)
-                                                    <option value="{{ $acc->id }}" @selected($oldSelected('account_id', $acc->id, 'loan_repayment'))>
+                                                    <option value="{{ $acc->id }}"
+                                                        @selected($oldSelected('account_id', $acc->id, 'loan_repayment'))>
                                                         {{ $acc->name ?? 'Account #' . $acc->id }}
                                                     </option>
                                                 @endforeach
                                             </select>
                                             <button type="button"
                                                 @click="openModal('accounts', 'select_loan_repayment_account')"
-                                                class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
+                                                class="shrink-0 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-white/5">
                                                 + Add
                                             </button>
                                         </div>
@@ -938,25 +1003,28 @@
 
                                     <div class="grid grid-cols-2 gap-2">
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Date</label>
                                             <input type="date" name="transactions_date"
                                                 value="{{ $oldFor('transactions_date', 'loan_repayment') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                class="{{ $inputClass }}">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Receipt
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Receipt
                                                 No</label>
                                             <input type="text" name="recipt_no"
                                                 value="{{ $oldFor('recipt_no', 'loan_repayment') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                class="{{ $inputClass }}">
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Note</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Note</label>
                                         <input type="text" name="note"
                                             value="{{ $oldFor('note', 'loan_repayment') }}"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            class="{{ $inputClass }}">
                                     </div>
 
                                     <button type="submit"
@@ -968,45 +1036,46 @@
 
                             {{-- Expense --}}
                             <div x-show="tab==='expense'" x-cloak>
-                                <form method="POST" action="{{ url('/transactions/quick-store') }}"
-                                    class="space-y-3">
+                                <form method="POST" action="{{ url('/transactions/quick-store') }}" class="space-y-3">
                                     @csrf
                                     <input type="hidden" name="type_key" value="expense">
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Expense
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Expense
                                             Title</label>
                                         <input type="text" name="title"
                                             value="{{ $oldFor('title', 'expense') }}"
-                                            placeholder="e.g., Electricity bill"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            placeholder="e.g., Electricity bill" class="{{ $inputClass }}">
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Amount</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Amount</label>
                                         <input type="number" step="0.01" name="amount"
                                             value="{{ $oldFor('amount', 'expense') }}"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                        <p class="text-[11px] text-slate-500 mt-1">Expense = Credit (cash out).</p>
+                                            class="{{ $inputClass }}">
+                                        <p class="text-[11px] text-slate-500 mt-1">Ledger: Expense = <b>OUT
+                                                (debit)</b>.</p>
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Account</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Account</label>
                                         <div class="flex items-center gap-2">
-                                            {{-- ✅ FIX: id + data-entity-select --}}
                                             <select id="select_expense_account" data-entity-select="accounts"
-                                                name="account_id"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                name="account_id" class="{{ $selectClass }}">
                                                 <option value="">Select account</option>
                                                 @foreach ($accounts ?? [] as $acc)
-                                                    <option value="{{ $acc->id }}" @selected($oldSelected('account_id', $acc->id, 'expense'))>
+                                                    <option value="{{ $acc->id }}"
+                                                        @selected($oldSelected('account_id', $acc->id, 'expense'))>
                                                         {{ $acc->name ?? 'Account #' . $acc->id }}
                                                     </option>
                                                 @endforeach
                                             </select>
                                             <button type="button"
                                                 @click="openModal('accounts', 'select_expense_account')"
-                                                class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
+                                                class="shrink-0 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-white/5">
                                                 + Add
                                             </button>
                                         </div>
@@ -1014,25 +1083,27 @@
 
                                     <div class="grid grid-cols-2 gap-2">
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Date</label>
                                             <input type="date" name="transactions_date"
                                                 value="{{ $oldFor('transactions_date', 'expense') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                class="{{ $inputClass }}">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Receipt
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Receipt
                                                 No</label>
                                             <input type="text" name="recipt_no"
                                                 value="{{ $oldFor('recipt_no', 'expense') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                class="{{ $inputClass }}">
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Note</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Note</label>
                                         <input type="text" name="note"
-                                            value="{{ $oldFor('note', 'expense') }}"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            value="{{ $oldFor('note', 'expense') }}" class="{{ $inputClass }}">
                                     </div>
 
                                     <button type="submit"
@@ -1044,45 +1115,45 @@
 
                             {{-- Income --}}
                             <div x-show="tab==='income'" x-cloak>
-                                <form method="POST" action="{{ url('/transactions/quick-store') }}"
-                                    class="space-y-3">
+                                <form method="POST" action="{{ url('/transactions/quick-store') }}" class="space-y-3">
                                     @csrf
                                     <input type="hidden" name="type_key" value="income">
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Income
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Income
                                             Title</label>
                                         <input type="text" name="title"
                                             value="{{ $oldFor('title', 'income') }}"
-                                            placeholder="e.g., Service income"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            placeholder="e.g., Service income" class="{{ $inputClass }}">
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Amount</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Amount</label>
                                         <input type="number" step="0.01" name="amount"
-                                            value="{{ $oldFor('amount', 'income') }}"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                        <p class="text-[11px] text-slate-500 mt-1">Income = Debit (cash in).</p>
+                                            value="{{ $oldFor('amount', 'income') }}" class="{{ $inputClass }}">
+                                        <p class="text-[11px] text-slate-500 mt-1">Ledger: Income = <b>IN (credit)</b>.
+                                        </p>
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Account</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Account</label>
                                         <div class="flex items-center gap-2">
-                                            {{-- ✅ FIX: id + data-entity-select --}}
                                             <select id="select_income_account" data-entity-select="accounts"
-                                                name="account_id"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                name="account_id" class="{{ $selectClass }}">
                                                 <option value="">Select account</option>
                                                 @foreach ($accounts ?? [] as $acc)
-                                                    <option value="{{ $acc->id }}" @selected($oldSelected('account_id', $acc->id, 'income'))>
+                                                    <option value="{{ $acc->id }}"
+                                                        @selected($oldSelected('account_id', $acc->id, 'income'))>
                                                         {{ $acc->name ?? 'Account #' . $acc->id }}
                                                     </option>
                                                 @endforeach
                                             </select>
                                             <button type="button"
                                                 @click="openModal('accounts', 'select_income_account')"
-                                                class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50">
+                                                class="shrink-0 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-white/5">
                                                 + Add
                                             </button>
                                         </div>
@@ -1090,25 +1161,27 @@
 
                                     <div class="grid grid-cols-2 gap-2">
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Date</label>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Date</label>
                                             <input type="date" name="transactions_date"
                                                 value="{{ $oldFor('transactions_date', 'income') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                class="{{ $inputClass }}">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Receipt
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Receipt
                                                 No</label>
                                             <input type="text" name="recipt_no"
                                                 value="{{ $oldFor('recipt_no', 'income') }}"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                class="{{ $inputClass }}">
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Note</label>
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Note</label>
                                         <input type="text" name="note"
-                                            value="{{ $oldFor('note', 'income') }}"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                            value="{{ $oldFor('note', 'income') }}" class="{{ $inputClass }}">
                                     </div>
 
                                     <button type="submit"
@@ -1120,20 +1193,22 @@
 
                         </div>
 
-                        {{-- Modal (Phase 3) --}}
+                        {{-- Modal --}}
                         <div x-show="modalOpen" x-cloak
                             class="fixed inset-0 z-50 flex items-center justify-center p-4">
                             <div class="fixed inset-0 bg-slate-900/60" @click="closeModal()"></div>
 
                             <div
-                                class="relative w-full max-w-md rounded-2xl bg-white border border-slate-200 shadow-xl overflow-hidden">
-                                <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+                                class="relative w-full max-w-md rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-white/10 shadow-xl overflow-hidden">
+                                <div
+                                    class="px-4 py-3 border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
                                     <div>
-                                        <div class="text-sm font-semibold text-slate-800" x-text="modalTitle"></div>
+                                        <div class="text-sm font-semibold text-slate-800 dark:text-slate-100"
+                                            x-text="modalTitle"></div>
                                         <div class="text-xs text-slate-500">Create → auto select</div>
                                     </div>
                                     <button type="button" @click="closeModal()"
-                                        class="rounded-lg border border-slate-200 px-2 py-1 text-xs hover:bg-slate-50">✕</button>
+                                        class="rounded-lg border border-slate-200 dark:border-white/10 px-2 py-1 text-xs hover:bg-slate-50 dark:hover:bg-white/5">✕</button>
                                 </div>
 
                                 <div class="p-4 space-y-3">
@@ -1149,84 +1224,87 @@
                                         </div>
                                     </template>
 
-                                    <div>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Name</label>
-                                        <input type="text" x-model="modalForm.name"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200"
+                                    {{-- ✅ Name (not for students) --}}
+                                    <div x-show="modalEntity!=='students'">
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Name</label>
+                                        <input type="text" x-model="modalForm.name" class="{{ $inputClass }}"
                                             placeholder="Enter name">
                                     </div>
 
-                                    {{-- Students extra --}}
+                                    {{-- ✅ Students (Phase 1): full_name + father_name, email optional --}}
                                     <div x-show="modalEntity==='students'" x-cloak class="space-y-2">
+                                        <div>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Full
+                                                Name</label>
+                                            <input type="text" x-model="modalForm.full_name"
+                                                class="{{ $inputClass }}" placeholder="Student full name">
+                                        </div>
 
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div>
-                                                <label class="block text-xs font-medium text-slate-600 mb-1">First
-                                                    Name</label>
-                                                <input type="text" x-model="modalForm.first_name"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-slate-600 mb-1">Last
-                                                    Name</label>
-                                                <input type="text" x-model="modalForm.last_name"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
-                                            </div>
+                                        <div>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Father
+                                                Name</label>
+                                            <input type="text" x-model="modalForm.father_name"
+                                                class="{{ $inputClass }}" placeholder="Father name (optional)">
                                         </div>
 
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">DOB</label>
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">DOB</label>
                                                 <input type="date" x-model="modalForm.dob"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $inputClass }}">
                                             </div>
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Age</label>
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Age</label>
                                                 <input type="number" x-model="modalForm.age"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $inputClass }}">
                                             </div>
                                         </div>
 
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Roll</label>
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Roll</label>
                                                 <input type="number" x-model="modalForm.roll"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $inputClass }}">
                                             </div>
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Scholarship
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Scholarship
                                                     Amount</label>
                                                 <input type="number" step="0.01"
                                                     x-model="modalForm.scholarship_amount"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $inputClass }}">
                                             </div>
                                         </div>
 
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Mobile</label>
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Mobile</label>
                                                 <input type="text" x-model="modalForm.mobile"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $inputClass }}">
                                             </div>
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Email</label>
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Email
+                                                    (optional)</label>
                                                 <input type="email" x-model="modalForm.email"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $inputClass }}">
                                             </div>
                                         </div>
 
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
-                                                <label class="block text-xs font-medium text-slate-600 mb-1">Fees
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Fees
                                                     Type</label>
                                                 <select x-model="modalForm.fees_type_id"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $selectClass }}">
                                                     <option value="">Select</option>
                                                     @foreach ($feesTypes ?? [] as $ft)
                                                         <option value="{{ $ft->id }}">
@@ -1235,10 +1313,11 @@
                                                 </select>
                                             </div>
                                             <div>
-                                                <label class="block text-xs font-medium text-slate-600 mb-1">Academic
+                                                <label
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Academic
                                                     Year</label>
                                                 <select x-model="modalForm.academic_year_id"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="{{ $selectClass }}">
                                                     <option value="">Select</option>
                                                     @foreach ($years ?? [] as $y)
                                                         <option value="{{ $y->id }}">
@@ -1251,9 +1330,8 @@
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Class</label>
-                                                <select x-model="modalForm.class_id"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Class</label>
+                                                <select x-model="modalForm.class_id" class="{{ $selectClass }}">
                                                     <option value="">Select</option>
                                                     @foreach ($classes ?? [] as $c)
                                                         <option value="{{ $c->id }}">
@@ -1263,9 +1341,8 @@
                                             </div>
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Section</label>
-                                                <select x-model="modalForm.section_id"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Section</label>
+                                                <select x-model="modalForm.section_id" class="{{ $selectClass }}">
                                                     <option value="">Select</option>
                                                     @foreach ($sections ?? [] as $sec)
                                                         <option value="{{ $sec->id }}">
@@ -1276,91 +1353,90 @@
                                         </div>
 
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Photo
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Photo
                                                 (optional)</label>
                                             <input type="file" accept="image/*"
                                                 @change="modalForm.photo = $event.target.files[0]"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200">
+                                                class="w-full rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-sm text-slate-900 dark:text-slate-100">
                                         </div>
 
-                                        <label class="inline-flex items-center gap-2 text-xs text-slate-700 mt-1">
+                                        <label
+                                            class="inline-flex items-center gap-2 text-xs text-slate-700 dark:text-slate-200 mt-1">
                                             <input type="checkbox" x-model="modalForm.isActived"
-                                                class="rounded border-slate-300">
+                                                class="rounded border-slate-300 dark:border-white/20">
                                             Active
                                         </label>
                                     </div>
 
-
-
-                                    {{-- Donors extra --}}
+                                    {{-- Donors --}}
                                     <div x-show="modalEntity==='donors'" x-cloak class="grid grid-cols-2 gap-2">
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Mobile</label>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Mobile</label>
                                             <input type="text" x-model="modalForm.mobile"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200"
-                                                placeholder="01xxxxxxxxx">
+                                                class="{{ $inputClass }}" placeholder="01xxxxxxxxx">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Email</label>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Email
+                                                (optional)</label>
                                             <input type="email" x-model="modalForm.email"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200"
-                                                placeholder="email@example.com">
+                                                class="{{ $inputClass }}" placeholder="email@example.com">
                                         </div>
                                     </div>
 
-                                    {{-- Accounts extra --}}
+                                    {{-- Accounts --}}
                                     <div x-show="modalEntity==='accounts'" x-cloak>
-                                        <label class="block text-xs font-medium text-slate-600 mb-1">Account
+                                        <label
+                                            class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Account
                                             Details</label>
                                         <input type="text" x-model="modalForm.account_details"
-                                            class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200"
-                                            placeholder="e.g., Cash in hand">
+                                            class="{{ $inputClass }}" placeholder="e.g., Cash in hand">
                                         <div class="mt-2">
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Account Number
-                                                (optional)</label>
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Account
+                                                Number (optional)</label>
                                             <input type="text" x-model="modalForm.account_number"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200"
-                                                placeholder="Leave blank for auto">
+                                                class="{{ $inputClass }}" placeholder="Leave blank for auto">
                                         </div>
                                     </div>
 
-                                    {{-- Lenders extra --}}
+                                    {{-- Lenders --}}
                                     <div x-show="modalEntity==='lenders'" x-cloak class="space-y-2">
                                         <div class="grid grid-cols-2 gap-2">
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Phone</label>
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Phone</label>
                                                 <input type="text" x-model="modalForm.phone"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200"
-                                                    placeholder="01xxxxxxxxx">
+                                                    class="{{ $inputClass }}" placeholder="01xxxxxxxxx">
                                             </div>
                                             <div>
                                                 <label
-                                                    class="block text-xs font-medium text-slate-600 mb-1">Email</label>
+                                                    class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Email
+                                                    (optional)</label>
                                                 <input type="email" x-model="modalForm.email"
-                                                    class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200"
-                                                    placeholder="email@example.com">
+                                                    class="{{ $inputClass }}" placeholder="email@example.com">
                                             </div>
                                         </div>
                                         <div>
                                             <label
-                                                class="block text-xs font-medium text-slate-600 mb-1">Address</label>
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Address</label>
                                             <input type="text" x-model="modalForm.address"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200"
-                                                placeholder="Address">
+                                                class="{{ $inputClass }}" placeholder="Address">
                                         </div>
                                         <div>
-                                            <label class="block text-xs font-medium text-slate-600 mb-1">Bank
+                                            <label
+                                                class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Bank
                                                 Details</label>
                                             <input type="text" x-model="modalForm.bank_detils"
-                                                class="w-full rounded-xl border-slate-200 text-sm focus:border-slate-400 focus:ring-slate-200"
-                                                placeholder="Bank details">
+                                                class="{{ $inputClass }}" placeholder="Bank details">
                                         </div>
                                     </div>
 
                                     <div class="flex items-center justify-end gap-2 pt-2">
                                         <button type="button" @click="closeModal()"
-                                            class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm hover:bg-slate-50">
+                                            class="rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-4 py-2 text-sm hover:bg-slate-50 dark:hover:bg-white/5">
                                             Cancel
                                         </button>
                                         <button type="button" @click="submitModal()" :disabled="saving"
@@ -1372,15 +1448,13 @@
 
                                     <p class="text-[11px] text-slate-500">
                                         AJAX: <code
-                                            class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded">POST
+                                            class="px-1 py-0.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded">POST
                                             /ajax/{entity}</code>
                                     </p>
                                 </div>
                             </div>
                         </div>
-
-
-
+                        {{-- /Modal --}}
                     </div>
                 </aside>
 
@@ -1388,16 +1462,13 @@
         </div>
     </div>
 
-    {{-- Page JS (vanilla + Alpine) --}}
-
-    {{-- modal --}}
-
+    {{-- Alpine + JS --}}
     <script>
         function transactionCenterQuickAdd(initialTab = 'student_fee', initialFeeMode = 'single') {
             return {
                 tab: initialTab,
                 feeMode: initialFeeMode,
-                tabClass: 'rounded-xl border border-slate-200 bg-white px-2 py-2 hover:bg-slate-50',
+                tabClass: 'rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 px-2 py-2 hover:bg-slate-50 dark:hover:bg-white/5',
                 activeTabClass: 'rounded-xl border border-slate-900 bg-slate-900 text-white px-2 py-2 hover:bg-slate-800',
 
                 modalOpen: false,
@@ -1407,7 +1478,7 @@
                 modalErrors: [],
                 saving: false,
 
-                // ✅ FULL modal form (students + others)
+                // ✅ Phase 1: student full_name + father_name
                 modalForm: {
                     // common
                     name: '',
@@ -1423,9 +1494,9 @@
                     account_number: '',
                     account_details: '',
 
-                    // ✅ students
-                    first_name: '',
-                    last_name: '',
+                    // students
+                    full_name: '',
+                    father_name: '',
                     dob: '',
                     age: '',
                     roll: '',
@@ -1445,7 +1516,6 @@
                     this.modalErrors = [];
                     this.saving = false;
 
-                    // ✅ reset full
                     this.modalForm = {
                         name: '',
                         mobile: '',
@@ -1458,8 +1528,8 @@
                         account_number: '',
                         account_details: '',
 
-                        first_name: '',
-                        last_name: '',
+                        full_name: '',
+                        father_name: '',
                         dob: '',
                         age: '',
                         roll: '',
@@ -1484,16 +1554,13 @@
                 },
 
                 _studentLabelFromData(data) {
-                    // best label for select option
-                    const label =
+                    return (
                         data?.label ||
-                        data?.name ||
                         data?.full_name ||
+                        data?.name ||
                         data?.student_name ||
-                        (data?.first_name ? `${data.first_name} ${data.last_name || ''}`.trim() : null) ||
-                        (data?.id ? `Student #${data.id}` : '#');
-
-                    return label;
+                        (data?.id ? `Student #${data.id}` : '#')
+                    );
                 },
 
                 async submitModal() {
@@ -1502,25 +1569,21 @@
 
                     const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
                         '{{ csrf_token() }}';
-
                     const endpoint = `/ajax/${this.modalEntity}`;
 
                     try {
                         let res;
 
-                        // ✅ STUDENTS => FormData (photo support)
                         if (this.modalEntity === 'students') {
                             const fd = new FormData();
 
-                            // build a safe display name
-                            const autoName = `${this.modalForm.first_name || ''} ${this.modalForm.last_name || ''}`
-                                .trim();
-                            const finalName = (this.modalForm.name || autoName || '').trim();
+                            const fullName = (this.modalForm.full_name || '').trim();
 
-                            fd.append('name', finalName);
+                            // ✅ keep "name" for backward compatibility (some endpoints may expect it)
+                            fd.append('name', fullName);
+                            fd.append('full_name', fullName);
+                            fd.append('father_name', this.modalForm.father_name || '');
 
-                            fd.append('first_name', this.modalForm.first_name || '');
-                            fd.append('last_name', this.modalForm.last_name || '');
                             fd.append('dob', this.modalForm.dob || '');
                             fd.append('age', this.modalForm.age || '');
                             fd.append('roll', this.modalForm.roll || '');
@@ -1550,7 +1613,6 @@
                             });
 
                         } else {
-                            // ✅ others => JSON
                             let payload = {
                                 name: this.modalForm.name
                             };
@@ -1586,13 +1648,9 @@
                         const data = await res.json().catch(() => ({}));
 
                         if (!res.ok) {
-                            if (data?.errors) {
-                                this.modalErrors = Object.values(data.errors).flat();
-                            } else if (data?.message) {
-                                this.modalErrors = [data.message];
-                            } else {
-                                this.modalErrors = ['Something went wrong'];
-                            }
+                            if (data?.errors) this.modalErrors = Object.values(data.errors).flat();
+                            else if (data?.message) this.modalErrors = [data.message];
+                            else this.modalErrors = ['Something went wrong'];
                             this.saving = false;
                             return;
                         }
@@ -1606,13 +1664,11 @@
                             if (this.modalEntity === 'students') {
                                 opt.textContent = this._studentLabelFromData(data);
 
-                                // ✅ set dataset so single fee auto-fill works
                                 opt.dataset.roll = data.roll ?? '';
                                 opt.dataset.classId = data.class_id ?? '';
                                 opt.dataset.sectionId = data.section_id ?? '';
                                 opt.dataset.academicYearId = data.academic_year_id ?? '';
                                 opt.dataset.feesTypeId = data.fees_type_id ?? '';
-
                             } else {
                                 opt.textContent = data.name || (`#${data.id}`);
                             }
@@ -1620,12 +1676,11 @@
                             sel.appendChild(opt);
                         });
 
-                        // ✅ auto-select target select if provided
+                        // ✅ auto-select target
                         if (this.modalTargetSelectId) {
                             const target = document.getElementById(this.modalTargetSelectId);
                             if (target) {
                                 target.value = String(data.id);
-                                // ✅ trigger change (student meta auto-fill)
                                 target.dispatchEvent(new Event('change'));
                             }
                         }
@@ -1641,9 +1696,7 @@
         }
     </script>
 
-
-
-
+    {{-- Student meta auto-fill --}}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const studentSel = document.getElementById('select_student_fee_student');
@@ -1652,8 +1705,15 @@
             const rollInput = document.getElementById('student_fee_roll');
 
             const setIfEmpty = (el, val) => {
-                if (!el || !val) return;
-                if (!el.value) el.value = String(val);
+                if (!el || !val) return false;
+                if (!el.value) {
+                    el.value = String(val);
+                    el.dispatchEvent(new Event('change', {
+                        bubbles: true
+                    }));
+                    return true;
+                }
+                return false;
             };
 
             const applyMeta = () => {
@@ -1669,13 +1729,99 @@
             };
 
             studentSel.addEventListener('change', applyMeta);
-            applyMeta(); // page load (old selected থাকলে)
+            applyMeta();
         });
     </script>
 
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Single fee form target: hidden _tc_fee_mode=single
+            const form = document.getElementById('tc_single_fee_form');
+            if (!form) return;
+
+            const endpoint = @js($classDefaultFeesEndpoint ?? url('/ajax/class-default-fees'));
+
+            const classSel = document.getElementById('select_student_fee_class');
+            const feesTypeSel = document.getElementById('select_student_fee_fess_type');
+            const applyBtn = document.getElementById('tc_apply_class_defaults');
+            const statusEl = document.getElementById('tc_defaults_status');
+
+            if (!classSel) return;
+
+            const setStatus = (t) => {
+                if (statusEl) statusEl.textContent = t || '';
+            };
+
+            const setFee = (name, val, force = false) => {
+                const el = form.querySelector(`input[name="${name}"]`);
+                if (!el) return;
+
+                const incoming = parseFloat(val || 0) || 0;
+
+                // ✅ do not overwrite user input unless force=true
+                const currentRaw = String(el.value || '').trim();
+                const currentNum = parseFloat(currentRaw || 0) || 0;
+
+                if (!force) {
+                    if (currentRaw !== '' && currentNum > 0) return;
+                }
+
+                el.value = incoming > 0 ? String(incoming) : '';
+                el.dispatchEvent(new Event('input', {
+                    bubbles: true
+                }));
+            };
+
+            const loadDefaults = async (force = false) => {
+                const classId = classSel.value;
+                if (!classId) {
+                    setStatus('');
+                    return;
+                }
+
+                setStatus('Loading defaults...');
+                try {
+                    const url = new URL(endpoint, window.location.origin);
+                    url.searchParams.set('class_id', classId);
+
+                    const res = await fetch(url.toString(), {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const data = await res.json().catch(() => ({}));
+
+                    if (!res.ok || !data?.found) {
+                        setStatus('No defaults found for this class.');
+                        return;
+                    }
+
+                    setFee('monthly_fees', data.monthly_fees, force);
+                    setFee('boarding_fees', data.boarding_fees, force);
+                    setFee('management_fees', data.management_fees, force);
+                    setFee('exam_fees', data.exam_fees, force);
+                    setFee('others_fees', data.others_fees, force);
+
+                    setStatus(`Defaults applied (source #${data.source_id}).`);
+                } catch (e) {
+                    setStatus('Failed to load defaults.');
+                }
+            };
+
+            classSel.addEventListener('change', () => loadDefaults(false));
+            feesTypeSel?.addEventListener('change', () => loadDefaults(false));
+
+            applyBtn?.addEventListener('click', () => loadDefaults(true));
+
+            // initial attempt (if class already set)
+            if (classSel.value) loadDefaults(false);
+        });
+    </script>
+
+
+    {{-- Total auto-calc (single fee) --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
             const mode = document.querySelector('input[name="_tc_fee_mode"][value="single"]');
             const form = mode ? mode.closest('form') : null;
             if (!form) return;
@@ -1696,21 +1842,17 @@
                 if (totalEl) totalEl.value = sum > 0 ? sum.toFixed(2) : '';
             };
 
-            // bind
             feeNames.forEach(name => {
                 const el = form.querySelector(`input[name="${name}"]`);
                 if (el) el.addEventListener('input', calc);
             });
 
-            // initial
             calc();
         });
     </script>
 
-
-    {{-- date range buttons --}}
+    {{-- Date range buttons --}}
     <script>
-        // ✅ Phase 2.6: Date range buttons (Today / This Month) -> auto submit
         document.addEventListener('DOMContentLoaded', () => {
             const form = document.querySelector('[data-filter-form]');
             if (!form) return;
@@ -1743,8 +1885,6 @@
                 });
             });
         });
-
-        // Alpine data
     </script>
 
     <style>
@@ -1752,6 +1892,4 @@
             display: none !important;
         }
     </style>
-
-
 </x-app-layout>

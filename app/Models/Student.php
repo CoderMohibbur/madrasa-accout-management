@@ -10,12 +10,42 @@ class Student extends Model
     use HasFactory;
 
     protected $fillable = [
-        'first_name','last_name','full_name','dob','roll','email','mobile','photo','age',
-        'fees_type_id','class_id','section_id','academic_year_id',
-        'scholarship_amount','isActived','isDeleted'
+        'full_name',
+        'father_name',
+        'dob',
+        'roll',
+        'email',
+        'mobile',
+        'photo',
+        'age',
+        'fees_type_id',
+        'class_id',
+        'section_id',
+        'academic_year_id',
+        'scholarship_amount',
+        'isActived',
+        'isDeleted',
     ];
 
-    // ✅ Proper relations (use these in Transaction Center)
+    protected $casts = [
+        'dob' => 'date',
+        'roll' => 'integer',
+        'scholarship_amount' => 'decimal:2',
+        'isActived' => 'boolean',
+        'isDeleted' => 'boolean',
+    ];
+
+    /**
+     * ✅ Legacy friendly:
+     * আপনার অনেক জায়গায় $student->name চেক করা আছে,
+     * তাই name attribute কে full_name হিসেবে expose করে দিলাম।
+     */
+    public function getNameAttribute(): ?string
+    {
+        return $this->full_name;
+    }
+
+    // ✅ Proper relations (Transaction Center uses these)
     public function feesType()
     {
         return $this->belongsTo(AddFessType::class, 'fees_type_id');
@@ -36,9 +66,9 @@ class Student extends Model
         return $this->belongsTo(AddAcademy::class, 'academic_year_id');
     }
 
-    // ✅ Backward compatibility (আপনার পুরোনো কোড ভাঙবে না)
+    // ✅ Backward compatibility (পুরোনো কোড ভাঙবে না)
     public function AddFess()   { return $this->belongsTo(AddFessType::class, 'fees_type_id'); }
     public function classes()   { return $this->belongsTo(AddClass::class, 'class_id'); }
-    public function Sections()   { return $this->belongsTo(AddSection::class, 'section_id'); }
+    public function Sections()  { return $this->belongsTo(AddSection::class, 'section_id'); }
     public function Academy()   { return $this->belongsTo(AddAcademy::class, 'academic_year_id'); }
 }

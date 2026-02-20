@@ -40,6 +40,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/transaction-center', [TransactionCenterController::class, 'index'])
         ->name('transactions.center');
 
+    // ✅ Phase 2: Class Default Fees AJAX
+    Route::get('/ajax/class-default-fees', [TransactionCenterController::class, 'classDefaultFees'])
+        ->name('ajax.class_default_fees');
+
+    // ✅ Transaction actions (Print / Edit / Delete)
+    Route::get('/transactions/{transaction}/receipt', [TransactionCenterController::class, 'receipt'])
+        ->name('transactions.receipt');
+
+    Route::get('/transactions/{transaction}/edit', [TransactionCenterController::class, 'edit'])
+        ->name('transactions.edit');
+
+    Route::put('/transactions/{transaction}', [TransactionCenterController::class, 'update'])
+        ->name('transactions.update');
+
+    Route::delete('/transactions/{transaction}', [TransactionCenterController::class, 'destroy'])
+        ->name('transactions.destroy');
+
     Route::post('/transactions/quick-store', [TransactionCenterController::class, 'storeQuick'])
         ->name('transactions.quickStore');
 

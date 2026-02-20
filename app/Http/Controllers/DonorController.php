@@ -2,148 +2,218 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\Donor;
 use App\Models\Account;
 use App\Models\AddFessType;
+use App\Models\Donor;
 use App\Models\Transactions;
+use App\Models\TransactionsType;
+use App\Support\TransactionLedger;
 use Illuminate\Http\Request;
 
 class DonorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        // Fetch all years
         $Donors = Donor::all();
-
-        // Return view with the list of years
         return view('donors.index', compact('Donors'));
     }
-    // Show the form for creating a new Donor
+
     public function create()
     {
-
-        $fees_types = AddFessType::all(); // Fetch all available fees types
-
+        $fees_types = AddFessType::all();
         return view('donors.create', compact('fees_types'));
     }
+
     public function store(Request $request)
     {
-        // Validate the incoming request data
+        // ✅ only necessary required (Phase 1 style)
         $validatedData = $request->validate([
-            'name' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
-            'mobile' => 'nullable|string|max:15',
-            'fees_type_id' => 'required|exists:add_fess_types,id',
-            'isActived' => 'boolean',
+            'name'        => 'nullable|string|max:255',
+            'email'       => 'nullable|email|max:255',
+            'mobile'      => 'nullable|string|max:15',
+            'fees_type_id'=> 'nullable|exists:add_fess_types,id', // ✅ optional
+            'isActived'   => 'nullable|boolean',
         ]);
 
-
-        // Create a new Donor record using the validated data
         Donor::create([
-            'name' => $validatedData['name'],
-            'email' => $validatedData['email'],
-            'mobile' => $validatedData['mobile'],
-            'fees_type_id' => $validatedData['fees_type_id'],
-            'isActived' => $validatedData['isActived'] ?? 1, // Set active by default if not provided
-            'isDeleted' => 0, // Set as not deleted by default
+            'name'        => $validatedData['name'] ?? null,
+            'email'       => $validatedData['email'] ?? null,
+            'mobile'      => $validatedData['mobile'] ?? null,
+            'fees_type_id'=> $validatedData['fees_type_id'] ?? null,
+            'isActived'   => $validatedData['isActived'] ?? 1,
+            'isDeleted'   => 0,
         ]);
 
-        // Redirect to the Donor list with a success message
         return redirect()->route('donors.index')->with('success', 'Donor created successfully.');
     }
 
-    // Display the specified Donor
-    public function show(Donor $Donor)
-    {
-        return view('Donors.show', data: compact(var_name: 'Donors'));
-    }
     public function edit($id)
     {
-        // Find the Donation by ID
         $Donor = Donor::findOrFail($id);
         $fees_types = AddFessType::all();
-
-        // Return view with the Donation details for editing
-
         return view('donors.create', compact('Donor', 'fees_types'));
     }
+
     public function update(Request $request, Donor $Donor)
     {
-        // Validate the incoming request data
         $validated = $request->validate([
-            'doner_id' => 'required|exists:donors,id',
-            'account_id' => 'required|exists:accounts,id',
-            'debit' => 'required|numeric|min:0',
-            'transactions_date' => 'required|date',
+            'name'         => 'nullable|string|max:255',
+            'email'        => 'nullable|email|max:255',
+            'mobile'       => 'nullable|string|max:15',
+            'fees_type_id' => 'nullable|exists:add_fess_types,id',
+            'isActived'    => 'nullable|boolean',
         ]);
 
-        // Update the Donor record using the validated data
         $Donor->update([
-            'name' => $validated['name'],
-            'mobile' => $validated['mobile'],
-            'email' => $validated['email'],
-            'fees_type_id' => $validated['fees_type_id'],
-            'isActived' => $validated['isActived'] ?? 1, // Set active by default if not provided
+            'name'         => $validated['name'] ?? null,
+            'email'        => $validated['email'] ?? null,
+            'mobile'       => $validated['mobile'] ?? null,
+            'fees_type_id' => $validated['fees_type_id'] ?? null,
+            'isActived'    => $validated['isActived'] ?? 1,
         ]);
 
-        // Redirect to the Donor list with a success message
         return redirect()->route('donors.index')->with('success', 'Donor updated successfully.');
     }
 
-    // Remove the specified Donor from storage
     public function destroy(Donor $Donor)
     {
         $Donor->delete();
         return redirect()->route('donors.index')->with('success', 'Donor deleted successfully.');
     }
+
+    /**
+     * Donation transactions list/add page
+     */
     public function donars()
     {
-        $transactionss = Transactions::whereNotNull('doner_id')->get();
+        $transactionss = Transactions::whereNotNull('doner_id')->orderByDesc('id')->get();
         $Donors = Donor::all();
         $accounts = Account::all();
 
         return view('donors.add-donar', compact('transactionss', 'Donors', 'accounts'));
     }
 
+    /**
+     * ✅ Donation create (Phase 1)
+     * - no hardcode transactions_type_id
+     * - donation is INCOME => credit
+     */
     public function donosr_store(Request $request)
     {
-        $today = Carbon::now();
-        // Validate the form inputs
-        $validatedData = $request->validate([
-            'doner_id' => 'exists:donors,id',
-            'total_fees' => 'numeric',
-            'c_s_1' => 'string|max:250',
-
-
-            'account_id' => 'exists:accounts,id',
-            'note' => 'string|max:500',
-            'isActived' => 'required|boolean', // Ensure the status is either 'activate' or 'deactivate'
+        $validated = $request->validate([
+            'doner_id'          => 'required|exists:donors,id',
+            'total_fees'        => 'required|numeric|min:0.01',   // donation amount
+            'c_s_1'             => 'nullable|string|max:250',     // title
+            'account_id'        => 'required|exists:accounts,id',
+            'note'              => 'nullable|string|max:500',
+            'transactions_date' => 'nullable|date',
+            'isActived'         => 'required|boolean',
         ]);
 
-        // Create a new Donation and save to the database
+        $txDate = $validated['transactions_date'] ?? now()->toDateString();
+        $amount = (float) $validated['total_fees'];
+
+        $typeId = TransactionsType::idByKey('donation');
+        $split  = TransactionLedger::split('donation', $amount); // ✅ credit
 
         Transactions::create([
-            'doner_id' => $validatedData['doner_id'],
-            'fess_type_id' => 1,
-            'transactions_type_id' => 1,
-            'total_fees' => $validatedData['total_fees'],
-            'c_s_1' => $validatedData['c_s_1'],
+            'doner_id'             => $validated['doner_id'],
+            'transactions_type_id' => $typeId,
+            'account_id'           => $validated['account_id'],
+            'transactions_date'    => $txDate,
+            'note'                 => $validated['note'] ?? 'Donation',
+            'c_s_1'                => $validated['c_s_1'] ?? 'Donation',
+            'total_fees'           => $amount,
 
-            'account_id' => $validatedData['account_id'],
+            'debit'                => $split['debit'],
+            'credit'               => $split['credit'],
 
-            'transactions_date' => $today,
-            'note' => $validatedData['note'],
-            'isActived' => $validatedData['isActived'] ?? 1, // Save as boolean: true for 'activate', false for 'deactivate'
+            'fess_type_id'         => null,
+            'isActived'            => $validated['isActived'] ?? 1,
+            'isDeleted'            => 0,
+            'created_by_id'        => auth()->id(),
         ]);
 
-        // Redirect back or to a success page
         return redirect()->route('add_donar')->with('success', 'Donation added successfully!');
     }
 
+    public function edit_donor($id)
+    {
+        $transaction = Transactions::findOrFail($id);
+        $transactionss = Transactions::whereNotNull('doner_id')->orderByDesc('id')->get();
+        $Donors = Donor::all();
+        $accounts = Account::all();
+
+        return view('donors.add-donar', compact('transaction', 'Donors', 'accounts', 'transactionss'));
+    }
+
+    /**
+     * ✅ Donation update (Phase 1)
+     * - fix invalid validation
+     * - remove hardcode type id
+     * - keep donation ledger: credit
+     */
+    public function update_donor(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'doner_id'          => 'required|exists:donors,id',
+            'total_fees'        => 'required|numeric|min:0.01',
+            'account_id'        => 'required|exists:accounts,id',
+            'c_s_1'             => 'nullable|string|max:250',
+            'note'              => 'nullable|string|max:500',
+            'transactions_date' => 'nullable|date',
+            'isActived'         => 'required|boolean',
+        ]);
+
+        $transaction = Transactions::findOrFail($id);
+
+        $txDate = $validated['transactions_date'] ?? now()->toDateString();
+        $amount = (float) $validated['total_fees'];
+
+        $typeId = TransactionsType::idByKey('donation');
+        $split  = TransactionLedger::split('donation', $amount);
+
+        $transaction->update([
+            'doner_id'             => $validated['doner_id'],
+            'transactions_type_id' => $typeId,
+            'account_id'           => $validated['account_id'],
+            'transactions_date'    => $txDate,
+            'note'                 => $validated['note'] ?? 'Donation',
+            'c_s_1'                => $validated['c_s_1'] ?? 'Donation',
+            'total_fees'           => $amount,
+            'debit'                => $split['debit'],
+            'credit'               => $split['credit'],
+            'fess_type_id'         => null,
+            'isActived'            => $validated['isActived'],
+        ]);
+
+        return redirect()->route('add_donar')->with('success', 'Donation updated successfully.');
+    }
+
+    /**
+     * ✅ Fix: this should delete donation transaction, not donor
+     */
+    public function destroy_donor($id)
+    {
+        $transaction = Transactions::findOrFail($id);
+
+        // Soft delete aware
+        if (in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($transaction))) {
+            $transaction->delete();
+        } else {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('transactions', 'isDeleted')) {
+                $transaction->isDeleted = true;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('transactions', 'isActived')) {
+                $transaction->isActived = false;
+            }
+            $transaction->save();
+        }
+
+        return redirect()->route('add_donar')->with('success', 'Donation deleted successfully.');
+    }
+
+    // (Optional) this method seems unrelated, kept as-is
     public function donors_loan(Donor $lender)
     {
         $transactionss = Transactions::with('doner')->whereNotNull('doner_id')->get();
@@ -151,55 +221,5 @@ class DonorController extends Controller
         $accounts = Account::all();
 
         return view('lender.add-loan', compact('transactionss', 'Donors', 'accounts'));
-    }
-
-    public function edit_donor($id)
-    {
-        $transaction = Transactions::findOrFail($id);
-        $transactionss = Transactions::with('doner')->whereNotNull('doner_id')->get();
-        $Donors = Donor::all();
-        $accounts = Account::all();
-
-        return view('donors.add-donar', compact('transaction', 'Donors', 'accounts', 'transactionss'));
-    }
-
-    public function update_donor(Request $request, $id)
-    {
-        $validatedData = $request->validate([
-            'doner_id' => 'doner_id',
-            'total_fees' => 'numeric',
-            'account_id' => 'exists:accounts,id',
-            'c_s_1' => 'string|max:250',
-            'note' => 'nullable|string|max:500',
-            'isActived' => 'required|boolean',
-        ]);
-
-        $today = Carbon::now();
-        $transaction = Transactions::findOrFail($id);
-
-        // Update the transaction
-        $transaction->update([
-            'doner_id' => $validatedData['doner_id'],
-            'fess_type_id' => 1,
-            'transactions_type_id' => 1,
-            'total_fees' => $validatedData['total_fees'],
-            'account_id' => $validatedData['account_id'],
-            'c_s_1' => $validatedData['c_s_1'],
-
-
-            'transactions_date' => $today,
-            'note' => $validatedData['note'],
-            'isActived' => $validatedData['isActived'],
-        ]);
-
-        return redirect()->route('add_donar')->with('success', 'Donation updated successfully.');
-    }
-
-    public function destroy_donor($id)
-    {
-        $Donor = Donor::findOrFail($id);
-
-        $Donor->delete();
-        return redirect()->route('add_donar')->with('success', 'Donation deleted successfully.');
     }
 }
