@@ -17,6 +17,8 @@ use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\LenderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Reports\MonthlyStatementController;
+use App\Http\Controllers\Reports\YearlySummaryController;
 use App\Http\Controllers\SettingsHubController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TransactionCenterController;
@@ -81,11 +83,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('transactions.bulkStore');
 
     // ✅ Reports
-    Route::get('/reports/transactions', [ReportController::class, 'transactions'])
-        ->name('reports.transactions');
-
-    Route::get('/reports/transactions.csv', [ReportController::class, 'transactionsCsv'])
-        ->name('reports.transactions.csv');
+    Route::get('/reports/transactions', [ReportController::class, 'transactions'])->name('reports.transactions');
+    Route::get('/reports/transactions/csv', [ReportController::class, 'transactionsCsv'])->name('reports.transactions.csv');
+    Route::get('/reports/transactions/print', [ReportController::class, 'transactionsPrint'])->name('reports.transactions.print');
+    Route::get('/reports/transactions/pdf', [ReportController::class, 'transactionsPdf'])->name('reports.transactions.pdf');
+    Route::get('/reports/monthly-statement', [MonthlyStatementController::class, 'index'])
+        ->name('reports.monthly-statement');
+    Route::get('/reports/yearly-summary', [YearlySummaryController::class, 'index'])
+        ->name('reports.yearly-summary');
 });
 
 //
@@ -212,8 +217,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/ajax/donors', [QuickCreateController::class, 'storeDonor'])->name('ajax.donors.store');
     Route::post('/ajax/lenders', [QuickCreateController::class, 'storeLender'])->name('ajax.lenders.store');
 
-Route::post('/ajax/{entity}', [QuickCreateController::class, 'store'])
-    ->whereIn('entity', ['students', 'donors', 'lenders', 'accounts', 'catagories', 'expens', 'incomes']);
+    Route::post('/ajax/{entity}', [QuickCreateController::class, 'store'])
+        ->whereIn('entity', ['students', 'donors', 'lenders', 'accounts', 'catagories', 'expens', 'incomes']);
 
     // Settings Hub
     Route::get('/settings', [SettingsHubController::class, 'index'])->name('settings.index');
