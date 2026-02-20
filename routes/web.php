@@ -63,6 +63,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/transactions/quick-store', [TransactionCenterController::class, 'storeQuick'])
         ->name('transactions.quickStore');
 
+    // ✅ Transaction Center Bulk Fee
+    Route::get('/ajax/transaction-center/bulk-students', [TransactionCenterController::class, 'bulkStudents'])
+        ->name('transactions.bulkStudents');
+
+    Route::post('/transaction-center/fees/bulk-store', [TransactionCenterController::class, 'storeBulkStudentFee'])
+        ->name('transactions.bulkStore');
+
     // ✅ Reports
     Route::get('/reports/transactions', [ReportController::class, 'transactions'])
         ->name('reports.transactions');

@@ -1,4 +1,4 @@
-<form method="POST" action="{{ route('fees.bulk_store') }}" class="space-y-3">
+<form method="POST" action="{{ route('transactions.bulkStore') }}" class="space-y-3">
     @csrf
 
     <input type="hidden" name="type_key" value="student_fee">
@@ -85,6 +85,13 @@
                 value="{{ old('transactions_date', now()->toDateString()) }}"
                 class="w-full rounded border-slate-200" />
         </div>
+
+        <div class="col-span-2">
+            <label class="inline-flex items-center gap-2 text-xs text-slate-600">
+                <input type="checkbox" name="skip_duplicates" value="1" class="rounded border-slate-200">
+                Skip duplicates (don’t stop submit)
+            </label>
+        </div>
     </div>
 
     <div class="flex items-center gap-2">
@@ -93,7 +100,6 @@
             Load Students
         </button>
 
-        {{-- ✅ Save Fees: students load না হলে disable থাকবে --}}
         <button id="tc_save_btn" type="submit" disabled
             class="rounded bg-emerald-600 px-3 py-2 text-white text-sm disabled:opacity-50 disabled:cursor-not-allowed">
             Save Fees
@@ -105,7 +111,7 @@
 
     <div class="rounded border border-slate-200 p-2">
         <div class="text-xs text-slate-500 mb-2">
-            Students list (auto fill if already saved for this month)
+            Students list (Paid already হলে row disable থাকবে)
         </div>
 
         <div id="tc_students_list" class="space-y-2 max-h-[55vh] overflow-auto"></div>
@@ -149,7 +155,7 @@ async function tcLoadStudents(){
         return;
     }
 
-    const url = new URL(@json(route('get.students')));
+    const url = new URL(@json(route('transactions.bulkStudents')));
     url.searchParams.set('academic_year_id', academicYearId);
     url.searchParams.set('months_id', monthId);
     url.searchParams.set('class_id', classId);
@@ -164,18 +170,9 @@ async function tcLoadStudents(){
             credentials: 'same-origin',
         });
 
-        const ct = (res.headers.get('content-type') || '').toLowerCase();
-
         if(!res.ok){
-            if(ct.includes('application/json')){
-                const data = await res.json();
-                const errs = data.errors || {};
-                const items = Object.values(errs).flat().map(e => `<li>${e}</li>`).join('');
-                tcShowStatus(`<b>Could not load students</b><ul class="list-disc ml-5 mt-1">${items || data.message || 'Unknown error'}</ul>`);
-            }else{
-                const txt = await res.text();
-                tcShowStatus(`<b>Could not load students</b><div class="mt-1">${txt}</div>`);
-            }
+            const txt = await res.text();
+            tcShowStatus(`<b>Could not load students</b><div class="mt-1">${txt}</div>`);
             if(list) list.innerHTML = '';
             return;
         }
@@ -183,10 +180,9 @@ async function tcLoadStudents(){
         const html = await res.text();
         if(list) list.innerHTML = html;
 
-        // ✅ student_ids[] আছে কিনা চেক
         const hasStudents = !!list?.querySelector('input[name="student_ids[]"]');
         if(!hasStudents){
-            tcShowStatus('No students found for this Academic Year / Class / Section. (Students table এ academic_year_id, class_id, section_id সেট আছে কিনা চেক করুন)');
+            tcShowStatus('No students found for this Academic Year / Class / Section.');
             tcSetSaveEnabled(false);
             return;
         }
@@ -205,20 +201,17 @@ function tcWireFeeAutoCalc(){
     if(!wrap) return;
 
     wrap.querySelectorAll('.student-fee').forEach((row) => {
-        const inputs = row.querySelectorAll(
-          'input[name="monthly_fees[]"], input[name="boarding_fees[]"], input[name="management_fees[]"], input[name="exam_fees[]"], input[name="others_fees[]"]'
-        );
-        const total  = row.querySelector('input[name="total_fees[]"]');
-        const debit  = row.querySelector('input[name="debit[]"]');
+        const fees  = row.querySelectorAll('[data-fee]');
+        const total = row.querySelector('[data-total]');
 
         const calc = () => {
             let sum = 0;
-            inputs.forEach(i => sum += (parseFloat(i.value || 0) || 0));
+            fees.forEach(i => sum += (parseFloat(i.value || 0) || 0));
             if(total) total.value = sum.toFixed(2);
-            if(debit) debit.value = sum.toFixed(2);
         };
 
-        inputs.forEach(i => i.addEventListener('input', calc));
+        fees.forEach(i => i.addEventListener('input', calc));
+        calc();
     });
 }
 </script>

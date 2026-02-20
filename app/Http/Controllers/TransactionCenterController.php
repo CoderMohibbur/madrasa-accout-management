@@ -941,6 +941,220 @@ class TransactionCenterController extends Controller
         return redirect()->to('/transaction-center')->with('success', 'Transaction updated successfully!');
     }
 
+    public function bulkStudents(Request $request)
+    {
+        $data = $request->validate([
+            'academic_year_id' => ['required', 'exists:add_academies,id'],
+            'months_id'        => ['required', 'exists:add_months,id'],
+            'class_id'         => ['required', 'exists:add_classes,id'],
+            'section_id'       => ['required', 'exists:add_sections,id'],
+        ]);
+
+        // ✅ students (active + not deleted)
+        $students = $this->activeOnly(Student::class)
+            ->where('academic_year_id', $data['academic_year_id'])
+            ->where('class_id', $data['class_id'])
+            ->where('section_id', $data['section_id'])
+            ->orderBy('roll')
+            ->get();
+
+        // ✅ type id (no hardcode)
+        $typeId = $this->typeIdByKey('student_fee');
+
+        // ✅ existing tx for this month+year (to mark already paid)
+        $txQ = Transactions::query()
+            ->where('transactions_type_id', $typeId)
+            ->where('months_id', $data['months_id'])
+            ->where('academic_year_id', $data['academic_year_id'])
+            ->whereIn('student_id', $students->pluck('id'));
+
+        $txTable = (new Transactions())->getTable();
+        if (Schema::hasColumn($txTable, 'isDeleted')) $txQ->where('isDeleted', false);
+
+        $existingTx = $txQ->orderByDesc('transactions_date')->orderByDesc('id')
+            ->get()
+            ->keyBy('student_id');
+
+        // ✅ class default fees (optional auto-fill)
+        $dfQ = AddRegistrationFess::query()->where('class_id', $data['class_id']);
+        $dfTable = (new AddRegistrationFess())->getTable();
+        if (Schema::hasColumn($dfTable, 'isDeleted')) $dfQ->where('isDeleted', false);
+        if (Schema::hasColumn($dfTable, 'isActived')) $dfQ->where('isActived', true);
+        $defaultFee = $dfQ->orderByDesc('id')->first();
+
+        return view('transactions.partials.bulk_students_list', [
+            'students'    => $students,
+            'transactions' => $existingTx,
+            'defaultFee'  => $defaultFee,
+            'months_id'   => (int)$data['months_id'],
+            'academic_year_id' => (int)$data['academic_year_id'],
+            'class_id'    => (int)$data['class_id'],
+            'section_id'  => (int)$data['section_id'],
+        ]);
+    }
+
+    public function storeBulkStudentFee(Request $request)
+    {
+        $validated = $request->validate([
+            'type_key'          => ['required', 'in:student_fee'],
+            '_tc_fee_mode'      => ['required', 'in:bulk'],
+
+            'academic_year_id'  => ['required', 'exists:add_academies,id'],
+            'months_id'         => ['required', 'exists:add_months,id'],
+            'class_id'          => ['required', 'exists:add_classes,id'],
+            'section_id'        => ['required', 'exists:add_sections,id'],
+
+            'account_id'        => ['required', 'exists:accounts,id'],
+            'transactions_date' => ['nullable', 'date'],
+
+            'skip_duplicates'   => ['nullable', 'boolean'],
+
+            // from list partial
+            'student_ids'       => ['required', 'array'],
+            'student_ids.*'     => ['integer', 'exists:students,id'],
+
+            'paid_ids'          => ['nullable', 'array'],
+            'paid_ids.*'        => ['integer'],
+
+            'rows'                         => ['nullable', 'array'],
+            'rows.*.admission_fee'         => ['nullable', 'numeric', 'min:0'],
+            'rows.*.monthly_fees'          => ['nullable', 'numeric', 'min:0'],
+            'rows.*.boarding_fees'         => ['nullable', 'numeric', 'min:0'],
+            'rows.*.management_fees'       => ['nullable', 'numeric', 'min:0'],
+            'rows.*.exam_fees'             => ['nullable', 'numeric', 'min:0'],
+            'rows.*.others_fees'           => ['nullable', 'numeric', 'min:0'],
+            'rows.*.total_fees'            => ['nullable', 'numeric', 'min:0'],
+            'rows.*.student_book_number'   => ['nullable', 'string', 'max:255'],
+            'rows.*.recipt_no'             => ['nullable', 'string', 'max:255'],
+            'rows.*.note'                  => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $typeId   = $this->typeIdByKey('student_fee');
+        $txDate   = $validated['transactions_date'] ?? Carbon::now()->toDateString();
+        $skipDup  = $request->boolean('skip_duplicates');
+
+        $paidIds = collect($validated['paid_ids'] ?? [])
+            ->map(fn($v) => (int)$v)
+            ->unique()
+            ->values();
+
+        if ($paidIds->isEmpty()) {
+            throw ValidationException::withMessages([
+                'paid_ids' => 'কমপক্ষে ১ জন student কে Paid হিসেবে select করুন।',
+            ]);
+        }
+
+        // ✅ students (needed meta)
+        $students = Student::query()
+            ->select('id', 'roll', 'fees_type_id', 'academic_year_id', 'class_id', 'section_id')
+            ->whereIn('id', $paidIds)
+            ->get()
+            ->keyBy('id');
+
+        // ✅ duplicate check: same student + same month + same academic year (MVP strict)
+        $dupQ = Transactions::query()
+            ->where('transactions_type_id', $typeId)
+            ->where('months_id', (int)$validated['months_id'])
+            ->where('academic_year_id', (int)$validated['academic_year_id'])
+            ->whereIn('student_id', $paidIds);
+
+        $txTable = (new Transactions())->getTable();
+        if (Schema::hasColumn($txTable, 'isDeleted')) $dupQ->where('isDeleted', false);
+
+        $duplicateIds = $dupQ->pluck('student_id')->unique()->values();
+
+        if ($duplicateIds->isNotEmpty() && !$skipDup) {
+            throw ValidationException::withMessages([
+                'paid_ids' => 'Duplicate blocked: কিছু student এর এই month এর fee আগে থেকেই আছে. Skip duplicates টিক দিলে continue হবে।',
+            ]);
+        }
+
+        $insertRows = [];
+        $inserted = 0;
+        $skipped  = 0;
+        $sumTotal = 0.0;
+        $now = now();
+
+        foreach ($paidIds as $sid) {
+            if ($duplicateIds->contains($sid)) {
+                $skipped++;
+                continue;
+            }
+
+            $st = $students->get($sid);
+            if (!$st) continue;
+
+            $r = $validated['rows'][$sid] ?? [];
+
+            $admission  = (float)($r['admission_fee'] ?? 0);
+            $monthly    = (float)($r['monthly_fees'] ?? 0);
+            $boarding   = (float)($r['boarding_fees'] ?? 0);
+            $management = (float)($r['management_fees'] ?? 0);
+            $exam       = (float)($r['exam_fees'] ?? 0);
+            $others     = (float)($r['others_fees'] ?? 0);
+
+            $computed = $admission + ($monthly + $boarding + $management + $exam + $others);
+            $total    = (float)($r['total_fees'] ?? $computed);
+
+            if ($total <= 0) continue;
+
+            // ✅ Mandatory: student_fee => credit
+            $split = $this->applyAmountByType('student_fee', $total);
+
+            $insertRows[] = [
+                'transactions_type_id' => $typeId,
+                'account_id'           => (int)$validated['account_id'],
+                'transactions_date'    => $txDate,
+                'created_by_id'        => auth()->id(),
+
+                'isActived'            => true,
+                'isDeleted'            => false,
+
+                'student_id'           => $sid,
+                'months_id'            => (int)$validated['months_id'],
+                'academic_year_id'     => (int)$validated['academic_year_id'],
+                'class_id'             => (int)$validated['class_id'],
+                'section_id'           => (int)$validated['section_id'],
+                'fess_type_id'         => $st->fees_type_id ?? null,
+
+                'c_i_1'                => $st->roll ?? null,           // roll
+                'c_d_1'                => $admission ?: null,          // admission fee
+
+                'student_book_number'  => $r['student_book_number'] ?? null,
+                'recipt_no'            => $r['recipt_no'] ?? null,
+
+                'monthly_fees'         => $monthly ?: null,
+                'boarding_fees'        => $boarding ?: null,
+                'management_fees'      => $management ?: null,
+                'exam_fees'            => $exam ?: null,
+                'others_fees'          => $others ?: null,
+                'total_fees'           => $total,
+
+                'note'                 => $r['note'] ?? 'Student Fee (Bulk)',
+
+                'debit'                => $split['debit'],
+                'credit'               => $split['credit'],
+
+                'created_at'           => $now,
+                'updated_at'           => $now,
+            ];
+
+            $inserted++;
+            $sumTotal += $total;
+        }
+
+        DB::transaction(function () use ($insertRows) {
+            if (!empty($insertRows)) {
+                Transactions::insert($insertRows);
+            }
+        });
+
+        return back()->with(
+            'success',
+            "Bulk Fee Saved ✅ Inserted: {$inserted}, Skipped duplicates: {$skipped}, Total: " . number_format($sumTotal, 2)
+        );
+    }
+
     public function destroy(Transactions $transaction)
     {
         DB::transaction(function () use ($transaction) {
