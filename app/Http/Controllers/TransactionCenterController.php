@@ -14,7 +14,6 @@ use App\Models\AddFessType;
 use App\Models\AddRegistrationFess;
 use App\Models\Transactions;
 use App\Models\TransactionsType;
-use App\Support\TransactionLedger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -201,7 +200,9 @@ class TransactionCenterController extends Controller
             'fees_type_id' => ['nullable', 'exists:add_fess_types,id'],
 
             'roll' => [
-                'required', 'integer', 'min:1',
+                'required',
+                'integer',
+                'min:1',
                 Rule::unique('students', 'roll')->where(function ($q) use ($request) {
                     return $q->where('academic_year_id', $request->academic_year_id)
                         ->where('class_id', $request->class_id)
@@ -291,6 +292,54 @@ class TransactionCenterController extends Controller
         };
     }
 
+    /**
+     * ✅ Mandatory Accounting Rule:
+     * Income types => credit
+     * Expense types => debit
+     */
+    private function applyAmountByType(string $typeKey, float $amount): array
+    {
+        $amount = (float) $amount;
+        if ($amount < 0) $amount = 0;
+
+        return match ($typeKey) {
+            'expense', 'loan_repayment' => ['debit' => $amount, 'credit' => 0],
+            'student_fee', 'donation', 'income', 'loan_taken' => ['debit' => 0, 'credit' => $amount],
+            default => ['debit' => 0, 'credit' => 0],
+        };
+    }
+
+    /**
+     * ✅ Duplicate policy (MVP full payment):
+     * Same student + same month + (same academic year if available) => block
+     */
+    private function assertNoDuplicateStudentFee(
+        int $typeId,
+        int $studentId,
+        int $monthId,
+        ?int $academicYearId,
+        ?int $ignoreTxId = null
+    ): void {
+        $q = Transactions::query()
+            ->where('transactions_type_id', $typeId)
+            ->where('student_id', $studentId)
+            ->where('months_id', $monthId);
+
+        if ($academicYearId) {
+            $q->where('academic_year_id', $academicYearId);
+        }
+
+        $txTable = (new Transactions())->getTable();
+        if (Schema::hasColumn($txTable, 'isDeleted')) $q->where('isDeleted', false);
+        if ($ignoreTxId) $q->where('id', '!=', $ignoreTxId);
+
+        if ($q->exists()) {
+            throw ValidationException::withMessages([
+                'months_id' => 'এই student এর এই month এর fee ইতিমধ্যে নেওয়া হয়েছে (duplicate block policy)।',
+            ]);
+        }
+    }
+
     // =========================
     // Phase 2: AJAX Class Default Fees
     // =========================
@@ -348,12 +397,16 @@ class TransactionCenterController extends Controller
     }
 
     // =========================
-    // Phase 1: Quick Store
+    // Phase 1/4: Quick Store
     // =========================
-
     public function storeQuick(Request $request)
     {
         $typeKey = (string) $request->input('type_key');
+
+        // ✅ Auto-fill date (but still validate as required)
+        if (!$request->filled('transactions_date')) {
+            $request->merge(['transactions_date' => Carbon::now()->toDateString()]);
+        }
 
         if (!$typeKey || !in_array($typeKey, self::ALLOWED_TYPE_KEYS, true)) {
             return back()->with('error', 'Invalid type_key.');
@@ -365,7 +418,7 @@ class TransactionCenterController extends Controller
         $baseRules = [
             'type_key'          => 'required|string|in:student_fee,donation,income,expense,loan_taken,loan_repayment',
             'account_id'        => 'required|exists:accounts,id',
-            'transactions_date' => 'nullable|date',
+            'transactions_date' => 'required|date',
             'note'              => 'nullable|string|max:500',
             'recipt_no'         => 'nullable|string|max:255',
         ];
@@ -408,37 +461,71 @@ class TransactionCenterController extends Controller
             $typeRules = [
                 'title'       => 'required|string|max:255',
                 'amount'      => 'required|numeric|min:0.01',
-                'catagory_id' => 'nullable|exists:catagories,id',
-                'expens_id'   => 'nullable|exists:expens,id',
+                // ✅ MVP: category + head required
+                'catagory_id' => 'required|exists:catagories,id',
+                'expens_id'   => 'required|exists:expens,id',
             ];
         } elseif ($typeKey === 'income') {
             $typeRules = [
                 'title'       => 'required|string|max:255',
                 'amount'      => 'required|numeric|min:0.01',
                 'catagory_id' => 'nullable|exists:catagories,id',
-                'income_id'   => 'nullable|exists:incomes,id',
+                // ✅ MVP: income head required
+                'income_id'   => 'required|exists:incomes,id',
             ];
         }
 
         $validated = $request->validate(array_merge($baseRules, $typeRules));
         $this->ensureSingleParty($validated);
 
-        $txDate = $validated['transactions_date'] ?? Carbon::now()->toDateString();
+        $txDate = $validated['transactions_date'];
 
+        // ✅ Base txData (clear everything upfront so nothing "sticks")
         $txData = [
             'transactions_type_id' => $typeId,
             'account_id'           => $validated['account_id'],
             'transactions_date'    => $txDate,
             'created_by_id'        => auth()->id(),
+
             'isActived'            => true,
             'isDeleted'            => false,
 
+            // required note/title (always set a meaningful default)
             'note'      => $validated['note'] ?? $this->defaultNoteFor($typeKey, $validated),
             'recipt_no' => $validated['recipt_no'] ?? null,
 
-            'student_id' => $validated['student_id'] ?? null,
-            'doner_id'   => $validated['doner_id'] ?? null,
-            'lender_id'  => $validated['lender_id'] ?? null,
+            // parties
+            'student_id' => null,
+            'doner_id'   => null,
+            'lender_id'  => null,
+
+            // student fee meta (always clear)
+            'months_id'            => null,
+            'academic_year_id'     => null,
+            'class_id'             => null,
+            'section_id'           => null,
+            'fess_type_id'         => null,
+            'student_book_number'  => null,
+            'c_i_1'                => null, // roll
+            'c_d_1'                => null, // admission fee
+            'monthly_fees'         => null,
+            'boarding_fees'        => null,
+            'management_fees'      => null,
+            'exam_fees'            => null,
+            'others_fees'          => null,
+            'total_fees'           => null,
+
+            // heads
+            'catagory_id' => null,
+            'expens_id'   => null,
+            'income_id'   => null,
+
+            // title bucket (c_s_1)
+            'c_s_1' => null,
+
+            // amount split
+            'debit'  => 0,
+            'credit' => 0,
         ];
 
         if ($typeKey === 'student_fee') {
@@ -446,21 +533,23 @@ class TransactionCenterController extends Controller
                 ->select('id', 'roll', 'class_id', 'section_id', 'academic_year_id', 'fees_type_id')
                 ->find($validated['student_id']);
 
-            $txData['months_id']        = $validated['months_id'];
-            $txData['academic_year_id'] = $validated['academic_year_id'] ?? ($student?->academic_year_id);
-            $txData['class_id']         = $validated['class_id'] ?? ($student?->class_id);
-            $txData['section_id']       = $validated['section_id'] ?? ($student?->section_id);
-            $txData['fess_type_id']     = $validated['fess_type_id'] ?? ($student?->fees_type_id);
+            $txData['student_id']        = $validated['student_id'];
+            $txData['months_id']         = (int) $validated['months_id'];
+            $txData['academic_year_id']  = $validated['academic_year_id'] ?? ($student?->academic_year_id);
+            $txData['class_id']          = $validated['class_id'] ?? ($student?->class_id);
+            $txData['section_id']        = $validated['section_id'] ?? ($student?->section_id);
+            $txData['fess_type_id']      = $validated['fess_type_id'] ?? ($student?->fees_type_id);
 
-            $txData['c_i_1'] = $student?->roll;
-            $txData['c_d_1'] = $validated['admission_fee'] ?? null;
+            $txData['c_i_1']             = $student?->roll;
+            $txData['c_d_1']             = $validated['admission_fee'] ?? null;
+
             $txData['student_book_number'] = $validated['student_book_number'] ?? null;
 
-            $txData['monthly_fees']    = $validated['monthly_fees'] ?? null;
-            $txData['boarding_fees']   = $validated['boarding_fees'] ?? null;
-            $txData['management_fees'] = $validated['management_fees'] ?? null;
-            $txData['exam_fees']       = $validated['exam_fees'] ?? null;
-            $txData['others_fees']     = $validated['others_fees'] ?? null;
+            $txData['monthly_fees']      = $validated['monthly_fees'] ?? null;
+            $txData['boarding_fees']     = $validated['boarding_fees'] ?? null;
+            $txData['management_fees']   = $validated['management_fees'] ?? null;
+            $txData['exam_fees']         = $validated['exam_fees'] ?? null;
+            $txData['others_fees']       = $validated['others_fees'] ?? null;
 
             $admission = (float)($validated['admission_fee'] ?? 0);
             $sum       = $admission + $this->calcTotalFees($validated);
@@ -476,84 +565,95 @@ class TransactionCenterController extends Controller
 
             $txData['total_fees'] = $total;
 
-            $split = TransactionLedger::split('student_fee', $total);
+            // ✅ Duplicate guard (MVP full payment policy)
+            $this->assertNoDuplicateStudentFee(
+                $typeId,
+                (int) $validated['student_id'],
+                (int) $validated['months_id'],
+                $txData['academic_year_id'] ? (int)$txData['academic_year_id'] : null,
+                null
+            );
+
+            // ✅ Mandatory rule: student_fee => credit
+            $split = $this->applyAmountByType('student_fee', $total);
             $txData['debit']  = $split['debit'];
             $txData['credit'] = $split['credit'];
-
-            $txData['doner_id']  = null;
-            $txData['lender_id'] = null;
         }
 
         if ($typeKey === 'donation') {
             $amount = (float)$validated['amount'];
-            $split = TransactionLedger::split('donation', $amount);
+
+            $txData['doner_id'] = $validated['doner_id'];
+            $txData['c_s_1']    = $validated['title'] ?? 'Donation';
+
+            $split = $this->applyAmountByType('donation', $amount);
             $txData['debit']  = $split['debit'];
             $txData['credit'] = $split['credit'];
-            $txData['c_s_1'] = $validated['title'] ?? 'Donation';
-            $txData['total_fees'] = null;
-            $txData['student_id'] = null;
-            $txData['lender_id']  = null;
         }
 
         if ($typeKey === 'loan_taken') {
             $amount = (float)$validated['amount'];
-            $split = TransactionLedger::split('loan_taken', $amount);
+
+            $txData['lender_id'] = $validated['lender_id'];
+            $txData['c_s_1']     = $validated['title'] ?? 'Loan Taken';
+
+            $split = $this->applyAmountByType('loan_taken', $amount);
             $txData['debit']  = $split['debit'];
             $txData['credit'] = $split['credit'];
-            $txData['c_s_1'] = $validated['title'] ?? 'Loan Taken';
-            $txData['total_fees'] = null;
-            $txData['student_id'] = null;
-            $txData['doner_id']   = null;
         }
 
         if ($typeKey === 'loan_repayment') {
             $amount = (float)$validated['amount'];
-            $split = TransactionLedger::split('loan_repayment', $amount);
+
+            $txData['lender_id'] = $validated['lender_id'];
+            $txData['c_s_1']     = $validated['title'] ?? 'Loan Repayment';
+
+            // ✅ Mandatory rule: loan_repayment => debit
+            $split = $this->applyAmountByType('loan_repayment', $amount);
             $txData['debit']  = $split['debit'];
             $txData['credit'] = $split['credit'];
-            $txData['c_s_1'] = $validated['title'] ?? 'Loan Repayment';
-            $txData['total_fees'] = null;
-            $txData['student_id'] = null;
-            $txData['doner_id']   = null;
         }
 
         if ($typeKey === 'expense') {
             $amount = (float)$validated['amount'];
-            $txData['c_s_1'] = $validated['title'];
-            $txData['catagory_id'] = $validated['catagory_id'] ?? null;
-            $txData['expens_id']   = $validated['expens_id'] ?? null;
 
-            $split = TransactionLedger::split('expense', $amount);
+            $txData['c_s_1']       = $validated['title'];
+            $txData['catagory_id'] = $validated['catagory_id'];
+            $txData['expens_id']   = $validated['expens_id'];
+
+            // ✅ Mandatory rule: expense => debit
+            $split = $this->applyAmountByType('expense', $amount);
             $txData['debit']  = $split['debit'];
             $txData['credit'] = $split['credit'];
-
-            $txData['total_fees'] = null;
-            $txData['student_id'] = null;
-            $txData['doner_id']   = null;
-            $txData['lender_id']  = null;
         }
 
         if ($typeKey === 'income') {
             $amount = (float)$validated['amount'];
-            $txData['c_s_1'] = $validated['title'];
-            $txData['catagory_id'] = $validated['catagory_id'] ?? null;
-            $txData['income_id']   = $validated['income_id'] ?? null;
 
-            $split = TransactionLedger::split('income', $amount);
+            $txData['c_s_1']       = $validated['title'];
+            $txData['catagory_id'] = $validated['catagory_id'] ?? null;
+            $txData['income_id']   = $validated['income_id'];
+
+            // ✅ Mandatory rule: income => credit
+            $split = $this->applyAmountByType('income', $amount);
             $txData['debit']  = $split['debit'];
             $txData['credit'] = $split['credit'];
-
-            $txData['total_fees'] = null;
-            $txData['student_id'] = null;
-            $txData['doner_id']   = null;
-            $txData['lender_id']  = null;
         }
 
-        DB::transaction(function () use ($txData) {
-            Transactions::create($txData);
+        // ✅ PATCH: capture created TX so we can flash last_tx_id for Print/Receipt flow
+        $tx = null;
+
+        DB::transaction(function () use ($txData, &$tx) {
+            $tx = Transactions::create($txData);
         });
 
-        return redirect()->to('/transaction-center')->with('success', 'Transaction saved successfully!');
+        if ($tx?->id) {
+            session()->flash('last_tx_id', $tx->id);
+        }
+
+        return redirect()
+            ->to('/transaction-center')
+            ->with('success', 'Transaction saved successfully!');
     }
 
     public function receipt(Transactions $transaction)
@@ -618,11 +718,16 @@ class TransactionCenterController extends Controller
             return back()->with('error', 'Type key not found for this transaction.');
         }
 
+        // ✅ Auto-fill date (but still validate as required)
+        if (!$request->filled('transactions_date')) {
+            $request->merge(['transactions_date' => Carbon::now()->toDateString()]);
+        }
+
         $typeId = $this->typeIdByKey($typeKey);
 
         $baseRules = [
             'account_id'        => 'required|exists:accounts,id',
-            'transactions_date' => 'nullable|date',
+            'transactions_date' => 'required|date',
             'note'              => 'nullable|string|max:500',
             'recipt_no'         => 'nullable|string|max:255',
         ];
@@ -665,23 +770,24 @@ class TransactionCenterController extends Controller
             $typeRules = [
                 'title'       => 'required|string|max:255',
                 'amount'      => 'required|numeric|min:0.01',
-                'catagory_id' => 'nullable|exists:catagories,id',
-                'expens_id'   => 'nullable|exists:expens,id',
+                'catagory_id' => 'required|exists:catagories,id',
+                'expens_id'   => 'required|exists:expens,id',
             ];
         } elseif ($typeKey === 'income') {
             $typeRules = [
                 'title'       => 'required|string|max:255',
                 'amount'      => 'required|numeric|min:0.01',
                 'catagory_id' => 'nullable|exists:catagories,id',
-                'income_id'   => 'nullable|exists:incomes,id',
+                'income_id'   => 'required|exists:incomes,id',
             ];
         }
 
         $validated = $request->validate(array_merge($baseRules, $typeRules));
         $this->ensureSingleParty($validated);
 
-        $txDate = $validated['transactions_date'] ?? Carbon::now()->toDateString();
+        $txDate = $validated['transactions_date'];
 
+        // ✅ Clear everything upfront (so editing never leaves old junk)
         $txData = [
             'transactions_type_id' => $typeId,
             'account_id'           => $validated['account_id'],
@@ -689,9 +795,36 @@ class TransactionCenterController extends Controller
             'note'                 => $validated['note'] ?? $this->defaultNoteFor($typeKey, $validated),
             'recipt_no'            => $validated['recipt_no'] ?? null,
 
+            // parties
             'student_id' => null,
             'doner_id'   => null,
             'lender_id'  => null,
+
+            // student fee meta
+            'months_id'            => null,
+            'academic_year_id'     => null,
+            'class_id'             => null,
+            'section_id'           => null,
+            'fess_type_id'         => null,
+            'student_book_number'  => null,
+            'c_i_1'                => null,
+            'c_d_1'                => null,
+            'monthly_fees'         => null,
+            'boarding_fees'        => null,
+            'management_fees'      => null,
+            'exam_fees'            => null,
+            'others_fees'          => null,
+            'total_fees'           => null,
+
+            // heads
+            'catagory_id' => null,
+            'expens_id'   => null,
+            'income_id'   => null,
+
+            'c_s_1' => null,
+
+            'debit'  => 0,
+            'credit' => 0,
         ];
 
         if ($typeKey === 'student_fee') {
@@ -700,7 +833,7 @@ class TransactionCenterController extends Controller
                 ->find($validated['student_id']);
 
             $txData['student_id']        = $validated['student_id'];
-            $txData['months_id']         = $validated['months_id'];
+            $txData['months_id']         = (int) $validated['months_id'];
             $txData['academic_year_id']  = $validated['academic_year_id'] ?? ($student?->academic_year_id);
             $txData['class_id']          = $validated['class_id'] ?? ($student?->class_id);
             $txData['section_id']        = $validated['section_id'] ?? ($student?->section_id);
@@ -708,7 +841,6 @@ class TransactionCenterController extends Controller
 
             $txData['c_i_1']             = $student?->roll;
             $txData['c_d_1']             = $validated['admission_fee'] ?? null;
-
             $txData['student_book_number'] = $validated['student_book_number'] ?? null;
 
             $txData['monthly_fees']      = $validated['monthly_fees'] ?? null;
@@ -731,64 +863,73 @@ class TransactionCenterController extends Controller
 
             $txData['total_fees'] = $total;
 
-            $split = TransactionLedger::split('student_fee', $total);
+            // ✅ Duplicate guard (ignore this tx id)
+            $this->assertNoDuplicateStudentFee(
+                $typeId,
+                (int) $validated['student_id'],
+                (int) $validated['months_id'],
+                $txData['academic_year_id'] ? (int)$txData['academic_year_id'] : null,
+                $transaction->id
+            );
+
+            $split = $this->applyAmountByType('student_fee', $total);
             $txData['debit']  = $split['debit'];
             $txData['credit'] = $split['credit'];
         }
 
         if ($typeKey === 'donation') {
             $amount = (float)$validated['amount'];
-            $txData['doner_id'] = $validated['doner_id'];
-            $txData['total_fees'] = null;
-            $txData['c_s_1'] = $validated['title'] ?? 'Donation';
 
-            $split = TransactionLedger::split('donation', $amount);
+            $txData['doner_id'] = $validated['doner_id'];
+            $txData['c_s_1']    = $validated['title'] ?? 'Donation';
+
+            $split = $this->applyAmountByType('donation', $amount);
             $txData['debit']  = $split['debit'];
             $txData['credit'] = $split['credit'];
         }
 
         if ($typeKey === 'loan_taken') {
             $amount = (float)$validated['amount'];
-            $txData['lender_id'] = $validated['lender_id'];
-            $txData['total_fees'] = null;
-            $txData['c_s_1'] = $validated['title'] ?? 'Loan Taken';
 
-            $split = TransactionLedger::split('loan_taken', $amount);
+            $txData['lender_id'] = $validated['lender_id'];
+            $txData['c_s_1']     = $validated['title'] ?? 'Loan Taken';
+
+            $split = $this->applyAmountByType('loan_taken', $amount);
             $txData['debit']  = $split['debit'];
             $txData['credit'] = $split['credit'];
         }
 
         if ($typeKey === 'loan_repayment') {
             $amount = (float)$validated['amount'];
-            $txData['lender_id'] = $validated['lender_id'];
-            $txData['total_fees'] = null;
-            $txData['c_s_1'] = $validated['title'] ?? 'Loan Repayment';
 
-            $split = TransactionLedger::split('loan_repayment', $amount);
+            $txData['lender_id'] = $validated['lender_id'];
+            $txData['c_s_1']     = $validated['title'] ?? 'Loan Repayment';
+
+            $split = $this->applyAmountByType('loan_repayment', $amount);
             $txData['debit']  = $split['debit'];
             $txData['credit'] = $split['credit'];
         }
 
         if ($typeKey === 'expense') {
             $amount = (float)$validated['amount'];
-            $txData['c_s_1'] = $validated['title'];
-            $txData['total_fees'] = null;
-            $txData['catagory_id'] = $validated['catagory_id'] ?? null;
-            $txData['expens_id']   = $validated['expens_id'] ?? null;
 
-            $split = TransactionLedger::split('expense', $amount);
+            $txData['c_s_1']       = $validated['title'];
+            $txData['catagory_id'] = $validated['catagory_id'];
+            $txData['expens_id']   = $validated['expens_id'];
+
+            $split = $this->applyAmountByType('expense', $amount);
             $txData['debit']  = $split['debit'];
             $txData['credit'] = $split['credit'];
         }
 
         if ($typeKey === 'income') {
             $amount = (float)$validated['amount'];
-            $txData['c_s_1'] = $validated['title'];
-            $txData['total_fees'] = null;
-            $txData['catagory_id'] = $validated['catagory_id'] ?? null;
-            $txData['income_id']   = $validated['income_id'] ?? null;
 
-            $split = TransactionLedger::split('income', $amount);
+            $txData['c_s_1']       = $validated['title'];
+            $txData['catagory_id'] = $validated['catagory_id'] ?? null;
+            $txData['income_id']   = $validated['income_id'];
+
+            $split = $this->applyAmountByType('income', $amount);
             $txData['debit']  = $split['debit'];
             $txData['credit'] = $split['credit'];
         }
