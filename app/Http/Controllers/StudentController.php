@@ -3,17 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
-use App\Models\Student;
-use App\Models\AddClass;
-use App\Models\AddMonth;
 use App\Models\AddAcademy;
-use App\Models\AddSection;
+use App\Models\AddClass;
 use App\Models\AddFessType;
+use App\Models\AddMonth;
+use App\Models\AddSection;
+use App\Models\Student;
 use App\Models\Transactions;
 use App\Models\TransactionsType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -46,44 +47,133 @@ class StudentController extends Controller
      */
     public function index(Request $request)
     {
-        $q = Student::query()
-            ->with(['class', 'section', 'academicYear', 'feesType'])
-            ->where('isDeleted', false);
+        /**
+         * ✅ Phase 3: Student List + Filters + Live Search (AJAX)
+         * Filters: academic_year_id, class_id, section_id, is_boarding(0/1), search
+         */
+        $request->validate([
+            'academic_year_id' => ['nullable', 'integer'],
+            'class_id'         => ['nullable', 'integer'],
+            'section_id'       => ['nullable', 'integer'],
+            'is_boarding'      => ['nullable', 'in:0,1'],
+            'search'           => ['nullable', 'string', 'max:100'],
+            'page'             => ['nullable', 'integer'],
+        ]);
 
+        $q = Student::query()->with([
+            'class',
+            'section',
+            'academicYear',
+            'feesType',
+        ]);
+
+        // Soft/flag delete compatibility
+        if (Schema::hasColumn('students', 'isDeleted')) {
+            $q->where('isDeleted', false);
+        }
+
+        // --------------------------
         // Filters
+        // --------------------------
         if ($request->filled('academic_year_id')) {
-            $q->where('academic_year_id', $request->academic_year_id);
+            $q->where('academic_year_id', (int) $request->academic_year_id);
         }
+
         if ($request->filled('class_id')) {
-            $q->where('class_id', $request->class_id);
+            $q->where('class_id', (int) $request->class_id);
         }
+
         if ($request->filled('section_id')) {
-            $q->where('section_id', $request->section_id);
+            $q->where('section_id', (int) $request->section_id);
         }
 
-        // ✅ safer (so "0" works)
+        // ✅ "0" (Non-Boarding) must work
         if ($request->has('is_boarding') && $request->is_boarding !== '') {
-            $q->where('is_boarding', (int) $request->is_boarding); // 0/1
+            $q->where('is_boarding', (int) $request->is_boarding);
         }
 
-        if ($request->filled('search')) {
-            $s = trim($request->search);
-            $q->where(function ($qq) use ($s) {
-                $qq->where('full_name', 'like', "%{$s}%")
-                    ->orWhere('father_name', 'like', "%{$s}%")
-                    ->orWhere('mobile', 'like', "%{$s}%")
-                    ->orWhere('roll', 'like', "%{$s}%")
-                    ->orWhere('email', 'like', "%{$s}%");
+        // --------------------------
+        // Search (schema-safe, match anything)
+        // --------------------------
+        $raw = trim((string) $request->input('search', ''));
+
+        if ($raw !== '') {
+            $s = addcslashes($raw, '\\%_'); // escape LIKE wildcards
+            $digitsOnly = preg_replace('/\D+/', '', $raw);
+
+            $textColumns = [];
+            foreach (['full_name', 'father_name', 'mobile', 'email'] as $col) {
+                if (Schema::hasColumn('students', $col)) {
+                    $textColumns[] = $col;
+                }
+            }
+            $hasRoll = Schema::hasColumn('students', 'roll');
+
+            $q->where(function ($qq) use ($textColumns, $hasRoll, $s, $raw, $digitsOnly) {
+                $added = false;
+
+                // full_name / father_name / mobile / email
+                foreach ($textColumns as $col) {
+                    if (!$added) {
+                        $qq->where($col, 'like', "%{$s}%");
+                        $added = true;
+                    } else {
+                        $qq->orWhere($col, 'like', "%{$s}%");
+                    }
+                }
+
+                // roll
+                if ($hasRoll) {
+                    // numeric exact match (fast)
+                    if (is_numeric($raw)) {
+                        $qq->orWhere('roll', (int) $raw);
+                    }
+                    // also allow partial (string) match
+                    $qq->orWhere('roll', 'like', "%{$s}%");
+                    $added = true;
+                }
+
+                // digits-only fallback for mobile (017-xx / 017 xx)
+                if (!empty($digitsOnly) && in_array('mobile', $textColumns, true) && $digitsOnly !== $raw) {
+                    $qq->orWhere('mobile', 'like', "%{$digitsOnly}%");
+                    $added = true;
+                }
+
+                // If no searchable columns exist, prevent accidental full scan match
+                if (!$added) {
+                    $qq->whereRaw('1 = 0');
+                }
             });
         }
 
-        $students = $q->orderByDesc('id')->paginate(20)->withQueryString();
+        // Pagination
+        $students = $q->orderByDesc('id')
+            ->paginate(20)
+            ->withQueryString();
 
-        // Dropdowns (Phase 1/2 style)
-        $classes = AddClass::query()->where('isDeleted', false)->orderBy('name')->get();
-        $sections = AddSection::query()->where('isDeleted', false)->orderBy('name')->get();
-        $fees_types = AddFessType::query()->where('isDeleted', false)->orderBy('name')->get();
-        $academic_years = AddAcademy::query()->where('isDeleted', false)->orderByDesc('id')->get();
+        // ✅ AJAX Live Search: only return the results block (fast)
+        if ($request->ajax()) {
+            return view('students.partials.results', compact('students'));
+        }
+
+        // Dropdowns (only for full page load)
+        $classes = AddClass::query()
+            ->when(Schema::hasColumn('add_classes', 'isDeleted') ?? false, fn($qq) => $qq->where('isDeleted', false))
+            ->orderBy('name')
+            ->get();
+
+        $sections = AddSection::query()
+            ->when(Schema::hasColumn('add_sections', 'isDeleted') ?? false, fn($qq) => $qq->where('isDeleted', false))
+            ->orderBy('name')
+            ->get();
+
+        $fees_types = AddFessType::query()
+            ->orderBy('name')
+            ->get();
+
+        $academic_years = AddAcademy::query()
+            ->orderByDesc('id')
+            ->get();
 
         return view('students.index', compact(
             'students',

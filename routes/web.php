@@ -17,6 +17,7 @@ use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\LenderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Reports\ExpenseReportController;
 use App\Http\Controllers\Reports\MonthlyStatementController;
 use App\Http\Controllers\Reports\YearlySummaryController;
 use App\Http\Controllers\SettingsHubController;
@@ -91,6 +92,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('reports.monthly-statement');
     Route::get('/reports/yearly-summary', [YearlySummaryController::class, 'index'])
         ->name('reports.yearly-summary');
+
+    Route::get('/reports/expense-report', [ExpenseReportController::class, 'index'])
+        ->name('reports.expense-report');
 });
 
 //

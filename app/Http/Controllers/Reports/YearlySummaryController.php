@@ -69,8 +69,18 @@ class YearlySummaryController extends Controller
             ->pluck('total', 'm');
 
         $monthsBn = [
-            1=>'জানুয়ারি',2=>'ফেব্রুয়ারি',3=>'মার্চ',4=>'এপ্রিল',5=>'মে',6=>'জুন',
-            7=>'জুলাই',8=>'আগস্ট',9=>'সেপ্টেম্বর',10=>'অক্টোবর',11=>'নভেম্বর',12=>'ডিসেম্বর'
+            1 => 'January',
+            2 => 'February',
+            3 => 'March',
+            4 => 'April',
+            5 => 'May',
+            6 => 'June',
+            7 => 'July',
+            8 => 'August',
+            9 => 'September',
+            10 => 'October',
+            11 => 'November',
+            12 => 'December'
         ];
 
         $months = collect(range(1, 12))->map(function ($m) use ($year, $monthsBn, $incomeByMonth, $expenseByMonth) {
@@ -79,7 +89,7 @@ class YearlySummaryController extends Controller
 
             return [
                 'm'        => $m,
-                'label'    => $monthsBn[$m] ?? ('Month '.$m),
+                'label'    => $monthsBn[$m] ?? ('Month ' . $m),
                 'ym'       => sprintf('%04d-%02d', $year, $m),
                 'income'   => $income,
                 'expense'  => $expense,
@@ -87,13 +97,21 @@ class YearlySummaryController extends Controller
             ];
         });
 
-        $accounts = Account::query()->select('id','name')->orderBy('name')->get();
+        $accounts = Account::query()->select('id', 'name')->orderBy('name')->get();
 
         $yearIncome  = (float) $months->sum('income');
         $yearExpense = (float) $months->sum('expense');
 
+        $printedAt = now();
+
         return view('reports.yearly-summary', compact(
-            'year','accountId','accounts','months','yearIncome','yearExpense'
+            'year',
+            'accountId',
+            'accounts',
+            'months',
+            'yearIncome',
+            'yearExpense',
+            'printedAt'
         ));
     }
 }

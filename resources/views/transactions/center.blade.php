@@ -134,7 +134,7 @@
                 <p class="text-xs text-slate-500 mt-1">All transactions in one place — filter + review + quick add</p>
             </div>
 
-            <div class="flex items-center gap-2 flex-wrap justify-end">
+            {{-- <div class="flex items-center gap-2 flex-wrap justify-end">
                 <a href="{{ url('/dashboard') }}"
                     class="inline-flex items-center rounded-xl bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-700">
                     Dashboard
@@ -159,7 +159,7 @@
                     class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50">
                     Boarding Students
                 </a>
-            </div>
+            </div> --}}
         </div>
     </x-slot>
 
@@ -490,7 +490,7 @@
                         <div class="p-4">
                             <div class="grid grid-cols-3 gap-2">
                                 <button type="button" @click="tab='student_fee'"
-                                    class="rounded-2xl border px-3 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5"
+                                    class="rounded-2xl border px-3 py-3 text-left dark:hover:bg-white/5"
                                     :class="tab === 'student_fee' ?
                                         'bg-slate-900 text-white border-slate-900' :
                                         'bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100'">
@@ -500,7 +500,7 @@
                                 </button>
 
                                 <button type="button" @click="tab='expense'"
-                                    class="rounded-2xl border px-3 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5"
+                                    class="rounded-2xl border px-3 py-3 text-left dark:hover:bg-white/5"
                                     :class="tab === 'expense' ?
                                         'bg-slate-900 text-white border-slate-900' :
                                         'bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100'">
@@ -510,7 +510,7 @@
                                 </button>
 
                                 <button type="button" @click="tab='donation'"
-                                    class="rounded-2xl border px-3 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5"
+                                    class="rounded-2xl border px-3 py-3 text-left dark:hover:bg-white/5"
                                     :class="tab === 'donation' ?
                                         'bg-slate-900 text-white border-slate-900' :
                                         'bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100'">

@@ -79,7 +79,7 @@ class DashboardController extends Controller
         }
 
         $q->whereDate('transactions_date', '>=', $from)
-          ->whereDate('transactions_date', '<=', $to);
+            ->whereDate('transactions_date', '<=', $to);
 
         if ($accountId) {
             $q->where('account_id', $accountId);
@@ -323,6 +323,52 @@ class DashboardController extends Controller
                 ->get();
         }
 
+
+        /**
+         * =========================
+         * H2) Paid students list (fee-only)
+         * =========================
+         */
+        $studentsPaidCountExact = $studentsPaidCount; // fallback
+        $paidStudents = collect();
+
+        if ($studentFeeTypeId) {
+
+            // reuse exact paid count from paidSub (more accurate with flags/account filter)
+            if (isset($studentsPaidCount2)) {
+                $studentsPaidCountExact = (int) $studentsPaidCount2;
+            }
+
+            $paidStudentsQ = DB::table('transactions as t')
+                ->join('students as s', 's.id', '=', 't.student_id')
+                ->whereNotNull('t.student_id')
+                ->where('t.transactions_type_id', $studentFeeTypeId)
+                ->whereDate('t.transactions_date', '>=', $from)
+                ->whereDate('t.transactions_date', '<=', $to);
+
+            // transactions flags
+            if (Schema::hasColumn('transactions', 'deleted_at')) $paidStudentsQ->whereNull('t.deleted_at');
+            if (Schema::hasColumn('transactions', 'isDeleted'))  $paidStudentsQ->where('t.isDeleted', 0);
+            if (Schema::hasColumn('transactions', 'isActived'))  $paidStudentsQ->where('t.isActived', 1);
+
+            // student flags (optional)
+            if (Schema::hasColumn('students', 'isDeleted')) $paidStudentsQ->where('s.isDeleted', 0);
+
+            if ($accountId) $paidStudentsQ->where('t.account_id', $accountId);
+
+            $paidStudents = $paidStudentsQ
+                ->selectRaw("
+            s.id as id,
+            COALESCE(NULLIF(s.full_name,''), CONCAT('Student #', s.id)) as student_name,
+            SUM(COALESCE(t.credit,0)) as paid_total,
+            MAX(t.transactions_date) as last_paid_date
+        ")
+                ->groupBy('s.id', 'student_name')
+                ->orderByDesc('last_paid_date')
+                ->limit(8)
+                ->get();
+        }
+
         /**
          * =========================
          * I) Expense breakdown by category (expense = debit)
@@ -389,12 +435,17 @@ class DashboardController extends Controller
             'accountBalances',
             'maxAbsBalance',
             'dueStudents',
+            'paidStudents',
+            'studentsPaidCountExact',
             'loanPaidPct',
             'expenseByCategory',
             'studentFeeTypeId',
             'loanTakenTypeId',
             'loanRepayTypeId',
-            'studentsDueCount'
+            'studentsDueCount',
+            'expenseTypeId',
+            'incomeTypeId',
+            'donationTypeId',
         ));
     }
 }

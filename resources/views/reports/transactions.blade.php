@@ -22,8 +22,6 @@
                     Print / Save PDF
                 </a>
 
-                <a href="{{ route('reports.yearly-summary') }}">Yearly Summary</a>
-                <a href="{{ route('reports.monthly-statement') }}">Monthly Statement</a>
             </div>
         </div>
     </x-slot>

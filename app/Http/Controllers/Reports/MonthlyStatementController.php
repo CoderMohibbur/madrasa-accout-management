@@ -167,11 +167,24 @@ class MonthlyStatementController extends Controller
 
         $accounts = Account::query()->select('id', 'name')->orderBy('name')->get();
 
+        $printedAt = now();
+        $monthLabel = $c->format('F Y'); // e.g. February 2026
+
         return view('reports.monthly-statement', compact(
-            'month','start','end','accountId',
-            'incomeTx','expenseTx','expenseGroups',
-            'totalIncome','totalExpense','surplus',
-            'accounts','getDisplay'
+            'month',
+            'monthLabel',
+            'start',
+            'end',
+            'accountId',
+            'incomeTx',
+            'expenseTx',
+            'expenseGroups',
+            'totalIncome',
+            'totalExpense',
+            'surplus',
+            'accounts',
+            'getDisplay',
+            'printedAt'
         ));
     }
 }
