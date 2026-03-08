@@ -31,9 +31,9 @@ Do not begin the next phase.
 Update `run_state.json` and the upcoming phase report with the blocker.
 
 ## Current Bootstrap Target
-- previous completed phase: `PHASE_2_GUARDIAN_PORTAL`
-- next approved phase: `PHASE_3_DONOR_PORTAL`
+- previous completed phase: `PHASE_3_DONOR_PORTAL`
+- next approved phase: `PHASE_4_MANAGEMENT_REPORTING`
 - required branch: `codex/2026-03-08-phase-1-foundation-safety`
-- phase end implementation commit: `a63c3af4a29c27b3158c6fdb0083413d91c58368`
-- phase-end validation result: guardian portal routes and tests passed; full suite remained at the 14 documented baseline auth/profile failures only
+- phase end implementation commit: `4bc465b47471cd925d8095b19956a12cdfd494a8`
+- phase-end validation result: donor portal routes and tests passed; full suite remained at the 14 documented baseline auth/profile failures only
 - do not treat the 14 documented auth/profile baseline failures as new regressions unless additional failures appear

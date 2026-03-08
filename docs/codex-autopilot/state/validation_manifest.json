@@ -118,6 +118,46 @@
         "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest.",
         "A temporary parallel test invocation dirtied the shared testing database, but a sequential rerun restored the expected 14-failure baseline with no additional regressions."
       ]
+    },
+    {
+      "phase": "PHASE_3_DONOR_PORTAL",
+      "status": "passed",
+      "validated_at": "2026-03-08T18:23:31.9066412+06:00",
+      "command_results": [
+        {
+          "command": "php artisan route:list --path=donor",
+          "exit_code": 0,
+          "summary": "3 donor portal routes registered plus preserved donor resource routes"
+        },
+        {
+          "command": "php artisan route:list --path=dashboard",
+          "exit_code": 0,
+          "summary": "dashboard route preserved with existing portal landing and management-surface guard"
+        },
+        {
+          "command": "php artisan route:list --path=donors",
+          "exit_code": 0,
+          "summary": "legacy donor management routes still registered while donor portal routes remain additive"
+        },
+        {
+          "command": "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php tests/Feature/Phase3/DonorPortalTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
+          "exit_code": 0,
+          "summary": "8 tests passed"
+        },
+        {
+          "command": "php artisan test --env=testing",
+          "exit_code": 1,
+          "summary": "14 failures, 23 passes",
+          "classification": "known_preexisting_failures_only"
+        }
+      ],
+      "unexpected_failures": [],
+      "new_regressions_detected": false,
+      "notes": [
+        "Donor dashboard, donation history, and receipt history tests all passed.",
+        "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest.",
+        "Legacy donor management routes remained registered alongside the new donor portal routes with no route-name changes."
+      ]
     }
   ]
 }

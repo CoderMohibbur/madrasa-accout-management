@@ -179,16 +179,54 @@
       ]
     },
     "PHASE_3_DONOR_PORTAL": {
-      "status": "pending",
+      "status": "completed",
       "allowed_touch_budget": {
         "existing_files_soft_max": 10,
         "critical_existing_files_soft_max": 3
       },
-      "new_files": [],
-      "modified_existing_files": [],
+      "new_files": [
+        "app/Http/Controllers/Donor/DonorPortalController.php",
+        "app/Services/DonorPortal/DonorPortalData.php",
+        "resources/views/components/donor-layout.blade.php",
+        "resources/views/donor/dashboard.blade.php",
+        "resources/views/donor/donations/index.blade.php",
+        "resources/views/donor/receipts/index.blade.php",
+        "tests/Feature/Phase3/DonorPortalTest.php"
+      ],
+      "modified_existing_files": [
+        "routes/donor.php",
+        "tests/Feature/Phase1/PortalRoleAccessTest.php"
+      ],
       "critical_existing_files": [],
-      "change_impact_entries": [],
-      "notes": []
+      "change_impact_entries": [
+        {
+          "path": "routes/donor.php",
+          "impact_class": "medium",
+          "reason": "Replaced the Phase 1 placeholder donor route with the real donor dashboard, donation history, and receipt history routes under the existing donor namespace.",
+          "compatibility_note": "The `/donor` prefix and donor route-name namespace remain unchanged, and legacy donor management routes under `/donors` were left intact.",
+          "regression_checks": [
+            "php -l routes/donor.php",
+            "php artisan route:list --path=donor",
+            "php artisan route:list --path=donors",
+            "php artisan test --env=testing tests/Feature/Phase3/DonorPortalTest.php"
+          ]
+        },
+        {
+          "path": "tests/Feature/Phase1/PortalRoleAccessTest.php",
+          "impact_class": "low",
+          "reason": "Updated the stale donor route assertion so it provisions the donor profile now required by the real Phase 3 portal surface.",
+          "compatibility_note": "The test still verifies role boundaries; it now matches the active donor portal contract instead of the Phase 1 placeholder page.",
+          "regression_checks": [
+            "php -l tests/Feature/Phase1/PortalRoleAccessTest.php",
+            "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase3/DonorPortalTest.php"
+          ]
+        }
+      ],
+      "notes": [
+        "No historical migrations were edited.",
+        "No legacy donor management controller, transaction posting controller, or reporting controller was modified.",
+        "Donor portal reads only from the linked donor profile, legacy donation ledger rows, and explicit user-bound receipt records; it does not introduce donor-side write flows or live gateway finalization."
+      ]
     },
     "PHASE_4_MANAGEMENT_REPORTING": {
       "status": "pending",

@@ -1,12 +1,12 @@
 {
-  "updated_at": "2026-03-08T18:06:58.4430257+06:00",
-  "current_basis_phase": "PHASE_2_GUARDIAN_PORTAL",
-  "next_phase": "PHASE_3_DONOR_PORTAL",
+  "updated_at": "2026-03-08T18:23:31.9066412+06:00",
+  "current_basis_phase": "PHASE_3_DONOR_PORTAL",
+  "next_phase": "PHASE_4_MANAGEMENT_REPORTING",
   "adjustments_required": false,
   "adjustments": [],
   "notes": [
-    "Phase 2 established a reusable portal-surface guard and a portal-specific layout without altering legacy transaction or report flows.",
-    "Phase 3 can build on the existing donor user linkage, donor route boundary, and new portal redirect guard while keeping legacy manual donor entry flows untouched.",
-    "Fresh-thread continuation remains the intended workflow boundary before Phase 3 starts."
+    "Phase 3 established a donor-scoped portal surface using the linked donor profile, legacy donation ledger rows, and user-bound receipts without altering legacy donor management writes.",
+    "Phase 4 can add new reporting services and management-only summary views on top of the guardian, donor, invoice, payment, and receipt boundaries while preserving existing report route names and totals.",
+    "Any Phase 4 semantic difference from the legacy reporting totals must be documented explicitly instead of silently replacing the old reports."
   ]
 }

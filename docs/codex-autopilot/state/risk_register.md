@@ -86,3 +86,16 @@
   The new `management.surface` middleware narrows portal leakage without forcing a risky management-role cutover in the same phase.
 - Runtime action:
   Revisit full explicit management-role enforcement only after role backfill and regression proof during a later hardening step.
+
+## R-08 Legacy donor rows do not guarantee receipt backfill
+- Severity: medium
+- Files:
+  - `app/Models/Transactions.php`
+  - `app/Models/Receipt.php`
+  - `app/Services/DonorPortal/DonorPortalData.php`
+- Why it matters:
+  Legacy manual donation rows and Phase 1 receipt records are separate data surfaces, so older donor ledger rows may not have a corresponding receipt record for the portal to display.
+- Protection in kit:
+  Phase 3 keeps donor receipt visibility strictly user-bound and read-only instead of inventing synthetic receipt records from legacy transactions.
+- Runtime action:
+  Any later backfill or reporting reconciliation must be explicit and documented rather than inferred inside the portal views.
