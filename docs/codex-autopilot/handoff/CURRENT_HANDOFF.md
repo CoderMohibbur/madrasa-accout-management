@@ -1,31 +1,27 @@
 # CURRENT HANDOFF
 
 ## Current Status
-Phase 1 foundation work is complete and validated. A fresh thread is now required before Phase 2 begins.
+Phase 2 guardian portal work is complete and validated. The next approved phase is `PHASE_3_DONOR_PORTAL`.
 
 ## Latest Safe Position
-- completed phase: `PHASE_1_FOUNDATION`
-- next approved work: `PHASE_2_GUARDIAN_PORTAL`
-- current thread id: `thread-002-runtime-preflight-rerun`
-- workflow status: `phase_1_complete`
-- actual branch: `codex/2026-03-08-phase-1-foundation-safety`
-- actual HEAD at reconciliation: `2344df7c4d21604b0b64adfd7b849aa9fbf66916`
-- preflight pass commit: `8b989bcaeff9634e3e8a3fb3d3182fab5f6f2f00`
-- phase end implementation commit: `4b02760ad036eb64d6d056965d0da0243fff4bb8`
-- most recent autopilot handoff metadata commit: `2344df7c4d21604b0b64adfd7b849aa9fbf66916`
-- handoff checkpoint commit: `2344df7c4d21604b0b64adfd7b849aa9fbf66916`
-- superseded stale intermediate metadata commit: `5460a93715e88fa47d46cdf17d5c19ff95a0a468`
-- baseline test status: `php artisan test --env=testing` still reproduces only the 14 known pre-existing auth/profile failures, with no unexpected regressions added by Phase 1
+- completed phase: `PHASE_2_GUARDIAN_PORTAL`
+- next approved work: `PHASE_3_DONOR_PORTAL`
+- current thread id: `thread-003-phase-2-guardian-portal`
+- workflow status: `phase_2_complete`
+- actual branch at validation: `codex/2026-03-08-phase-1-foundation-safety`
+- phase start commit: `39d37c34d04842d7bc75a93b085b5f83c68c835a`
+- phase end implementation commit: `a63c3af4a29c27b3158c6fdb0083413d91c58368`
+- baseline test status: `php artisan test --env=testing` still reproduces only the 14 known pre-existing auth/profile failures, with no unexpected regressions added by Phase 2
 
 ## Confirmed Runtime Safety Notes
-- dedicated `/management`, `/guardian`, and `/donor` route groups now exist behind role middleware
-- guardian-student links, donor user linkage, invoice, payment, receipt, gateway event, audit, and RBAC schema foundations are in place
-- canonical posting for future new flows is defined in `app/Services/Finance/CanonicalPostingService.php`
-- legacy transaction controllers, legacy report controllers, historical migrations, and existing management route names were left untouched
+- `/guardian` now serves a real guardian dashboard plus linked student, invoice, and payment-history views.
+- Guardian visibility is driven by `guardian_student` ownership plus `StudentPolicy` and `StudentFeeInvoicePolicy`.
+- Guardian-only and donor-only users are redirected off `/dashboard` and blocked from legacy management surfaces, while unroled legacy users still retain current access until a later hardening step.
+- Legacy transaction controllers, report controllers, shared management navigation, historical migrations, and existing route names were left untouched.
 
 ## Unresolved Live Runtime Blockers
 - none for the next approved phase
-- only the required fresh-thread boundary remains before Phase 2 can begin
+- donor-specific ownership views and history pages still need to be built in Phase 3
 
 ## Next Phase May Start?
-Yes, but only in a fresh thread after reading the updated bootstrap/handoff files from the recorded handoff checkpoint.
+Yes. Phase 3 can build on the existing donor linkage foundation and the new portal-surface guard without changing legacy payment or reporting flows.

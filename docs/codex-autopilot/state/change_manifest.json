@@ -73,7 +73,7 @@
         {
           "path": "app/Models/Donor.php",
           "impact_class": "medium",
-          "reason": "Added additive donor-user linkage fields, casts, and relation support for future portal work.",
+          "reason": "Added additive donor-user linkage fields, casts, and relation support for future donor portal work.",
           "compatibility_note": "Legacy donor CRUD fields and naming remain intact.",
           "regression_checks": [
             "php artisan test --env=testing tests/Feature/Phase1/FoundationSchemaTest.php"
@@ -99,16 +99,84 @@
       ]
     },
     "PHASE_2_GUARDIAN_PORTAL": {
-      "status": "pending",
+      "status": "completed",
       "allowed_touch_budget": {
         "existing_files_soft_max": 10,
         "critical_existing_files_soft_max": 3
       },
-      "new_files": [],
-      "modified_existing_files": [],
-      "critical_existing_files": [],
-      "change_impact_entries": [],
-      "notes": []
+      "new_files": [
+        "app/Http/Controllers/Guardian/GuardianPortalController.php",
+        "app/Http/Middleware/EnsureManagementSurfaceAccess.php",
+        "app/Http/Middleware/RedirectPortalUsersFromLegacyDashboard.php",
+        "app/Services/GuardianPortal/GuardianPortalData.php",
+        "resources/views/components/guardian-layout.blade.php",
+        "resources/views/guardian/dashboard.blade.php",
+        "resources/views/guardian/student.blade.php",
+        "resources/views/guardian/invoices/index.blade.php",
+        "resources/views/guardian/invoices/show.blade.php",
+        "resources/views/guardian/history.blade.php",
+        "tests/Feature/Phase2/GuardianPortalTest.php"
+      ],
+      "modified_existing_files": [
+        "bootstrap/app.php",
+        "routes/guardian.php",
+        "routes/web.php",
+        "tests/Feature/Phase1/PortalRoleAccessTest.php"
+      ],
+      "critical_existing_files": [
+        "routes/web.php"
+      ],
+      "change_impact_entries": [
+        {
+          "path": "bootstrap/app.php",
+          "impact_class": "low",
+          "reason": "Registered the portal landing and management surface middleware aliases needed by the Phase 2 guardian portal.",
+          "compatibility_note": "Existing role middleware remains intact; only the new additive aliases were added.",
+          "regression_checks": [
+            "php -l bootstrap/app.php",
+            "php artisan route:list --path=dashboard",
+            "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php"
+          ]
+        },
+        {
+          "path": "routes/guardian.php",
+          "impact_class": "medium",
+          "reason": "Replaced the Phase 1 placeholder route with the real guardian dashboard, student, invoice, and history routes under the existing guardian namespace.",
+          "compatibility_note": "The `/guardian` prefix and guardian route-name namespace remain unchanged.",
+          "regression_checks": [
+            "php -l routes/guardian.php",
+            "php artisan route:list --path=guardian",
+            "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php"
+          ]
+        },
+        {
+          "path": "routes/web.php",
+          "impact_class": "critical",
+          "reason": "Added a narrow redirect and management-surface guard so guardian-only and donor-only users cannot reach legacy management pages while all existing route names remain stable.",
+          "compatibility_note": "Unroled legacy users still retain their previous access during this phase to avoid breaking live management workflows before a later hardening/backfill step.",
+          "regression_checks": [
+            "php -l routes/web.php",
+            "php artisan route:list --path=dashboard",
+            "php artisan route:list --path=students",
+            "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php",
+            "php artisan test --env=testing"
+          ]
+        },
+        {
+          "path": "tests/Feature/Phase1/PortalRoleAccessTest.php",
+          "impact_class": "low",
+          "reason": "Updated the stale Phase 1 guardian route assertion so it provisions the guardian profile now required by the real Phase 2 portal surface.",
+          "compatibility_note": "The test still verifies role boundaries; it now matches the active guardian portal contract instead of the Phase 1 placeholder page.",
+          "regression_checks": [
+            "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php"
+          ]
+        }
+      ],
+      "notes": [
+        "No historical migrations were edited.",
+        "No legacy transaction controller, report controller, or shared navigation view was modified.",
+        "Guardian portal reads only from guardian links, student fee invoices, payments, and receipts added in Phase 1; it does not reuse legacy transaction posting paths."
+      ]
     },
     "PHASE_3_DONOR_PORTAL": {
       "status": "pending",

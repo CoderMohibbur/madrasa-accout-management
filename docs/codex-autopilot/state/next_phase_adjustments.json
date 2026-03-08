@@ -1,12 +1,12 @@
 {
-  "updated_at": "2026-03-08T16:32:01.3305912+06:00",
-  "current_basis_phase": "PHASE_1_FOUNDATION",
-  "next_phase": "PHASE_2_GUARDIAN_PORTAL",
+  "updated_at": "2026-03-08T18:06:58.4430257+06:00",
+  "current_basis_phase": "PHASE_2_GUARDIAN_PORTAL",
+  "next_phase": "PHASE_3_DONOR_PORTAL",
   "adjustments_required": false,
   "adjustments": [],
   "notes": [
-    "Phase 1 added the guardian-student, invoice, payment, receipt, audit, and RBAC foundations required by the remaining roadmap.",
-    "Phase 2 can build against the new guardian route boundary, policies, and invoice schema without touching legacy write controllers.",
-    "Fresh-thread continuation is required before Phase 2 starts."
+    "Phase 2 established a reusable portal-surface guard and a portal-specific layout without altering legacy transaction or report flows.",
+    "Phase 3 can build on the existing donor user linkage, donor route boundary, and new portal redirect guard while keeping legacy manual donor entry flows untouched.",
+    "Fresh-thread continuation remains the intended workflow boundary before Phase 3 starts."
   ]
 }

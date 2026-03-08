@@ -74,3 +74,15 @@
   `validation_manifest.json` captures known failures separately.
 - Runtime action:
   Distinguish baseline vs new regressions before deciding go/no-go.
+
+## R-07 Legacy management surfaces still allow unroled users
+- Severity: medium
+- Files:
+  - `routes/web.php`
+  - `app/Http/Middleware/EnsureManagementSurfaceAccess.php`
+- Why it matters:
+  Phase 2 blocks guardian-only and donor-only users from legacy management pages, but it intentionally preserves access for existing unroled users to avoid breaking live workflows before role backfill.
+- Protection in kit:
+  The new `management.surface` middleware narrows portal leakage without forcing a risky management-role cutover in the same phase.
+- Runtime action:
+  Revisit full explicit management-role enforcement only after role backfill and regression proof during a later hardening step.

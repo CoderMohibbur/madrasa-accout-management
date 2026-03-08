@@ -78,6 +78,46 @@
         "All newly added Phase 1 tests passed.",
         "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest."
       ]
+    },
+    {
+      "phase": "PHASE_2_GUARDIAN_PORTAL",
+      "status": "passed",
+      "validated_at": "2026-03-08T18:06:58.4430257+06:00",
+      "command_results": [
+        {
+          "command": "php artisan route:list --path=guardian",
+          "exit_code": 0,
+          "summary": "5 guardian portal routes registered"
+        },
+        {
+          "command": "php artisan route:list --path=dashboard",
+          "exit_code": 0,
+          "summary": "dashboard route preserved with portal landing and management-surface guard"
+        },
+        {
+          "command": "php artisan route:list --path=students",
+          "exit_code": 0,
+          "summary": "legacy student routes still registered while management-surface gating remains additive"
+        },
+        {
+          "command": "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
+          "exit_code": 0,
+          "summary": "5 tests passed"
+        },
+        {
+          "command": "php artisan test --env=testing",
+          "exit_code": 1,
+          "summary": "14 failures, 21 passes",
+          "classification": "known_preexisting_failures_only"
+        }
+      ],
+      "unexpected_failures": [],
+      "new_regressions_detected": false,
+      "notes": [
+        "Guardian dashboard, student profile, invoice visibility, and payment history tests all passed.",
+        "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest.",
+        "A temporary parallel test invocation dirtied the shared testing database, but a sequential rerun restored the expected 14-failure baseline with no additional regressions."
+      ]
     }
   ]
 }
