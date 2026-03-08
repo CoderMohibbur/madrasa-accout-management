@@ -4,6 +4,7 @@
 
 - Never implement on `main`, `master`, or another protected/shared branch.
 - Require a clean working tree before starting.
+- If the working tree is dirty only because autopilot-owned files under `docs/codex-autopilot/state/*`, `handoff/*`, `reports/*`, `docs/*`, or `templates/*` were updated during preflight or handoff maintenance, checkpoint those files and rerun the gate instead of treating that as an application blocker.
 - Create or switch to the dedicated branch before any implementation changes.
 - Record actual branch and actual commit SHA in `state/run_state.json`.
 - Record phase-end commit SHA in report + handoff + thread index.
@@ -25,7 +26,7 @@ A long-lived dedicated branch is acceptable only if:
 ## Preflight Git Checklist
 
 1. confirm repository exists
-2. confirm no uncommitted changes (`git status --porcelain`)
+2. confirm no uncommitted changes (`git status --porcelain`) unless any pending changes are autopilot-only and will be checkpointed before implementation starts
 3. confirm current branch is not protected/shared
 4. create or switch to the dedicated branch from the intended base
 5. record actual current branch in `run_state.json`
@@ -45,7 +46,8 @@ Recommended commit message pattern:
 
 ## If Git Preflight Fails
 
-Stop immediately.
+If the failure is autopilot-only dirty state/handoff/report/doc output, checkpoint it and rerun preflight.
+Otherwise stop immediately.
 Do not edit code.
 Write the blocker into:
 - current phase report

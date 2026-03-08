@@ -23,6 +23,7 @@ Required structure:
 - `implementation_series_id`
 - `base_branch`
 - `safe_branch`
+- `workflow_status`
 - `current_phase`
 - `current_phase_status`
 - `completed_phases`
@@ -39,6 +40,20 @@ Required structure:
 - `baseline_validation`
 - `phase_gate_notes`
 
+## Explicit Workflow Status Discipline
+
+Keep `run_state.json.workflow_status` current with an explicit stage-specific value such as:
+- `preflight_in_progress`
+- `preflight_passed`
+- `preflight_blocked`
+- `phase_1_in_progress`
+- `phase_1_complete`
+- `phase_2_in_progress`
+- `phase_2_complete`
+- `blocked`
+
+`current_phase_status` may continue to use the generic legal status values below, but `workflow_status` should reflect the live runtime position without requiring inference.
+
 ## Legal Status Values
 
 - `pending`
@@ -48,6 +63,22 @@ Required structure:
 - `completed`
 - `blocked`
 - `deferred`
+
+## Preflight Self-Repair Rule
+
+If preflight dirties only autopilot-owned files under:
+- `docs/codex-autopilot/state/*`
+- `docs/codex-autopilot/handoff/*`
+- `docs/codex-autopilot/reports/*`
+- `docs/codex-autopilot/docs/*`
+- `docs/codex-autopilot/templates/*`
+
+then the runtime must:
+1. classify the issue as autopilot/self-repair, not as an application-integrity blocker
+2. normalize the affected files
+3. create an autopilot-only checkpoint commit if that restores a clean tree
+4. rerun preflight automatically
+5. leave `run_state.json` in the final rerun result rather than a permanent self-blocked state
 
 ## Legal Phase Progression
 

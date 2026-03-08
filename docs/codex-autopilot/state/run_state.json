@@ -1,34 +1,56 @@
 {
   "project_name": "Madrasa Account Management",
   "implementation_series_id": "madrasa-autopilot-v4",
-  "base_branch": "main",
+  "base_branch": "master",
   "safe_branch": "codex/2026-03-08-phase-1-foundation-safety",
+  "workflow_status": "preflight_blocked",
   "current_phase": "PHASE_1_FOUNDATION",
-  "current_phase_status": "pending",
+  "current_phase_status": "blocked",
   "completed_phases": [],
-  "blocked_phases": [],
+  "blocked_phases": [
+    "PHASE_1_FOUNDATION"
+  ],
   "last_completed_phase": null,
-  "last_validation_result": null,
-  "current_thread_id": "thread-001-runtime-preflight",
+  "last_validation_result": "blocked",
+  "current_thread_id": "thread-002-runtime-preflight-rerun",
   "next_thread_required": false,
-  "blocker_present": false,
-  "blocker_summary": null,
-  "last_updated": "2026-03-08T00:00:00+06:00",
+  "blocker_present": true,
+  "blocker_category": "autopilot_hygiene",
+  "blocker_summary": "Phase 1 preflight is temporarily blocked only because autopilot state/report/handoff files are dirty. Commit the autopilot-only checkpoint, rerun preflight, and continue if the tree is clean.",
+  "last_updated": "2026-03-08T16:04:08.4774712+06:00",
   "final_verification_status": "pending",
   "git_runtime": {
-    "actual_current_branch": null,
-    "actual_head_sha": null,
+    "actual_current_branch": "codex/2026-03-08-phase-1-foundation-safety",
+    "actual_head_sha": "6814414e954194918bccb4c96344ae0991b45d09",
     "last_checkpoint_commit_sha": null,
-    "populated_at_runtime": true
+    "populated_at_runtime": true,
+    "repository_confirmed": true,
+    "working_tree_clean": false,
+    "protected_branch_violation": false,
+    "required_safe_branch_exists": true,
+    "required_safe_branch_active": true,
+    "safe_directory_override_required": true,
+    "checked_at": "2026-03-08T16:04:08.4774712+06:00"
   },
   "baseline_validation": {
     "known_preexisting_failures_documented": true,
     "known_preexisting_failures_source": "docs/codex-autopilot/state/validation_manifest.json",
-    "runtime_reconfirmation_required": true
+    "runtime_reconfirmation_required": true,
+    "runtime_reconfirmed_at": "2026-03-08T16:04:08.4774712+06:00",
+    "runtime_command": "php artisan test --env=testing",
+    "runtime_exit_code": 1,
+    "runtime_status": "known_preexisting_failures_confirmed_only",
+    "runtime_known_preexisting_failures_confirmed_count": 14,
+    "runtime_unexpected_failures": [],
+    "runtime_unknown_status": false
   },
   "phase_gate_notes": [
     "Do not start guardian/donor/payment implementation until Phase 1 creates canonical posting safety and auth boundaries.",
     "Do not rename existing route names.",
-    "Do not edit historical migrations."
+    "Do not edit historical migrations.",
+    "Required safe branch is active and local protected base branch is `master` in this repository.",
+    "Runtime preflight confirmed protected-path and stop-rule constraints; no application code was modified.",
+    "The current blocker is autopilot-only hygiene, not an application-integrity blocker.",
+    "Checkpoint the autopilot-maintained files, rerun preflight, and only then begin implementation."
   ]
 }

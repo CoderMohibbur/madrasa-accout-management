@@ -1,38 +1,60 @@
 # PREFLIGHT REPORT
 
 ## Status
-ready_for_runtime_preflight
+blocked
 
-## Prepared On
-2026-03-08
+## Ran On
+2026-03-08T16:04:08.4774712+06:00
 
-## Package Purpose
-This report records the pre-implementation safety setup prepared from the uploaded codebase and workflow files.
+## Scope
+Preflight only. No Phase 1 implementation started. No application code modified.
 
-## Verified Project Reality
-- Laravel 11 + Breeze app with single `users` auth and single `web` guard
-- current auth has admin-approval style login behavior through `email_verified_at`
-- current routes are flat and mostly protected only by `auth`/`verified`
-- current reports read from `transactions`
-- legacy financial write semantics are mixed across controllers
-- existing auth/profile tests have known baseline failures recorded separately
+## PASS Findings
+- Git repository confirmed.
+- Current branch is `codex/2026-03-08-phase-1-foundation-safety`, which matches the required safe branch and is not `main`, `master`, or another protected/shared branch.
+- Actual HEAD commit recorded: `6814414e954194918bccb4c96344ae0991b45d09`.
+- Local `master` exists and is at the same commit as the active safe branch; `run_state.json` was updated to match the live repository.
+- Required docs/state/handoff files exist, including `docs/codex-autopilot/phases/PHASE_1_FOUNDATION.md`.
+- `run_state.json` is valid JSON with all required top-level fields from `STATE_MACHINE_SPEC.md`.
+- Protected-path rules, stop conditions, and Phase 1 gate rules were reviewed and applied.
+- Only autopilot preflight/state/handoff files are modified in the working tree; no application code or protected application paths are currently changed.
+- Baseline validation manifest was reconfirmed at runtime with `php artisan test --env=testing`.
+- Runtime test failures matched only the 14 known pre-existing auth/profile failures already documented in `validation_manifest.json`.
+- No unexpected test failures were observed during preflight.
+- Git ownership protection requires a per-command `safe.directory` override in this runtime; repository checks completed successfully with that override.
 
-## Hard Decisions Applied In This Package
-- route names are frozen by rule
-- historical migrations are frozen by rule
-- financial write-path conflict is treated as a Phase 1 gating concern
-- Phase 5 payment integration is blocked until Phase 1 safety outputs exist
-- exact branch + exact commit SHA recording is mandatory at runtime
-- baseline-vs-regression separation is mandatory
+## BLOCKED Findings
+- Working tree is not clean.
+- Pending modified files:
+  - `docs/codex-autopilot/state/run_state.json`
+  - `docs/codex-autopilot/reports/PREFLIGHT_REPORT.md`
+  - `docs/codex-autopilot/handoff/CURRENT_HANDOFF.md`
+  - `docs/codex-autopilot/handoff/THREAD_HISTORY_INDEX.md`
+- The dirty tree is limited to autopilot-maintained artifacts; this is a self-repair/gate-rerun condition, not an application-integrity blocker.
+- Phase 1 implementation must not start until the working tree is clean again.
 
-## Runtime Items Still To Be Confirmed In Live Repo
-- actual Git branch
-- actual HEAD commit SHA
-- actual clean working tree
-- actual file presence after package is copied into the repo
-- actual test output in current runtime environment
+## Baseline Test Classification
+- Command: `php artisan test --env=testing`
+- Result: 14 failures, 11 passes
+- Classified as confirmed pre-existing failures:
+  - `Tests\Feature\Auth\AuthenticationTest::test_users_can_authenticate_using_the_login_screen`
+  - `Tests\Feature\Auth\AuthenticationTest::test_users_can_logout`
+  - `Tests\Feature\Auth\PasswordConfirmationTest::test_password_can_be_confirmed`
+  - `Tests\Feature\Auth\PasswordConfirmationTest::test_password_is_not_confirmed_with_invalid_password`
+  - `Tests\Feature\Auth\PasswordResetTest::test_reset_password_link_can_be_requested`
+  - `Tests\Feature\Auth\PasswordResetTest::test_reset_password_screen_can_be_rendered`
+  - `Tests\Feature\Auth\PasswordResetTest::test_password_can_be_reset_with_valid_token`
+  - `Tests\Feature\Auth\PasswordUpdateTest::test_password_can_be_updated`
+  - `Tests\Feature\Auth\PasswordUpdateTest::test_correct_password_must_be_provided_to_update_password`
+  - `Tests\Feature\Auth\RegistrationTest::test_new_users_can_register`
+  - `Tests\Feature\ProfileTest::test_profile_information_can_be_updated`
+  - `Tests\Feature\ProfileTest::test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged`
+  - `Tests\Feature\ProfileTest::test_user_can_delete_their_account`
+  - `Tests\Feature\ProfileTest::test_correct_password_must_be_provided_to_delete_account`
+- Unknown-status failures: none
 
 ## Go / No-Go
-go_for_runtime_preflight_only
+NO-GO for Phase 1.
 
-No implementation code should begin until live runtime preflight passes.
+Blocker class: autopilot hygiene only.
+Required next step: checkpoint the autopilot-only changes on `codex/2026-03-08-phase-1-foundation-safety`, then rerun preflight before any implementation.

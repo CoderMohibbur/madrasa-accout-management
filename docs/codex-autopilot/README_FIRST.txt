@@ -25,8 +25,9 @@ What this kit does NOT assume:
 First runtime action:
 1. Read `docs/codex-autopilot/docs/MASTER_ORCHESTRATOR_PROMPT.md`
 2. Run preflight only
-3. Create/switch to the safe branch required in `state/run_state.json`
-4. Do not start coding if any preflight item fails
+3. If preflight dirties only `docs/codex-autopilot/state/*`, `handoff/*`, `reports/*`, `docs/*`, or `templates/*`, normalize and checkpoint those autopilot-only changes, then rerun preflight
+4. Create/switch to the safe branch required in `state/run_state.json`
+5. Do not start coding until a final preflight pass is recorded
 
 Status of this package:
 - documentation/state package: ready

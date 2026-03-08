@@ -57,7 +57,7 @@ Do not implement anything until every preflight check passes.
 
 ### Git and Workspace Preflight
 - Confirm Git repository exists.
-- Confirm working tree is clean (`git status --porcelain` must be empty).
+- Confirm working tree is clean (`git status --porcelain` must be empty) unless the only pending changes are autopilot-owned files under `docs/codex-autopilot/state/*`, `handoff/*`, `reports/*`, `docs/*`, or `templates/*`; those must be normalized, checkpoint-committed, and the preflight rerun before implementation starts.
 - Confirm current branch is not `main`, `master`, or another protected/shared branch.
 - Create or switch to the dedicated working branch recorded in `run_state.json`.
 - Record actual current branch and actual HEAD commit SHA into `run_state.json`.
@@ -78,7 +78,8 @@ Do not implement anything until every preflight check passes.
 - Confirm portal/payment work will not start until canonical posting safety and auth boundaries from Phase 1 are in place.
 
 If any preflight item fails:
-- stop immediately
+- if the failure is limited to autopilot-owned docs/state/handoff/report/template drift or safe-branch Git hygiene that can be repaired without application changes, repair it, checkpoint if needed, and rerun preflight
+- otherwise stop immediately
 - do not implement code
 - update the current phase report
 - update `run_state.json`
