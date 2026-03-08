@@ -14,8 +14,8 @@ class PaymentReferenceGenerator
 
     public function merchantOrderId(Payment $payment, string $channel = 'INV'): string
     {
-        $prefix = Str::upper((string) config('payments.shurjopay.order_prefix', 'SPAY'));
-        $prefix = Str::limit(preg_replace('/[^A-Z0-9]/', '', $prefix) ?: 'SPAY', 5, '');
+        $prefix = Str::upper((string) config('payments.shurjopay.order_prefix', 'HFS'));
+        $prefix = Str::limit(preg_replace('/[^A-Z0-9]/', '', $prefix) ?: 'HFS', 5, '');
         $channel = Str::upper(preg_replace('/[^A-Z0-9]/', '', $channel) ?: 'INV');
 
         return "{$prefix}-{$channel}-{$payment->getKey()}";

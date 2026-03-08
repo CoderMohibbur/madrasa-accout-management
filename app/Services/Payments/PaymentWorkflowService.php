@@ -475,9 +475,13 @@ class PaymentWorkflowService
             );
         }
 
-        $verification = $this->verifyShurjopayOrder($providerOrderId);
-        $record = $verification['record'];
-        $payment = $this->locatePaymentFromVerification($providerOrderId, $record);
+        try {
+            $verification = $this->verifyShurjopayOrder($providerOrderId);
+            $record = $verification['record'];
+            $payment = $this->locatePaymentFromVerification($providerOrderId, $record);
+        } catch (Throwable $exception) {
+            return $this->handleVerificationException($user, $input, $requestSource, $providerOrderId, $exception);
+        }
 
         $this->eventLogger->record(
             $payment,
@@ -644,6 +648,61 @@ class PaymentWorkflowService
             'record' => is_array($record) ? $record : [],
             'response' => $verification['response'],
         ];
+    }
+
+    private function handleVerificationException(
+        ?User $user,
+        array $input,
+        string $requestSource,
+        string $providerOrderId,
+        Throwable $exception,
+    ): PaymentFlowResult {
+        $payment = Payment::query()
+            ->where('provider', 'shurjopay')
+            ->where('provider_reference', $providerOrderId)
+            ->with(['payable.student', 'receipt', 'reviewer'])
+            ->first();
+
+        if ($user && $payment) {
+            $this->authorizeView($user, $payment);
+        }
+
+        $this->eventLogger->record(
+            $payment,
+            'shurjopay',
+            'verification_error',
+            [
+                'source' => $requestSource,
+                'query' => $input,
+                'message' => $exception->getMessage(),
+            ],
+            'verify',
+            $providerOrderId,
+            null,
+            'failed'
+        );
+
+        if (! $payment) {
+            return new PaymentFlowResult(
+                status: 'manual_review',
+                payment: null,
+                message: 'shurjoPay verification could not be completed and Laravel could not match the order id to a local payment.',
+                context: [
+                    'provider_order_id' => $providerOrderId,
+                    'verification_error' => $exception->getMessage(),
+                ]
+            );
+        }
+
+        return $this->markManualReview(
+            $payment,
+            $user,
+            'shurjoPay verification could not be completed. Manual review is required before treating this payment as settled.',
+            [
+                'provider_order_id' => $providerOrderId,
+                'verification_error' => $exception->getMessage(),
+            ]
+        );
     }
 
     private function locatePaymentFromVerification(string $providerOrderId, array $record): ?Payment

@@ -20,6 +20,7 @@ class ShurjopayClient
             'store_id' => $auth['store_id'],
             'prefix' => config('payments.shurjopay.order_prefix'),
             'return_url' => config('payments.shurjopay.success_url') ?: route('payments.shurjopay.return.success'),
+            'fail_url' => config('payments.shurjopay.fail_url') ?: route('payments.shurjopay.return.fail'),
             'cancel_url' => config('payments.shurjopay.cancel_url') ?: route('payments.shurjopay.return.cancel'),
             'amount' => $resolvedPayable->amount,
             'order_id' => $merchantOrderId,

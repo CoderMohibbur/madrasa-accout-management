@@ -28,7 +28,7 @@ return [
     ],
 
     'shurjopay' => [
-        'order_prefix' => env('SHURJOPAY_ORDER_PREFIX', 'SPAY'),
+        'order_prefix' => env('SHURJOPAY_ORDER_PREFIX', 'HFS'),
         'success_url' => env('SHURJOPAY_SUCCESS_URL'),
         'fail_url' => env('SHURJOPAY_FAIL_URL'),
         'cancel_url' => env('SHURJOPAY_CANCEL_URL'),

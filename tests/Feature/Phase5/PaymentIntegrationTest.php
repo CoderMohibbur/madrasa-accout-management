@@ -72,11 +72,77 @@ class PaymentIntegrationTest extends TestCase
         $this->assertSame('SP-SANDBOX-001', $payment->provider_reference);
         $this->assertSame('sandbox', $payment->provider_mode);
         $this->assertSame('TIC-INV-'.$payment->id, data_get($payment->metadata, 'merchant_order_id'));
+        Http::assertSent(function ($request): bool {
+            if ($request->url() !== 'https://sandbox.shurjopayment.com/api/secret-pay') {
+                return false;
+            }
+
+            $payload = $request->data();
+
+            return ($payload['prefix'] ?? null) === 'TIC'
+                && ($payload['return_url'] ?? null) === route('payments.shurjopay.return.success')
+                && ($payload['fail_url'] ?? null) === route('payments.shurjopay.return.fail')
+                && ($payload['cancel_url'] ?? null) === route('payments.shurjopay.return.cancel');
+        });
         $this->assertDatabaseHas('payment_gateway_events', [
             'payment_id' => $payment->id,
             'provider' => 'shurjopay',
             'event_name' => 'initiate_response',
             'provider_order_id' => 'SP-SANDBOX-001',
+        ]);
+    }
+
+    public function test_success_return_routes_verification_transport_errors_to_manual_review(): void
+    {
+        ['guardianUser' => $guardianUser, 'invoice' => $invoice] = $this->makeGuardianInvoiceFixture();
+
+        $payment = Payment::query()->create([
+            'user_id' => $guardianUser->id,
+            'payable_type' => StudentFeeInvoice::class,
+            'payable_id' => $invoice->id,
+            'status' => Payment::STATUS_REDIRECT_PENDING,
+            'verification_status' => Payment::VERIFICATION_PENDING,
+            'provider' => 'shurjopay',
+            'provider_mode' => 'sandbox',
+            'currency' => 'BDT',
+            'amount' => 800,
+            'idempotency_key' => 'SPAY-TEST-ERROR-001',
+            'provider_reference' => 'SP-SANDBOX-ERROR-001',
+            'metadata' => [
+                'merchant_order_id' => 'TIC-INV-1003',
+            ],
+            'initiated_at' => now()->subMinute(),
+        ]);
+
+        Http::fake([
+            'https://sandbox.shurjopayment.com/api/get_token' => Http::response([
+                'token' => 'sandbox-token',
+                'store_id' => 1,
+                'token_type' => 'Bearer',
+            ]),
+            'https://sandbox.shurjopayment.com/api/verification' => Http::response([
+                'message' => 'temporary failure',
+            ], 500),
+        ]);
+
+        $this->actingAs($guardianUser)
+            ->get('/payments/shurjopay/return/success?order_id=SP-SANDBOX-ERROR-001')
+            ->assertOk()
+            ->assertSeeText('Manual Review Needed');
+
+        $payment->refresh();
+        $invoice->refresh();
+
+        $this->assertSame(Payment::STATUS_MANUAL_REVIEW, $payment->status);
+        $this->assertSame(Payment::VERIFICATION_MANUAL_REVIEW, $payment->verification_status);
+        $this->assertSame(0.0, (float) $invoice->paid_amount);
+        $this->assertSame(800.0, (float) $invoice->balance_amount);
+        $this->assertDatabaseCount('receipts', 0);
+        $this->assertDatabaseHas('payment_gateway_events', [
+            'payment_id' => $payment->id,
+            'provider' => 'shurjopay',
+            'event_name' => 'verification_error',
+            'provider_order_id' => 'SP-SANDBOX-ERROR-001',
         ]);
     }
 
