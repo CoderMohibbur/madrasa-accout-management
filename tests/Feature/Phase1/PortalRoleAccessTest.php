@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Phase1;
 
+use App\Models\Donor;
 use App\Models\Guardian;
 use App\Models\Role;
 use App\Models\User;
@@ -53,6 +54,15 @@ class PortalRoleAccessTest extends TestCase
 
         $donor = User::factory()->create();
         $donor->assignRole('donor');
+
+        Donor::query()->create([
+            'user_id' => $donor->id,
+            'name' => 'Donor Portal User',
+            'email' => $donor->email,
+            'portal_enabled' => true,
+            'isActived' => true,
+            'isDeleted' => false,
+        ]);
 
         $this->actingAs($guardian)
             ->get('/guardian')
