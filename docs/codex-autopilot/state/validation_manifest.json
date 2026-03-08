@@ -25,5 +25,59 @@
       "Therefore stale Breeze-default tests must not be treated as authoritative behavior."
     ]
   },
-  "phase_validations": []
+  "phase_validations": [
+    {
+      "phase": "PREFLIGHT",
+      "status": "passed",
+      "validated_at": "2026-03-08T16:29:50.7873571+06:00",
+      "command_results": [
+        {
+          "command": "php artisan test --env=testing",
+          "exit_code": 1,
+          "summary": "14 failures, 11 passes",
+          "classification": "known_preexisting_failures_only"
+        }
+      ],
+      "unexpected_failures": []
+    },
+    {
+      "phase": "PHASE_1_FOUNDATION",
+      "status": "passed",
+      "validated_at": "2026-03-08T16:32:01.3305912+06:00",
+      "command_results": [
+        {
+          "command": "php artisan route:list --path=management",
+          "exit_code": 0,
+          "summary": "2 management routes registered"
+        },
+        {
+          "command": "php artisan route:list --path=guardian",
+          "exit_code": 0,
+          "summary": "1 guardian route registered"
+        },
+        {
+          "command": "php artisan route:list --path=donor",
+          "exit_code": 0,
+          "summary": "1 donor dashboard route registered plus existing donor resource routes"
+        },
+        {
+          "command": "php artisan test --env=testing tests/Feature/Phase1 tests/Unit/Finance/CanonicalPostingServiceTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
+          "exit_code": 0,
+          "summary": "7 tests passed"
+        },
+        {
+          "command": "php artisan test --env=testing",
+          "exit_code": 1,
+          "summary": "14 failures, 18 passes",
+          "classification": "known_preexisting_failures_only"
+        }
+      ],
+      "unexpected_failures": [],
+      "new_regressions_detected": false,
+      "notes": [
+        "All newly added Phase 1 tests passed.",
+        "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest."
+      ]
+    }
+  ]
 }

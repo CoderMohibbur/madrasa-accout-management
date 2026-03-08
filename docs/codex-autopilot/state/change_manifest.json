@@ -2,16 +2,101 @@
   "schema_version": 2,
   "phases": {
     "PHASE_1_FOUNDATION": {
-      "status": "pending",
+      "status": "completed",
       "allowed_touch_budget": {
         "existing_files_soft_max": 12,
         "critical_existing_files_soft_max": 4
       },
-      "new_files": [],
-      "modified_existing_files": [],
-      "critical_existing_files": [],
-      "change_impact_entries": [],
-      "notes": []
+      "new_files": [
+        "app/Http/Middleware/EnsureUserHasRole.php",
+        "app/Models/Concerns/HasRoles.php",
+        "app/Models/Role.php",
+        "app/Models/Permission.php",
+        "app/Models/Guardian.php",
+        "app/Models/StudentFeeInvoice.php",
+        "app/Models/StudentFeeInvoiceItem.php",
+        "app/Models/Payment.php",
+        "app/Models/PaymentGatewayEvent.php",
+        "app/Models/Receipt.php",
+        "app/Models/AuditLog.php",
+        "app/Policies/StudentPolicy.php",
+        "app/Policies/StudentFeeInvoicePolicy.php",
+        "app/Policies/ReceiptPolicy.php",
+        "app/Services/Finance/CanonicalPostingPayload.php",
+        "app/Services/Finance/CanonicalPostingService.php",
+        "database/migrations/2026_03_08_100000_create_access_control_tables.php",
+        "database/migrations/2026_03_08_100100_create_guardian_tables.php",
+        "database/migrations/2026_03_08_100200_extend_donors_for_portal_access.php",
+        "database/migrations/2026_03_08_100300_create_student_billing_tables.php",
+        "database/migrations/2026_03_08_100400_create_payment_receipt_and_audit_tables.php",
+        "resources/views/portals/foundation.blade.php",
+        "routes/management.php",
+        "routes/guardian.php",
+        "routes/donor.php",
+        "tests/Feature/Phase1/FoundationSchemaTest.php",
+        "tests/Feature/Phase1/PortalRoleAccessTest.php",
+        "tests/Unit/Finance/CanonicalPostingServiceTest.php",
+        "tests/Unit/Policies/StudentFeeInvoicePolicyTest.php"
+      ],
+      "modified_existing_files": [
+        "bootstrap/app.php",
+        "app/Models/User.php",
+        "app/Models/Donor.php",
+        "routes/web.php"
+      ],
+      "critical_existing_files": [
+        "app/Models/User.php",
+        "routes/web.php"
+      ],
+      "change_impact_entries": [
+        {
+          "path": "bootstrap/app.php",
+          "impact_class": "low",
+          "reason": "Added the role middleware alias needed for new portal route boundaries.",
+          "compatibility_note": "Existing middleware behavior remains unchanged outside the new role alias.",
+          "regression_checks": [
+            "php artisan route:list --path=management",
+            "php artisan route:list --path=guardian",
+            "php artisan route:list --path=donor"
+          ]
+        },
+        {
+          "path": "app/Models/User.php",
+          "impact_class": "high",
+          "reason": "Attached additive RBAC and guardian/donor profile helpers to the existing single auth model.",
+          "compatibility_note": "Auth flow, password handling, and admin approval semantics were not changed.",
+          "regression_checks": [
+            "php artisan test --env=testing tests/Feature/Phase1 tests/Unit/Finance/CanonicalPostingServiceTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
+            "php artisan test --env=testing"
+          ]
+        },
+        {
+          "path": "app/Models/Donor.php",
+          "impact_class": "medium",
+          "reason": "Added additive donor-user linkage fields, casts, and relation support for future portal work.",
+          "compatibility_note": "Legacy donor CRUD fields and naming remain intact.",
+          "regression_checks": [
+            "php artisan test --env=testing tests/Feature/Phase1/FoundationSchemaTest.php"
+          ]
+        },
+        {
+          "path": "routes/web.php",
+          "impact_class": "critical",
+          "reason": "Added isolated role-protected portal route groups without changing any existing route names.",
+          "compatibility_note": "All legacy management route names and definitions remain unchanged.",
+          "regression_checks": [
+            "php artisan route:list --path=management",
+            "php artisan route:list --path=guardian",
+            "php artisan route:list --path=donor",
+            "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php"
+          ]
+        }
+      ],
+      "notes": [
+        "No historical migrations were edited.",
+        "No legacy transaction controller or reporting controller was modified.",
+        "Canonical posting safety was introduced as a new service rather than by rewriting legacy write paths."
+      ]
     },
     "PHASE_2_GUARDIAN_PORTAL": {
       "status": "pending",

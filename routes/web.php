@@ -31,6 +31,21 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::middleware(['auth', 'verified', 'role:management'])
+    ->prefix('management')
+    ->as('management.')
+    ->group(base_path('routes/management.php'));
+
+Route::middleware(['auth', 'verified', 'role:guardian'])
+    ->prefix('guardian')
+    ->as('guardian.')
+    ->group(base_path('routes/guardian.php'));
+
+Route::middleware(['auth', 'verified', 'role:donor'])
+    ->prefix('donor')
+    ->as('donor.')
+    ->group(base_path('routes/donor.php'));
+
 //
 // ✅ Dashboard + Transaction Center + Reports (auth + verified)
 //
