@@ -14,7 +14,10 @@ class PaymentGatewayEvent extends Model
         'payment_id',
         'provider',
         'provider_event_id',
+        'provider_order_id',
         'event_name',
+        'request_source',
+        'http_status',
         'signature_valid',
         'processing_status',
         'payload',
@@ -24,6 +27,7 @@ class PaymentGatewayEvent extends Model
 
     protected $casts = [
         'signature_valid' => 'boolean',
+        'http_status' => 'integer',
         'payload' => 'array',
         'received_at' => 'datetime',
         'processed_at' => 'datetime',

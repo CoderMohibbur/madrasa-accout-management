@@ -46,6 +46,8 @@ Route::middleware(['auth', 'verified', 'role:donor'])
     ->as('donor.')
     ->group(base_path('routes/donor.php'));
 
+Route::group([], base_path('routes/payments.php'));
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'portal.home', 'management.surface'])
     ->name('dashboard');
