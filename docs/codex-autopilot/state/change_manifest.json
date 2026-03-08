@@ -265,58 +265,110 @@
       ]
     },
     "PHASE_5_PAYMENT_INTEGRATION": {
-      "status": "blocked",
+      "status": "completed",
       "allowed_touch_budget": {
         "existing_files_soft_max": 10,
         "critical_existing_files_soft_max": 3
       },
       "new_files": [
-        "docs/codex-autopilot/docs/PHASE_5_PAYMENT_PROVIDER_SPEC.md"
+        "config/payments.php",
+        "database/migrations/2026_03_08_190500_extend_payments_for_phase_5_sandbox.php",
+        "app/Http/Controllers/Management/ManualBankPaymentReviewController.php",
+        "app/Http/Controllers/Payments/ManualBankPaymentController.php",
+        "app/Http/Controllers/Payments/ShurjopayPaymentController.php",
+        "app/Http/Requests/Payments/InitiateShurjopayPaymentRequest.php",
+        "app/Http/Requests/Payments/ReviewManualBankPaymentRequest.php",
+        "app/Http/Requests/Payments/StoreManualBankPaymentRequest.php",
+        "app/Services/Payments/PaymentAuditLogger.php",
+        "app/Services/Payments/PaymentEventLogger.php",
+        "app/Services/Payments/PaymentFlowResult.php",
+        "app/Services/Payments/PaymentReferenceGenerator.php",
+        "app/Services/Payments/PaymentWorkflowService.php",
+        "app/Services/Payments/ResolvedPayable.php",
+        "app/Services/Payments/Shurjopay/ShurjopayClient.php",
+        "app/Services/Payments/StudentFeeInvoicePayableResolver.php",
+        "resources/views/management/manual-bank-payments/index.blade.php",
+        "resources/views/payments/manual-bank/show.blade.php",
+        "resources/views/payments/shurjopay/status.blade.php",
+        "routes/payments.php",
+        "tests/Feature/Phase5/PaymentIntegrationTest.php"
       ],
       "modified_existing_files": [
+        ".env.example",
+        "app/Models/Payment.php",
+        "app/Models/PaymentGatewayEvent.php",
+        "resources/views/guardian/invoices/show.blade.php",
+        "routes/web.php",
         "docs/codex-autopilot/reports/PHASE_5_REPORT.md",
         "docs/codex-autopilot/handoff/CURRENT_HANDOFF.md",
         "docs/codex-autopilot/handoff/NEXT_THREAD_BOOTSTRAP.md",
         "docs/codex-autopilot/handoff/THREAD_HISTORY_INDEX.md",
         "docs/codex-autopilot/state/run_state.json",
+        "docs/codex-autopilot/state/change_manifest.json",
         "docs/codex-autopilot/state/next_phase_adjustments.json",
         "docs/codex-autopilot/state/phase_manifest.md",
+        "docs/codex-autopilot/state/validation_manifest.json",
         "docs/codex-autopilot/state/risk_register.md"
       ],
-      "critical_existing_files": [],
+      "critical_existing_files": [
+        "routes/web.php"
+      ],
       "change_impact_entries": [
         {
-          "path": "docs/codex-autopilot/reports/PHASE_5_REPORT.md",
+          "path": ".env.example",
           "impact_class": "low",
-          "reason": "Replaced the generic Phase 5 blocker stub with the concrete provider-decision summary, unresolved-item list, and code go/no-go decision.",
-          "compatibility_note": "This is a documentation-only change; no application behavior changed.",
+          "reason": "Documented the sandbox payment env keys without adding secrets.",
+          "compatibility_note": "The runtime .env file was intentionally left untouched.",
           "regression_checks": [
-            "Get-Content -Raw docs/codex-autopilot/reports/PHASE_5_REPORT.md"
+            "php -l config/payments.php"
           ]
         },
         {
-          "path": "docs/codex-autopilot/handoff/CURRENT_HANDOFF.md",
-          "impact_class": "low",
-          "reason": "Updated the live handoff context to reflect the new Phase 5 provider decision and the remaining blockers.",
-          "compatibility_note": "This is a documentation-only change; no application behavior changed.",
+          "path": "app/Models/Payment.php",
+          "impact_class": "high",
+          "reason": "Added additive payment-state constants, verification fields, reviewer linkage, and terminal helpers needed by the Phase 5 workflow.",
+          "compatibility_note": "Existing Phase 1-4 payment and receipt relations remain intact.",
           "regression_checks": [
-            "Get-Content -Raw docs/codex-autopilot/handoff/CURRENT_HANDOFF.md"
+            "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php",
+            "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php"
           ]
         },
         {
-          "path": "docs/codex-autopilot/state/run_state.json",
-          "impact_class": "low",
-          "reason": "Moved the runtime focus from completed Phase 4 state to blocked Phase 5 state and normalized the actual current committed checkpoint before the docs-only edits.",
-          "compatibility_note": "This is a state-tracking change only; no app runtime semantics changed.",
+          "path": "app/Models/PaymentGatewayEvent.php",
+          "impact_class": "medium",
+          "reason": "Added additive provider-order and request-source metadata for sandbox callback tracing.",
+          "compatibility_note": "Existing gateway-event relation behavior remains intact.",
           "regression_checks": [
-            "Get-Content -Raw docs/codex-autopilot/state/run_state.json | ConvertFrom-Json | Out-Null"
+            "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php"
+          ]
+        },
+        {
+          "path": "resources/views/guardian/invoices/show.blade.php",
+          "impact_class": "medium",
+          "reason": "Exposed the new sandbox-only shurjoPay and manual-bank options on the guardian invoice detail page.",
+          "compatibility_note": "The invoice summary, item list, and payment history sections remain intact.",
+          "regression_checks": [
+            "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php",
+            "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php"
+          ]
+        },
+        {
+          "path": "routes/web.php",
+          "impact_class": "critical",
+          "reason": "Added the new isolated payment route file without renaming any existing route names.",
+          "compatibility_note": "All legacy management, dashboard, and portal route names remain unchanged.",
+          "regression_checks": [
+            "php artisan route:list --path=payments",
+            "php artisan route:list --path=manual-bank",
+            "php artisan route:list --path=shurjopay -v"
           ]
         }
       ],
       "notes": [
-        "No application code, routes, tests, configs, or env files were modified in this task.",
-        "Secret values supplied in the user prompt were intentionally not copied into tracked repo files; only config-key requirements were documented.",
-        "Phase 5 implementation remains blocked until provider-security and donor-payable-scope confirmations are supplied."
+        "No historical migrations were edited.",
+        "No live gateway activation, merchant-panel change, or WordPress IPN cutover was performed.",
+        "Donor online payments remain out of scope because a dedicated donor payable model still does not exist.",
+        "Canonical posting was scaffolded but intentionally left disabled by default to protect existing reporting and accounting behavior during sandbox-only work."
       ]
     },
     "PHASE_6_HARDENING_AND_FINAL_VERIFICATION": {

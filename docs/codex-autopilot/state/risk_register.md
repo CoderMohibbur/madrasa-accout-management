@@ -101,18 +101,19 @@
   Any later backfill or reporting reconciliation must be explicit and documented rather than inferred inside the portal views.
 
 ## R-09 Payment provider security contract is still incomplete
-- Severity: critical
+- Severity: medium
 - Files:
   - `app/Models/Payment.php`
   - `app/Models/PaymentGatewayEvent.php`
+  - `app/Services/Payments/PaymentWorkflowService.php`
   - `docs/codex-autopilot/docs/PHASE_5_PAYMENT_PROVIDER_SPEC.md`
   - `docs/codex-autopilot/phases/PHASE_5_PAYMENT_INTEGRATION.md`
 - Why it matters:
-  The project now has a provider decision, but the exact shurjoPay callback/IPN verification model, payload contract, stable event identifier, and authoritative finalization step are still unconfirmed.
+  Phase 5 now uses a safe sandbox-only verify-API flow, but the official material available to this thread still did not expose a separate callback signature secret or a distinct fail-return contract for live readiness.
 - Protection in kit:
-  Phase 5 remains blocked until those security-critical provider details are confirmed.
+  Phase 5 implemented only the verify-based sandbox scope and still forbids live activation.
 - Runtime action:
-  Do not implement live payment initiation, webhook handling, or finalization logic until the callback/IPN security contract is documented from accepted provider material.
+  Do not treat the current sandbox scaffold as approval for live go-live. Reconfirm any provider-side signature, callback, or merchant-panel requirements before activation.
 
 ## R-10 Donor online payment scope lacks a safe payable model
 - Severity: critical
@@ -125,6 +126,19 @@
 - Why it matters:
   Guardian invoice payments can attach to `StudentFeeInvoice`, but donor self-service payments still have no dedicated donation payable model. Reusing legacy `transactions` as a live gateway payable would violate the project analysis and payment-safety rules.
 - Protection in kit:
-  The Phase 5 payment spec narrows the currently safe online target surface to invoice-backed payments and blocks donor-side live finalization until a dedicated donor payable surface is approved.
+  The implemented Phase 5 payment flow is intentionally limited to invoice-backed guardian payments and keeps donor-side online payments out of scope.
 - Runtime action:
   Do not finalize donor online payments against legacy `transactions`; either add a dedicated donation payable model first or formally narrow Phase 5 implementation scope.
+
+## R-11 Canonical posting remains intentionally disabled by default
+- Severity: medium
+- Files:
+  - `config/payments.php`
+  - `app/Services/Payments/PaymentWorkflowService.php`
+  - `app/Models/Payment.php`
+- Why it matters:
+  The new sandbox flow finalizes payments, receipts, and invoice balances, but it intentionally skips legacy `transactions` posting unless an operator-approved account mapping is configured.
+- Protection in kit:
+  This avoids silently altering legacy accounting/report behavior during sandbox-only work.
+- Runtime action:
+  Do not enable `PAYMENT_STUDENT_FEE_POSTING_ENABLED=true` until a safe account mapping and regression plan are in place.

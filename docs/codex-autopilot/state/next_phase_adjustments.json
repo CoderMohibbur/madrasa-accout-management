@@ -1,29 +1,33 @@
 {
-  "updated_at": "2026-03-08T22:38:21.8733808+06:00",
+  "updated_at": "2026-03-08T23:34:05.9002024+06:00",
   "current_basis_phase": "PHASE_5_PAYMENT_INTEGRATION",
-  "next_phase": "PHASE_5_PAYMENT_INTEGRATION",
+  "next_phase": "PHASE_6_HARDENING_AND_FINAL_VERIFICATION",
   "adjustments_required": true,
   "adjustments": [
     {
-      "type": "provider_security_contract_required",
-      "summary": "Confirm the exact shurjoPay callback/IPN verification method, payload contract, stable event identifier, and authoritative payment-verification flow before any Phase 5 code begins."
+      "type": "sandbox_hardening_required",
+      "summary": "Validate the new sandbox payment routes, callback handling, and manual-bank review flow under a clean Phase 6 hardening pass."
     },
     {
-      "type": "configuration_required",
-      "summary": "Keep the documented env/config-key contract, but do not activate live credentials until the project records an explicit go-live confirmation."
+      "type": "posting_activation_deferred",
+      "summary": "Do not enable canonical posting for the new payment flow until an operator-approved account mapping exists for the legacy transactions surface."
     },
     {
-      "type": "scope_decision_required",
-      "summary": "Confirm whether initial Phase 5 code scope is limited to invoice-backed guardian payments or whether a dedicated donor payable model will be approved first."
+      "type": "live_cutover_still_forbidden",
+      "summary": "Keep live shurjoPay activation, live merchant-panel changes, and the current WordPress IPN cutover out of scope until explicit approval is recorded."
     },
     {
-      "type": "receipt_and_manual_flow_required",
-      "summary": "Confirm the dedicated receipt-number rule and any manual-bank evidence storage/retention requirements before payment finalization code is implemented."
+      "type": "donor_payable_required",
+      "summary": "Do not extend online payments to donor flows until a dedicated donor payable model exists."
+    },
+    {
+      "type": "provider_contract_followup",
+      "summary": "If shurjoPay later supplies a distinct callback signature secret or updated return-contract details, review and integrate them during a controlled hardening or go-live phase rather than changing the sandbox scaffold ad hoc."
     }
   ],
   "notes": [
-    "The provider decision is now recorded: shurjopay is the current online gateway, manual_bank is the current fallback, and bkash/nagad are future-only providers.",
-    "The new payment spec package lives at `docs/codex-autopilot/docs/PHASE_5_PAYMENT_PROVIDER_SPEC.md`.",
-    "Phase 5 code remains blocked because provider-selection is no longer the issue; the remaining blockers are callback/IPN security details, receipt numbering, and donor payable scope."
+    "Phase 5 is complete for the safe sandbox-only invoice-payment scope.",
+    "The current implementation uses verify-API confirmation instead of an undocumented callback signature scheme.",
+    "The next thread should focus on hardening and final verification, not on live cutover."
   ]
 }

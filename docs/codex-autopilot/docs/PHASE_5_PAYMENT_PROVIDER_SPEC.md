@@ -2,7 +2,8 @@
 
 ## Status
 - Payment spec preparation: complete
-- Phase 5 code implementation: blocked pending unresolved security and scope confirmations
+- Phase 5 sandbox code implementation: complete
+- Live activation readiness: not approved
 
 ## Approved Provider Matrix
 
@@ -369,26 +370,17 @@ These are project-side route reservations for later implementation. They are not
   - reconciliation and audit requirements
 - Future providers must fit into the existing `payments.provider` and `payment_gateway_events.provider` surfaces without changing current shurjoPay/manual-bank semantics
 
-## Unresolved Items Before Safe Code Implementation
+## Remaining Items Before Live Activation / Hardening Closure
 
-1. Confirm the exact shurjoPay callback/IPN contract from provider documentation already accepted by the project:
-   - transport method
-   - payload fields
-   - stable event identifier
-   - signature or verification rule
-2. Confirm the authoritative shurjoPay payment-verification step:
-   - whether success redirect is informational only
-   - whether a separate verification API call is required
-3. Confirm the exact success/fail/cancel redirect payload contract and whether these routes receive enough data to correlate a local payment attempt safely.
-4. Confirm the dedicated receipt-number generation rule for new `receipts` rows.
-5. Confirm whether Phase 5 code scope is:
-   - student-fee payments only
-   - or student-fee plus donor payments after a dedicated donor payable model is approved
-6. If donor self-service payments are in scope, approve the donor payable surface first; do not reuse legacy `transactions` rows as live payment payables.
-7. Confirm whether manual bank evidence requires file upload storage and, if so, what storage location and retention policy will be used.
-8. Confirm the explicit live go/no-go decision before any live credential activation.
+1. Reconfirm any shurjoPay callback signature secret or updated callback contract before live activation if the provider later supplies one beyond the verify-by-order-id flow used in sandbox.
+2. Confirm the final live return/cancel behavior and merchant-panel callback configuration before go-live.
+3. Confirm the operator-approved account mapping before enabling canonical posting into legacy `transactions`.
+4. Confirm the dedicated donor payable surface before donor online payments are attempted.
+5. Confirm whether manual bank evidence needs upload storage beyond the non-file sandbox evidence fields used in Phase 5.
+6. Confirm the explicit live go/no-go decision before any live credential activation.
 
 ## Implementation Readiness Decision
 
-- `PHASE 5 SPEC PREP COMPLETE`
-- Phase 5 code implementation remains blocked until the unresolved items above are confirmed
+- `PHASE 5 SANDBOX IMPLEMENTATION COMPLETE`
+- The Laravel repository now has a safe sandbox-only shurjoPay plus manual-bank scaffold.
+- Live activation, live merchant changes, WordPress IPN cutover, and donor online payments remain out of scope until the remaining items above are resolved.

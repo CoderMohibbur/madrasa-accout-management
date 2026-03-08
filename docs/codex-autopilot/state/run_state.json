@@ -3,34 +3,35 @@
   "implementation_series_id": "madrasa-autopilot-v4",
   "base_branch": "master",
   "safe_branch": "codex/2026-03-08-phase-1-foundation-safety",
-  "workflow_status": "blocked",
+  "workflow_status": "phase_5_complete",
   "current_phase": "PHASE_5_PAYMENT_INTEGRATION",
-  "current_phase_status": "blocked",
+  "current_phase_status": "completed",
   "completed_phases": [
     "PHASE_1_FOUNDATION",
     "PHASE_2_GUARDIAN_PORTAL",
     "PHASE_3_DONOR_PORTAL",
-    "PHASE_4_MANAGEMENT_REPORTING"
+    "PHASE_4_MANAGEMENT_REPORTING",
+    "PHASE_5_PAYMENT_INTEGRATION"
   ],
   "blocked_phases": [
     "PHASE_5_PAYMENT_INTEGRATION"
   ],
-  "last_completed_phase": "PHASE_4_MANAGEMENT_REPORTING",
-  "last_validation_result": "blocked",
-  "current_thread_id": "thread-006-phase-5-payment-spec-preparation",
-  "next_thread_required": false,
-  "blocker_present": true,
-  "blocker_category": "provider_security_and_scope_confirmation_required",
-  "blocker_summary": "Provider selection is now resolved to shurjopay plus manual-bank fallback, but PHASE_5_PAYMENT_INTEGRATION remains blocked until the shurjoPay callback/IPN verification contract, authoritative payment-verification flow, receipt-number rule, and donor payable scope are confirmed.",
-  "last_updated": "2026-03-08T22:38:21.8733808+06:00",
+  "last_completed_phase": "PHASE_5_PAYMENT_INTEGRATION",
+  "last_validation_result": "passed",
+  "current_thread_id": "thread-007-phase-5-sandbox-implementation",
+  "next_thread_required": true,
+  "blocker_present": false,
+  "blocker_category": null,
+  "blocker_summary": "",
+  "last_updated": "2026-03-08T23:34:05.9002024+06:00",
   "final_verification_status": "pending",
   "git_runtime": {
     "actual_current_branch": "codex/2026-03-08-phase-1-foundation-safety",
-    "actual_head_sha": "b28160a904d88ca22ef951b89fd50a6495b56fe3",
-    "last_checkpoint_commit_sha": "b28160a904d88ca22ef951b89fd50a6495b56fe3",
-    "phase_start_commit_sha": "b28160a904d88ca22ef951b89fd50a6495b56fe3",
-    "phase_end_commit_sha": "b28160a904d88ca22ef951b89fd50a6495b56fe3",
-    "handoff_checkpoint_commit_sha": "b28160a904d88ca22ef951b89fd50a6495b56fe3",
+    "actual_head_sha": "0b416d6f9e82679c7b720a5119383f6dff8cef69",
+    "last_checkpoint_commit_sha": "0b416d6f9e82679c7b720a5119383f6dff8cef69",
+    "phase_start_commit_sha": "12187ebebb3a003dc6b20c7cbc979a305fe5f280",
+    "phase_end_commit_sha": "0b416d6f9e82679c7b720a5119383f6dff8cef69",
+    "handoff_checkpoint_commit_sha": "0b416d6f9e82679c7b720a5119383f6dff8cef69",
     "populated_at_runtime": true,
     "repository_confirmed": true,
     "working_tree_clean": false,
@@ -38,13 +39,13 @@
     "required_safe_branch_exists": true,
     "required_safe_branch_active": true,
     "safe_directory_override_required": true,
-    "checked_at": "2026-03-08T22:38:21.8733808+06:00"
+    "checked_at": "2026-03-08T23:34:05.9002024+06:00"
   },
   "baseline_validation": {
     "known_preexisting_failures_documented": true,
     "known_preexisting_failures_source": "docs/codex-autopilot/state/validation_manifest.json",
     "runtime_reconfirmation_required": true,
-    "runtime_reconfirmed_at": "2026-03-08T18:37:03.2100457+06:00",
+    "runtime_reconfirmed_at": "2026-03-08T23:34:05.9002024+06:00",
     "runtime_command": "php artisan test --env=testing",
     "runtime_exit_code": 1,
     "runtime_status": "known_preexisting_failures_confirmed_only",
@@ -55,12 +56,12 @@
   "phase_gate_notes": [
     "Do not rename existing route names.",
     "Do not edit historical migrations.",
-    "Required safe branch is active and local protected base branch is `master` in this repository.",
-    "Phase 5 spec prep began from committed checkpoint `b28160a904d88ca22ef951b89fd50a6495b56fe3` after the Phase 4 handoff metadata commit.",
-    "The current provider decision is: shurjopay as the primary online gateway, manual_bank as the current offline/manual fallback, and bkash/nagad as future-only providers.",
-    "All initial gateway work must remain sandbox-first; live credentials are documented out of band but inactive.",
-    "No application code, config files, or env files were modified in this task.",
-    "The repository still lacks a confirmed shurjoPay callback/IPN verification contract and a dedicated donor payable model for safe donor-side live payments.",
-    "PHASE_5_PAYMENT_INTEGRATION code must remain blocked until those unresolved items are confirmed."
+    "The required safe branch remained active throughout Phase 5 implementation.",
+    "Phase 5 implementation began after the autopilot-only checkpoint `12187ebebb3a003dc6b20c7cbc979a305fe5f280` restored a clean preflight state.",
+    "Sandbox-only shurjoPay initiation, return handling, IPN scaffolding, verification, manual-bank review, receipt issuance, and invoice linkage are now implemented in Laravel.",
+    "Live payment activation, live merchant-panel changes, and the current WordPress-controlled live IPN routing remain out of scope and untouched.",
+    "shurjoPay authenticity is treated as verify-API based because the official docs available to this thread did not expose a separate callback signature secret for sandbox use.",
+    "Canonical posting remains scaffolded but disabled by default until an operator-approved account mapping exists; this preserves existing reporting and accounting behavior during sandbox-only work.",
+    "Donor online payments remain out of scope because the repository still lacks a dedicated donor payable model."
   ]
 }

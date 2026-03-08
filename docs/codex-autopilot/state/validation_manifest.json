@@ -193,6 +193,51 @@
         "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest.",
         "Legacy `reports.*` routes and controllers were intentionally left untouched while the new reporting page remained additive under `/management/reporting`."
       ]
+    },
+    {
+      "phase": "PHASE_5_PAYMENT_INTEGRATION",
+      "status": "passed",
+      "validated_at": "2026-03-08T23:34:05.9002024+06:00",
+      "command_results": [
+        {
+          "command": "php artisan route:list --path=payments",
+          "exit_code": 0,
+          "summary": "10 payment and manual-bank routes registered"
+        },
+        {
+          "command": "php artisan route:list --path=manual-bank",
+          "exit_code": 0,
+          "summary": "5 manual-bank routes registered including the management review queue"
+        },
+        {
+          "command": "php artisan route:list --path=shurjopay -v",
+          "exit_code": 0,
+          "summary": "5 shurjopay routes registered including initiate, success/fail/cancel returns, and IPN"
+        },
+        {
+          "command": "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php",
+          "exit_code": 0,
+          "summary": "4 tests passed"
+        },
+        {
+          "command": "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php tests/Feature/Phase3/DonorPortalTest.php tests/Feature/Phase4/ManagementReportingTest.php tests/Feature/Phase5/PaymentIntegrationTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
+          "exit_code": 0,
+          "summary": "14 tests passed"
+        },
+        {
+          "command": "php artisan test --env=testing",
+          "exit_code": 1,
+          "summary": "14 failures, 29 passes",
+          "classification": "known_preexisting_failures_only"
+        }
+      ],
+      "unexpected_failures": [],
+      "new_regressions_detected": false,
+      "notes": [
+        "All Phase 5 payment integration tests passed.",
+        "The existing portal/reporting regression slice still passed with the new payment scaffold in place.",
+        "The broader suite continued to fail only in the 14 documented auth/profile baseline areas."
+      ]
     }
   ]
 }
