@@ -1,25 +1,29 @@
 {
-  "updated_at": "2026-03-08T18:37:03.2100457+06:00",
-  "current_basis_phase": "PHASE_4_MANAGEMENT_REPORTING",
+  "updated_at": "2026-03-08T22:38:21.8733808+06:00",
+  "current_basis_phase": "PHASE_5_PAYMENT_INTEGRATION",
   "next_phase": "PHASE_5_PAYMENT_INTEGRATION",
   "adjustments_required": true,
   "adjustments": [
     {
-      "type": "business_decision_required",
-      "summary": "Choose the concrete payment provider and callback/webhook verification contract before Phase 5 begins."
+      "type": "provider_security_contract_required",
+      "summary": "Confirm the exact shurjoPay callback/IPN verification method, payload contract, stable event identifier, and authoritative payment-verification flow before any Phase 5 code begins."
     },
     {
       "type": "configuration_required",
-      "summary": "Define the provider-specific credential, secret, and deployment configuration surface for payment initiation and webhook verification."
+      "summary": "Keep the documented env/config-key contract, but do not activate live credentials until the project records an explicit go-live confirmation."
     },
     {
-      "type": "finalization_rule_required",
-      "summary": "Confirm the provider-specific receipt/finalization expectations so idempotent posting and receipt issuance can be implemented safely."
+      "type": "scope_decision_required",
+      "summary": "Confirm whether initial Phase 5 code scope is limited to invoice-backed guardian payments or whether a dedicated donor payable model will be approved first."
+    },
+    {
+      "type": "receipt_and_manual_flow_required",
+      "summary": "Confirm the dedicated receipt-number rule and any manual-bank evidence storage/retention requirements before payment finalization code is implemented."
     }
   ],
   "notes": [
-    "Phase 4 established an additive `/management/reporting` surface with source-wise inflow separation, fee-vs-donation visibility, invoice status summaries, and receipt visibility while leaving legacy report routes untouched.",
-    "Phase 5 is not safely unblocked because the repository does not define a concrete payment provider or webhook/signature verification contract.",
-    "Do not guess the gateway implementation details; wait for the real provider/business decision before adding live payment initiation or finalization code."
+    "The provider decision is now recorded: shurjopay is the current online gateway, manual_bank is the current fallback, and bkash/nagad are future-only providers.",
+    "The new payment spec package lives at `docs/codex-autopilot/docs/PHASE_5_PAYMENT_PROVIDER_SPEC.md`.",
+    "Phase 5 code remains blocked because provider-selection is no longer the issue; the remaining blockers are callback/IPN security details, receipt numbering, and donor payable scope."
   ]
 }

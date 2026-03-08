@@ -265,16 +265,59 @@
       ]
     },
     "PHASE_5_PAYMENT_INTEGRATION": {
-      "status": "pending",
+      "status": "blocked",
       "allowed_touch_budget": {
         "existing_files_soft_max": 10,
         "critical_existing_files_soft_max": 3
       },
-      "new_files": [],
-      "modified_existing_files": [],
+      "new_files": [
+        "docs/codex-autopilot/docs/PHASE_5_PAYMENT_PROVIDER_SPEC.md"
+      ],
+      "modified_existing_files": [
+        "docs/codex-autopilot/reports/PHASE_5_REPORT.md",
+        "docs/codex-autopilot/handoff/CURRENT_HANDOFF.md",
+        "docs/codex-autopilot/handoff/NEXT_THREAD_BOOTSTRAP.md",
+        "docs/codex-autopilot/handoff/THREAD_HISTORY_INDEX.md",
+        "docs/codex-autopilot/state/run_state.json",
+        "docs/codex-autopilot/state/next_phase_adjustments.json",
+        "docs/codex-autopilot/state/phase_manifest.md",
+        "docs/codex-autopilot/state/risk_register.md"
+      ],
       "critical_existing_files": [],
-      "change_impact_entries": [],
-      "notes": []
+      "change_impact_entries": [
+        {
+          "path": "docs/codex-autopilot/reports/PHASE_5_REPORT.md",
+          "impact_class": "low",
+          "reason": "Replaced the generic Phase 5 blocker stub with the concrete provider-decision summary, unresolved-item list, and code go/no-go decision.",
+          "compatibility_note": "This is a documentation-only change; no application behavior changed.",
+          "regression_checks": [
+            "Get-Content -Raw docs/codex-autopilot/reports/PHASE_5_REPORT.md"
+          ]
+        },
+        {
+          "path": "docs/codex-autopilot/handoff/CURRENT_HANDOFF.md",
+          "impact_class": "low",
+          "reason": "Updated the live handoff context to reflect the new Phase 5 provider decision and the remaining blockers.",
+          "compatibility_note": "This is a documentation-only change; no application behavior changed.",
+          "regression_checks": [
+            "Get-Content -Raw docs/codex-autopilot/handoff/CURRENT_HANDOFF.md"
+          ]
+        },
+        {
+          "path": "docs/codex-autopilot/state/run_state.json",
+          "impact_class": "low",
+          "reason": "Moved the runtime focus from completed Phase 4 state to blocked Phase 5 state and normalized the actual current committed checkpoint before the docs-only edits.",
+          "compatibility_note": "This is a state-tracking change only; no app runtime semantics changed.",
+          "regression_checks": [
+            "Get-Content -Raw docs/codex-autopilot/state/run_state.json | ConvertFrom-Json | Out-Null"
+          ]
+        }
+      ],
+      "notes": [
+        "No application code, routes, tests, configs, or env files were modified in this task.",
+        "Secret values supplied in the user prompt were intentionally not copied into tracked repo files; only config-key requirements were documented.",
+        "Phase 5 implementation remains blocked until provider-security and donor-payable-scope confirmations are supplied."
+      ]
     },
     "PHASE_6_HARDENING_AND_FINAL_VERIFICATION": {
       "status": "pending",

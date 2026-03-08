@@ -100,15 +100,31 @@
 - Runtime action:
   Any later backfill or reporting reconciliation must be explicit and documented rather than inferred inside the portal views.
 
-## R-09 Payment provider contract is unspecified
+## R-09 Payment provider security contract is still incomplete
 - Severity: critical
 - Files:
   - `app/Models/Payment.php`
   - `app/Models/PaymentGatewayEvent.php`
+  - `docs/codex-autopilot/docs/PHASE_5_PAYMENT_PROVIDER_SPEC.md`
   - `docs/codex-autopilot/phases/PHASE_5_PAYMENT_INTEGRATION.md`
 - Why it matters:
-  The repository has payment schema placeholders but no concrete provider choice, webhook signature model, or deployment configuration contract for live payment finalization.
+  The project now has a provider decision, but the exact shurjoPay callback/IPN verification model, payload contract, stable event identifier, and authoritative finalization step are still unconfirmed.
 - Protection in kit:
-  Phase 5 is explicitly blocked until the provider/business decision exists.
+  Phase 5 remains blocked until those security-critical provider details are confirmed.
 - Runtime action:
-  Do not implement live payment initiation, webhook handling, or finalization logic until the provider contract is supplied.
+  Do not implement live payment initiation, webhook handling, or finalization logic until the callback/IPN security contract is documented from accepted provider material.
+
+## R-10 Donor online payment scope lacks a safe payable model
+- Severity: critical
+- Files:
+  - `app/Models/Payment.php`
+  - `app/Models/Transactions.php`
+  - `docs/implementation-analysis-report.md`
+  - `docs/codex-autopilot/reports/PHASE_3_REPORT.md`
+  - `docs/codex-autopilot/docs/PHASE_5_PAYMENT_PROVIDER_SPEC.md`
+- Why it matters:
+  Guardian invoice payments can attach to `StudentFeeInvoice`, but donor self-service payments still have no dedicated donation payable model. Reusing legacy `transactions` as a live gateway payable would violate the project analysis and payment-safety rules.
+- Protection in kit:
+  The Phase 5 payment spec narrows the currently safe online target surface to invoice-backed payments and blocks donor-side live finalization until a dedicated donor payable surface is approved.
+- Runtime action:
+  Do not finalize donor online payments against legacy `transactions`; either add a dedicated donation payable model first or formally narrow Phase 5 implementation scope.
