@@ -19,8 +19,8 @@ Prepare the foundational schema, role/auth boundaries, guardian/donor linkage gr
 ## Branch / Commit
 - safe branch: `codex/2026-03-08-phase-1-foundation-safety`
 - phase start commit: `8b989bcaeff9634e3e8a3fb3d3182fab5f6f2f00`
-- phase end commit: `pending_phase_end_commit_capture`
-- handoff checkpoint commit: `pending_handoff_checkpoint_capture`
+- phase end commit: `4b027606d720f80d0cd472509ab514616f24ed99`
+- handoff checkpoint commit: `4b027606d720f80d0cd472509ab514616f24ed99`
 
 ## Files Touched
 - New files:

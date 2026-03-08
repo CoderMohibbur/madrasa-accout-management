@@ -10,8 +10,8 @@ Phase 1 foundation work is complete and validated. A fresh thread is now require
 - workflow status: `phase_1_complete`
 - actual branch: `codex/2026-03-08-phase-1-foundation-safety`
 - preflight pass commit: `8b989bcaeff9634e3e8a3fb3d3182fab5f6f2f00`
-- phase end commit: `pending_phase_end_commit_capture`
-- handoff checkpoint commit: `pending_handoff_checkpoint_capture`
+- phase end commit: `4b027606d720f80d0cd472509ab514616f24ed99`
+- handoff checkpoint commit: `4b027606d720f80d0cd472509ab514616f24ed99`
 - baseline test status: `php artisan test --env=testing` still reproduces only the 14 known pre-existing auth/profile failures, with no unexpected regressions added by Phase 1
 
 ## Confirmed Runtime Safety Notes

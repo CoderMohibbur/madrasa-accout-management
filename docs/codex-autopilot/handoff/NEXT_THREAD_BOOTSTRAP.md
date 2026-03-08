@@ -34,6 +34,6 @@ Update `run_state.json` and the upcoming phase report with the blocker.
 - previous completed phase: `PHASE_1_FOUNDATION`
 - next approved phase: `PHASE_2_GUARDIAN_PORTAL`
 - required branch: `codex/2026-03-08-phase-1-foundation-safety`
-- phase end commit to inherit from: `pending_phase_end_commit_capture`
-- handoff checkpoint commit to start from: `pending_handoff_checkpoint_capture`
+- phase end commit to inherit from: `4b027606d720f80d0cd472509ab514616f24ed99`
+- handoff checkpoint commit to start from: `4b027606d720f80d0cd472509ab514616f24ed99`
 - do not treat the 14 documented auth/profile baseline failures as new regressions unless additional failures appear
