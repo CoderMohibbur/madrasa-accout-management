@@ -1,387 +1,402 @@
 {
-  "schema_version": 2,
-  "phases": {
-    "PHASE_1_FOUNDATION": {
-      "status": "completed",
-      "allowed_touch_budget": {
-        "existing_files_soft_max": 12,
-        "critical_existing_files_soft_max": 4
-      },
-      "new_files": [
-        "app/Http/Middleware/EnsureUserHasRole.php",
-        "app/Models/Concerns/HasRoles.php",
-        "app/Models/Role.php",
-        "app/Models/Permission.php",
-        "app/Models/Guardian.php",
-        "app/Models/StudentFeeInvoice.php",
-        "app/Models/StudentFeeInvoiceItem.php",
-        "app/Models/Payment.php",
-        "app/Models/PaymentGatewayEvent.php",
-        "app/Models/Receipt.php",
-        "app/Models/AuditLog.php",
-        "app/Policies/StudentPolicy.php",
-        "app/Policies/StudentFeeInvoicePolicy.php",
-        "app/Policies/ReceiptPolicy.php",
-        "app/Services/Finance/CanonicalPostingPayload.php",
-        "app/Services/Finance/CanonicalPostingService.php",
-        "database/migrations/2026_03_08_100000_create_access_control_tables.php",
-        "database/migrations/2026_03_08_100100_create_guardian_tables.php",
-        "database/migrations/2026_03_08_100200_extend_donors_for_portal_access.php",
-        "database/migrations/2026_03_08_100300_create_student_billing_tables.php",
-        "database/migrations/2026_03_08_100400_create_payment_receipt_and_audit_tables.php",
-        "resources/views/portals/foundation.blade.php",
-        "routes/management.php",
-        "routes/guardian.php",
-        "routes/donor.php",
-        "tests/Feature/Phase1/FoundationSchemaTest.php",
-        "tests/Feature/Phase1/PortalRoleAccessTest.php",
-        "tests/Unit/Finance/CanonicalPostingServiceTest.php",
-        "tests/Unit/Policies/StudentFeeInvoicePolicyTest.php"
-      ],
-      "modified_existing_files": [
-        "bootstrap/app.php",
-        "app/Models/User.php",
-        "app/Models/Donor.php",
-        "routes/web.php"
-      ],
-      "critical_existing_files": [
-        "app/Models/User.php",
-        "routes/web.php"
-      ],
-      "change_impact_entries": [
-        {
-          "path": "bootstrap/app.php",
-          "impact_class": "low",
-          "reason": "Added the role middleware alias needed for new portal route boundaries.",
-          "compatibility_note": "Existing middleware behavior remains unchanged outside the new role alias.",
-          "regression_checks": [
-            "php artisan route:list --path=management",
-            "php artisan route:list --path=guardian",
-            "php artisan route:list --path=donor"
-          ]
-        },
-        {
-          "path": "app/Models/User.php",
-          "impact_class": "high",
-          "reason": "Attached additive RBAC and guardian/donor profile helpers to the existing single auth model.",
-          "compatibility_note": "Auth flow, password handling, and admin approval semantics were not changed.",
-          "regression_checks": [
-            "php artisan test --env=testing tests/Feature/Phase1 tests/Unit/Finance/CanonicalPostingServiceTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
-            "php artisan test --env=testing"
-          ]
-        },
-        {
-          "path": "app/Models/Donor.php",
-          "impact_class": "medium",
-          "reason": "Added additive donor-user linkage fields, casts, and relation support for future donor portal work.",
-          "compatibility_note": "Legacy donor CRUD fields and naming remain intact.",
-          "regression_checks": [
-            "php artisan test --env=testing tests/Feature/Phase1/FoundationSchemaTest.php"
-          ]
-        },
-        {
-          "path": "routes/web.php",
-          "impact_class": "critical",
-          "reason": "Added isolated role-protected portal route groups without changing any existing route names.",
-          "compatibility_note": "All legacy management route names and definitions remain unchanged.",
-          "regression_checks": [
-            "php artisan route:list --path=management",
-            "php artisan route:list --path=guardian",
-            "php artisan route:list --path=donor",
-            "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php"
-          ]
-        }
-      ],
-      "notes": [
-        "No historical migrations were edited.",
-        "No legacy transaction controller or reporting controller was modified.",
-        "Canonical posting safety was introduced as a new service rather than by rewriting legacy write paths."
-      ]
-    },
-    "PHASE_2_GUARDIAN_PORTAL": {
-      "status": "completed",
-      "allowed_touch_budget": {
-        "existing_files_soft_max": 10,
-        "critical_existing_files_soft_max": 3
-      },
-      "new_files": [
-        "app/Http/Controllers/Guardian/GuardianPortalController.php",
-        "app/Http/Middleware/EnsureManagementSurfaceAccess.php",
-        "app/Http/Middleware/RedirectPortalUsersFromLegacyDashboard.php",
-        "app/Services/GuardianPortal/GuardianPortalData.php",
-        "resources/views/components/guardian-layout.blade.php",
-        "resources/views/guardian/dashboard.blade.php",
-        "resources/views/guardian/student.blade.php",
-        "resources/views/guardian/invoices/index.blade.php",
-        "resources/views/guardian/invoices/show.blade.php",
-        "resources/views/guardian/history.blade.php",
-        "tests/Feature/Phase2/GuardianPortalTest.php"
-      ],
-      "modified_existing_files": [
-        "bootstrap/app.php",
-        "routes/guardian.php",
-        "routes/web.php",
-        "tests/Feature/Phase1/PortalRoleAccessTest.php"
-      ],
-      "critical_existing_files": [
-        "routes/web.php"
-      ],
-      "change_impact_entries": [
-        {
-          "path": "bootstrap/app.php",
-          "impact_class": "low",
-          "reason": "Registered the portal landing and management surface middleware aliases needed by the Phase 2 guardian portal.",
-          "compatibility_note": "Existing role middleware remains intact; only the new additive aliases were added.",
-          "regression_checks": [
-            "php -l bootstrap/app.php",
-            "php artisan route:list --path=dashboard",
-            "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php"
-          ]
-        },
-        {
-          "path": "routes/guardian.php",
-          "impact_class": "medium",
-          "reason": "Replaced the Phase 1 placeholder route with the real guardian dashboard, student, invoice, and history routes under the existing guardian namespace.",
-          "compatibility_note": "The `/guardian` prefix and guardian route-name namespace remain unchanged.",
-          "regression_checks": [
-            "php -l routes/guardian.php",
-            "php artisan route:list --path=guardian",
-            "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php"
-          ]
-        },
-        {
-          "path": "routes/web.php",
-          "impact_class": "critical",
-          "reason": "Added a narrow redirect and management-surface guard so guardian-only and donor-only users cannot reach legacy management pages while all existing route names remain stable.",
-          "compatibility_note": "Unroled legacy users still retain their previous access during this phase to avoid breaking live management workflows before a later hardening/backfill step.",
-          "regression_checks": [
-            "php -l routes/web.php",
-            "php artisan route:list --path=dashboard",
-            "php artisan route:list --path=students",
-            "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php",
-            "php artisan test --env=testing"
-          ]
-        },
-        {
-          "path": "tests/Feature/Phase1/PortalRoleAccessTest.php",
-          "impact_class": "low",
-          "reason": "Updated the stale Phase 1 guardian route assertion so it provisions the guardian profile now required by the real Phase 2 portal surface.",
-          "compatibility_note": "The test still verifies role boundaries; it now matches the active guardian portal contract instead of the Phase 1 placeholder page.",
-          "regression_checks": [
-            "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php"
-          ]
-        }
-      ],
-      "notes": [
-        "No historical migrations were edited.",
-        "No legacy transaction controller, report controller, or shared navigation view was modified.",
-        "Guardian portal reads only from guardian links, student fee invoices, payments, and receipts added in Phase 1; it does not reuse legacy transaction posting paths."
-      ]
-    },
-    "PHASE_3_DONOR_PORTAL": {
-      "status": "completed",
-      "allowed_touch_budget": {
-        "existing_files_soft_max": 10,
-        "critical_existing_files_soft_max": 3
-      },
-      "new_files": [
-        "app/Http/Controllers/Donor/DonorPortalController.php",
-        "app/Services/DonorPortal/DonorPortalData.php",
-        "resources/views/components/donor-layout.blade.php",
-        "resources/views/donor/dashboard.blade.php",
-        "resources/views/donor/donations/index.blade.php",
-        "resources/views/donor/receipts/index.blade.php",
-        "tests/Feature/Phase3/DonorPortalTest.php"
-      ],
-      "modified_existing_files": [
-        "routes/donor.php",
-        "tests/Feature/Phase1/PortalRoleAccessTest.php"
-      ],
-      "critical_existing_files": [],
-      "change_impact_entries": [
-        {
-          "path": "routes/donor.php",
-          "impact_class": "medium",
-          "reason": "Replaced the Phase 1 placeholder donor route with the real donor dashboard, donation history, and receipt history routes under the existing donor namespace.",
-          "compatibility_note": "The `/donor` prefix and donor route-name namespace remain unchanged, and legacy donor management routes under `/donors` were left intact.",
-          "regression_checks": [
-            "php -l routes/donor.php",
-            "php artisan route:list --path=donor",
-            "php artisan route:list --path=donors",
-            "php artisan test --env=testing tests/Feature/Phase3/DonorPortalTest.php"
-          ]
-        },
-        {
-          "path": "tests/Feature/Phase1/PortalRoleAccessTest.php",
-          "impact_class": "low",
-          "reason": "Updated the stale donor route assertion so it provisions the donor profile now required by the real Phase 3 portal surface.",
-          "compatibility_note": "The test still verifies role boundaries; it now matches the active donor portal contract instead of the Phase 1 placeholder page.",
-          "regression_checks": [
-            "php -l tests/Feature/Phase1/PortalRoleAccessTest.php",
-            "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase3/DonorPortalTest.php"
-          ]
-        }
-      ],
-      "notes": [
-        "No historical migrations were edited.",
-        "No legacy donor management controller, transaction posting controller, or reporting controller was modified.",
-        "Donor portal reads only from the linked donor profile, legacy donation ledger rows, and explicit user-bound receipt records; it does not introduce donor-side write flows or live gateway finalization."
-      ]
-    },
-    "PHASE_4_MANAGEMENT_REPORTING": {
-      "status": "completed",
-      "allowed_touch_budget": {
-        "existing_files_soft_max": 10,
-        "critical_existing_files_soft_max": 3
-      },
-      "new_files": [
-        "app/Http/Controllers/Management/ManagementReportingController.php",
-        "app/Services/ManagementReporting/ManagementReportingData.php",
-        "resources/views/management/reporting.blade.php",
-        "tests/Feature/Phase4/ManagementReportingTest.php"
-      ],
-      "modified_existing_files": [
-        "routes/management.php"
-      ],
-      "critical_existing_files": [],
-      "change_impact_entries": [
-        {
-          "path": "routes/management.php",
-          "impact_class": "medium",
-          "reason": "Added the new management-only reporting route and updated the management namespace copy to point operators toward the additive reporting surface.",
-          "compatibility_note": "Existing `management.dashboard`, `management.access-control`, and all legacy `reports.*` routes remain unchanged.",
-          "regression_checks": [
-            "php -l routes/management.php",
-            "php artisan route:list --path=management",
-            "php artisan route:list --path=reporting",
-            "php artisan test --env=testing tests/Feature/Phase4/ManagementReportingTest.php"
-          ]
-        }
-      ],
-      "notes": [
-        "No historical migrations were edited.",
-        "No legacy `ReportController`, `Reports/*` controller, dashboard controller, or shared navigation file was modified.",
-        "Management reporting remains additive under `/management/reporting` and documents its semantic separation from the existing legacy report totals."
-      ]
-    },
-    "PHASE_5_PAYMENT_INTEGRATION": {
-      "status": "completed",
-      "allowed_touch_budget": {
-        "existing_files_soft_max": 10,
-        "critical_existing_files_soft_max": 3
-      },
-      "new_files": [
-        "config/payments.php",
-        "database/migrations/2026_03_08_190500_extend_payments_for_phase_5_sandbox.php",
-        "app/Http/Controllers/Management/ManualBankPaymentReviewController.php",
-        "app/Http/Controllers/Payments/ManualBankPaymentController.php",
-        "app/Http/Controllers/Payments/ShurjopayPaymentController.php",
-        "app/Http/Requests/Payments/InitiateShurjopayPaymentRequest.php",
-        "app/Http/Requests/Payments/ReviewManualBankPaymentRequest.php",
-        "app/Http/Requests/Payments/StoreManualBankPaymentRequest.php",
-        "app/Services/Payments/PaymentAuditLogger.php",
-        "app/Services/Payments/PaymentEventLogger.php",
-        "app/Services/Payments/PaymentFlowResult.php",
-        "app/Services/Payments/PaymentReferenceGenerator.php",
-        "app/Services/Payments/PaymentWorkflowService.php",
-        "app/Services/Payments/ResolvedPayable.php",
-        "app/Services/Payments/Shurjopay/ShurjopayClient.php",
-        "app/Services/Payments/StudentFeeInvoicePayableResolver.php",
-        "resources/views/management/manual-bank-payments/index.blade.php",
-        "resources/views/payments/manual-bank/show.blade.php",
-        "resources/views/payments/shurjopay/status.blade.php",
-        "routes/payments.php",
-        "tests/Feature/Phase5/PaymentIntegrationTest.php"
-      ],
-      "modified_existing_files": [
-        ".env.example",
-        "app/Models/Payment.php",
-        "app/Models/PaymentGatewayEvent.php",
-        "resources/views/guardian/invoices/show.blade.php",
-        "routes/web.php",
-        "docs/codex-autopilot/reports/PHASE_5_REPORT.md",
-        "docs/codex-autopilot/handoff/CURRENT_HANDOFF.md",
-        "docs/codex-autopilot/handoff/NEXT_THREAD_BOOTSTRAP.md",
-        "docs/codex-autopilot/handoff/THREAD_HISTORY_INDEX.md",
-        "docs/codex-autopilot/state/run_state.json",
-        "docs/codex-autopilot/state/change_manifest.json",
-        "docs/codex-autopilot/state/next_phase_adjustments.json",
-        "docs/codex-autopilot/state/phase_manifest.md",
-        "docs/codex-autopilot/state/validation_manifest.json",
-        "docs/codex-autopilot/state/risk_register.md"
-      ],
-      "critical_existing_files": [
-        "routes/web.php"
-      ],
-      "change_impact_entries": [
-        {
-          "path": ".env.example",
-          "impact_class": "low",
-          "reason": "Documented the sandbox payment env keys without adding secrets.",
-          "compatibility_note": "The runtime .env file was intentionally left untouched.",
-          "regression_checks": [
-            "php -l config/payments.php"
-          ]
-        },
-        {
-          "path": "app/Models/Payment.php",
-          "impact_class": "high",
-          "reason": "Added additive payment-state constants, verification fields, reviewer linkage, and terminal helpers needed by the Phase 5 workflow.",
-          "compatibility_note": "Existing Phase 1-4 payment and receipt relations remain intact.",
-          "regression_checks": [
-            "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php",
-            "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php"
-          ]
-        },
-        {
-          "path": "app/Models/PaymentGatewayEvent.php",
-          "impact_class": "medium",
-          "reason": "Added additive provider-order and request-source metadata for sandbox callback tracing.",
-          "compatibility_note": "Existing gateway-event relation behavior remains intact.",
-          "regression_checks": [
-            "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php"
-          ]
-        },
-        {
-          "path": "resources/views/guardian/invoices/show.blade.php",
-          "impact_class": "medium",
-          "reason": "Exposed the new sandbox-only shurjoPay and manual-bank options on the guardian invoice detail page.",
-          "compatibility_note": "The invoice summary, item list, and payment history sections remain intact.",
-          "regression_checks": [
-            "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php",
-            "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php"
-          ]
-        },
-        {
-          "path": "routes/web.php",
-          "impact_class": "critical",
-          "reason": "Added the new isolated payment route file without renaming any existing route names.",
-          "compatibility_note": "All legacy management, dashboard, and portal route names remain unchanged.",
-          "regression_checks": [
-            "php artisan route:list --path=payments",
-            "php artisan route:list --path=manual-bank",
-            "php artisan route:list --path=shurjopay -v"
-          ]
-        }
-      ],
-      "notes": [
-        "No historical migrations were edited.",
-        "No live gateway activation, merchant-panel change, or WordPress IPN cutover was performed.",
-        "Donor online payments remain out of scope because a dedicated donor payable model still does not exist.",
-        "Canonical posting was scaffolded but intentionally left disabled by default to protect existing reporting and accounting behavior during sandbox-only work."
-      ]
-    },
-    "PHASE_6_HARDENING_AND_FINAL_VERIFICATION": {
-      "status": "pending",
-      "allowed_touch_budget": {
-        "existing_files_soft_max": 10,
-        "critical_existing_files_soft_max": 3
-      },
-      "new_files": [],
-      "modified_existing_files": [],
-      "critical_existing_files": [],
-      "change_impact_entries": [],
-      "notes": []
-    }
-  }
+    "schema_version":  2,
+    "phases":  {
+                   "PHASE_1_FOUNDATION":  {
+                                              "status":  "completed",
+                                              "allowed_touch_budget":  {
+                                                                           "existing_files_soft_max":  12,
+                                                                           "critical_existing_files_soft_max":  4
+                                                                       },
+                                              "new_files":  [
+                                                                "app/Http/Middleware/EnsureUserHasRole.php",
+                                                                "app/Models/Concerns/HasRoles.php",
+                                                                "app/Models/Role.php",
+                                                                "app/Models/Permission.php",
+                                                                "app/Models/Guardian.php",
+                                                                "app/Models/StudentFeeInvoice.php",
+                                                                "app/Models/StudentFeeInvoiceItem.php",
+                                                                "app/Models/Payment.php",
+                                                                "app/Models/PaymentGatewayEvent.php",
+                                                                "app/Models/Receipt.php",
+                                                                "app/Models/AuditLog.php",
+                                                                "app/Policies/StudentPolicy.php",
+                                                                "app/Policies/StudentFeeInvoicePolicy.php",
+                                                                "app/Policies/ReceiptPolicy.php",
+                                                                "app/Services/Finance/CanonicalPostingPayload.php",
+                                                                "app/Services/Finance/CanonicalPostingService.php",
+                                                                "database/migrations/2026_03_08_100000_create_access_control_tables.php",
+                                                                "database/migrations/2026_03_08_100100_create_guardian_tables.php",
+                                                                "database/migrations/2026_03_08_100200_extend_donors_for_portal_access.php",
+                                                                "database/migrations/2026_03_08_100300_create_student_billing_tables.php",
+                                                                "database/migrations/2026_03_08_100400_create_payment_receipt_and_audit_tables.php",
+                                                                "resources/views/portals/foundation.blade.php",
+                                                                "routes/management.php",
+                                                                "routes/guardian.php",
+                                                                "routes/donor.php",
+                                                                "tests/Feature/Phase1/FoundationSchemaTest.php",
+                                                                "tests/Feature/Phase1/PortalRoleAccessTest.php",
+                                                                "tests/Unit/Finance/CanonicalPostingServiceTest.php",
+                                                                "tests/Unit/Policies/StudentFeeInvoicePolicyTest.php"
+                                                            ],
+                                              "modified_existing_files":  [
+                                                                              "bootstrap/app.php",
+                                                                              "app/Models/User.php",
+                                                                              "app/Models/Donor.php",
+                                                                              "routes/web.php"
+                                                                          ],
+                                              "critical_existing_files":  [
+                                                                              "app/Models/User.php",
+                                                                              "routes/web.php"
+                                                                          ],
+                                              "change_impact_entries":  [
+                                                                            {
+                                                                                "path":  "bootstrap/app.php",
+                                                                                "impact_class":  "low",
+                                                                                "reason":  "Added the role middleware alias needed for new portal route boundaries.",
+                                                                                "compatibility_note":  "Existing middleware behavior remains unchanged outside the new role alias.",
+                                                                                "regression_checks":  [
+                                                                                                          "php artisan route:list --path=management",
+                                                                                                          "php artisan route:list --path=guardian",
+                                                                                                          "php artisan route:list --path=donor"
+                                                                                                      ]
+                                                                            },
+                                                                            {
+                                                                                "path":  "app/Models/User.php",
+                                                                                "impact_class":  "high",
+                                                                                "reason":  "Attached additive RBAC and guardian/donor profile helpers to the existing single auth model.",
+                                                                                "compatibility_note":  "Auth flow, password handling, and admin approval semantics were not changed.",
+                                                                                "regression_checks":  [
+                                                                                                          "php artisan test --env=testing tests/Feature/Phase1 tests/Unit/Finance/CanonicalPostingServiceTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
+                                                                                                          "php artisan test --env=testing"
+                                                                                                      ]
+                                                                            },
+                                                                            {
+                                                                                "path":  "app/Models/Donor.php",
+                                                                                "impact_class":  "medium",
+                                                                                "reason":  "Added additive donor-user linkage fields, casts, and relation support for future donor portal work.",
+                                                                                "compatibility_note":  "Legacy donor CRUD fields and naming remain intact.",
+                                                                                "regression_checks":  [
+                                                                                                          "php artisan test --env=testing tests/Feature/Phase1/FoundationSchemaTest.php"
+                                                                                                      ]
+                                                                            },
+                                                                            {
+                                                                                "path":  "routes/web.php",
+                                                                                "impact_class":  "critical",
+                                                                                "reason":  "Added isolated role-protected portal route groups without changing any existing route names.",
+                                                                                "compatibility_note":  "All legacy management route names and definitions remain unchanged.",
+                                                                                "regression_checks":  [
+                                                                                                          "php artisan route:list --path=management",
+                                                                                                          "php artisan route:list --path=guardian",
+                                                                                                          "php artisan route:list --path=donor",
+                                                                                                          "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php"
+                                                                                                      ]
+                                                                            }
+                                                                        ],
+                                              "notes":  [
+                                                            "No historical migrations were edited.",
+                                                            "No legacy transaction controller or reporting controller was modified.",
+                                                            "Canonical posting safety was introduced as a new service rather than by rewriting legacy write paths."
+                                                        ]
+                                          },
+                   "PHASE_2_GUARDIAN_PORTAL":  {
+                                                   "status":  "completed",
+                                                   "allowed_touch_budget":  {
+                                                                                "existing_files_soft_max":  10,
+                                                                                "critical_existing_files_soft_max":  3
+                                                                            },
+                                                   "new_files":  [
+                                                                     "app/Http/Controllers/Guardian/GuardianPortalController.php",
+                                                                     "app/Http/Middleware/EnsureManagementSurfaceAccess.php",
+                                                                     "app/Http/Middleware/RedirectPortalUsersFromLegacyDashboard.php",
+                                                                     "app/Services/GuardianPortal/GuardianPortalData.php",
+                                                                     "resources/views/components/guardian-layout.blade.php",
+                                                                     "resources/views/guardian/dashboard.blade.php",
+                                                                     "resources/views/guardian/student.blade.php",
+                                                                     "resources/views/guardian/invoices/index.blade.php",
+                                                                     "resources/views/guardian/invoices/show.blade.php",
+                                                                     "resources/views/guardian/history.blade.php",
+                                                                     "tests/Feature/Phase2/GuardianPortalTest.php"
+                                                                 ],
+                                                   "modified_existing_files":  [
+                                                                                   "bootstrap/app.php",
+                                                                                   "routes/guardian.php",
+                                                                                   "routes/web.php",
+                                                                                   "tests/Feature/Phase1/PortalRoleAccessTest.php"
+                                                                               ],
+                                                   "critical_existing_files":  [
+                                                                                   "routes/web.php"
+                                                                               ],
+                                                   "change_impact_entries":  [
+                                                                                 {
+                                                                                     "path":  "bootstrap/app.php",
+                                                                                     "impact_class":  "low",
+                                                                                     "reason":  "Registered the portal landing and management surface middleware aliases needed by the Phase 2 guardian portal.",
+                                                                                     "compatibility_note":  "Existing role middleware remains intact; only the new additive aliases were added.",
+                                                                                     "regression_checks":  [
+                                                                                                               "php -l bootstrap/app.php",
+                                                                                                               "php artisan route:list --path=dashboard",
+                                                                                                               "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php"
+                                                                                                           ]
+                                                                                 },
+                                                                                 {
+                                                                                     "path":  "routes/guardian.php",
+                                                                                     "impact_class":  "medium",
+                                                                                     "reason":  "Replaced the Phase 1 placeholder route with the real guardian dashboard, student, invoice, and history routes under the existing guardian namespace.",
+                                                                                     "compatibility_note":  "The `/guardian` prefix and guardian route-name namespace remain unchanged.",
+                                                                                     "regression_checks":  [
+                                                                                                               "php -l routes/guardian.php",
+                                                                                                               "php artisan route:list --path=guardian",
+                                                                                                               "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php"
+                                                                                                           ]
+                                                                                 },
+                                                                                 {
+                                                                                     "path":  "routes/web.php",
+                                                                                     "impact_class":  "critical",
+                                                                                     "reason":  "Added a narrow redirect and management-surface guard so guardian-only and donor-only users cannot reach legacy management pages while all existing route names remain stable.",
+                                                                                     "compatibility_note":  "Unroled legacy users still retain their previous access during this phase to avoid breaking live management workflows before a later hardening/backfill step.",
+                                                                                     "regression_checks":  [
+                                                                                                               "php -l routes/web.php",
+                                                                                                               "php artisan route:list --path=dashboard",
+                                                                                                               "php artisan route:list --path=students",
+                                                                                                               "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php",
+                                                                                                               "php artisan test --env=testing"
+                                                                                                           ]
+                                                                                 },
+                                                                                 {
+                                                                                     "path":  "tests/Feature/Phase1/PortalRoleAccessTest.php",
+                                                                                     "impact_class":  "low",
+                                                                                     "reason":  "Updated the stale Phase 1 guardian route assertion so it provisions the guardian profile now required by the real Phase 2 portal surface.",
+                                                                                     "compatibility_note":  "The test still verifies role boundaries; it now matches the active guardian portal contract instead of the Phase 1 placeholder page.",
+                                                                                     "regression_checks":  [
+                                                                                                               "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php"
+                                                                                                           ]
+                                                                                 }
+                                                                             ],
+                                                   "notes":  [
+                                                                 "No historical migrations were edited.",
+                                                                 "No legacy transaction controller, report controller, or shared navigation view was modified.",
+                                                                 "Guardian portal reads only from guardian links, student fee invoices, payments, and receipts added in Phase 1; it does not reuse legacy transaction posting paths."
+                                                             ]
+                                               },
+                   "PHASE_3_DONOR_PORTAL":  {
+                                                "status":  "completed",
+                                                "allowed_touch_budget":  {
+                                                                             "existing_files_soft_max":  10,
+                                                                             "critical_existing_files_soft_max":  3
+                                                                         },
+                                                "new_files":  [
+                                                                  "app/Http/Controllers/Donor/DonorPortalController.php",
+                                                                  "app/Services/DonorPortal/DonorPortalData.php",
+                                                                  "resources/views/components/donor-layout.blade.php",
+                                                                  "resources/views/donor/dashboard.blade.php",
+                                                                  "resources/views/donor/donations/index.blade.php",
+                                                                  "resources/views/donor/receipts/index.blade.php",
+                                                                  "tests/Feature/Phase3/DonorPortalTest.php"
+                                                              ],
+                                                "modified_existing_files":  [
+                                                                                "routes/donor.php",
+                                                                                "tests/Feature/Phase1/PortalRoleAccessTest.php"
+                                                                            ],
+                                                "critical_existing_files":  [
+
+                                                                            ],
+                                                "change_impact_entries":  [
+                                                                              {
+                                                                                  "path":  "routes/donor.php",
+                                                                                  "impact_class":  "medium",
+                                                                                  "reason":  "Replaced the Phase 1 placeholder donor route with the real donor dashboard, donation history, and receipt history routes under the existing donor namespace.",
+                                                                                  "compatibility_note":  "The `/donor` prefix and donor route-name namespace remain unchanged, and legacy donor management routes under `/donors` were left intact.",
+                                                                                  "regression_checks":  [
+                                                                                                            "php -l routes/donor.php",
+                                                                                                            "php artisan route:list --path=donor",
+                                                                                                            "php artisan route:list --path=donors",
+                                                                                                            "php artisan test --env=testing tests/Feature/Phase3/DonorPortalTest.php"
+                                                                                                        ]
+                                                                              },
+                                                                              {
+                                                                                  "path":  "tests/Feature/Phase1/PortalRoleAccessTest.php",
+                                                                                  "impact_class":  "low",
+                                                                                  "reason":  "Updated the stale donor route assertion so it provisions the donor profile now required by the real Phase 3 portal surface.",
+                                                                                  "compatibility_note":  "The test still verifies role boundaries; it now matches the active donor portal contract instead of the Phase 1 placeholder page.",
+                                                                                  "regression_checks":  [
+                                                                                                            "php -l tests/Feature/Phase1/PortalRoleAccessTest.php",
+                                                                                                            "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase3/DonorPortalTest.php"
+                                                                                                        ]
+                                                                              }
+                                                                          ],
+                                                "notes":  [
+                                                              "No historical migrations were edited.",
+                                                              "No legacy donor management controller, transaction posting controller, or reporting controller was modified.",
+                                                              "Donor portal reads only from the linked donor profile, legacy donation ledger rows, and explicit user-bound receipt records; it does not introduce donor-side write flows or live gateway finalization."
+                                                          ]
+                                            },
+                   "PHASE_4_MANAGEMENT_REPORTING":  {
+                                                        "status":  "completed",
+                                                        "allowed_touch_budget":  {
+                                                                                     "existing_files_soft_max":  10,
+                                                                                     "critical_existing_files_soft_max":  3
+                                                                                 },
+                                                        "new_files":  [
+                                                                          "app/Http/Controllers/Management/ManagementReportingController.php",
+                                                                          "app/Services/ManagementReporting/ManagementReportingData.php",
+                                                                          "resources/views/management/reporting.blade.php",
+                                                                          "tests/Feature/Phase4/ManagementReportingTest.php"
+                                                                      ],
+                                                        "modified_existing_files":  [
+                                                                                        "routes/management.php"
+                                                                                    ],
+                                                        "critical_existing_files":  [
+
+                                                                                    ],
+                                                        "change_impact_entries":  [
+                                                                                      {
+                                                                                          "path":  "routes/management.php",
+                                                                                          "impact_class":  "medium",
+                                                                                          "reason":  "Added the new management-only reporting route and updated the management namespace copy to point operators toward the additive reporting surface.",
+                                                                                          "compatibility_note":  "Existing `management.dashboard`, `management.access-control`, and all legacy `reports.*` routes remain unchanged.",
+                                                                                          "regression_checks":  [
+                                                                                                                    "php -l routes/management.php",
+                                                                                                                    "php artisan route:list --path=management",
+                                                                                                                    "php artisan route:list --path=reporting",
+                                                                                                                    "php artisan test --env=testing tests/Feature/Phase4/ManagementReportingTest.php"
+                                                                                                                ]
+                                                                                      }
+                                                                                  ],
+                                                        "notes":  [
+                                                                      "No historical migrations were edited.",
+                                                                      "No legacy `ReportController`, `Reports/*` controller, dashboard controller, or shared navigation file was modified.",
+                                                                      "Management reporting remains additive under `/management/reporting` and documents its semantic separation from the existing legacy report totals."
+                                                                  ]
+                                                    },
+                   "PHASE_5_PAYMENT_INTEGRATION":  {
+                                                       "status":  "completed",
+                                                       "allowed_touch_budget":  {
+                                                                                    "existing_files_soft_max":  10,
+                                                                                    "critical_existing_files_soft_max":  3
+                                                                                },
+                                                       "new_files":  [
+                                                                         "config/payments.php",
+                                                                         "database/migrations/2026_03_08_190500_extend_payments_for_phase_5_sandbox.php",
+                                                                         "app/Http/Controllers/Management/ManualBankPaymentReviewController.php",
+                                                                         "app/Http/Controllers/Payments/ManualBankPaymentController.php",
+                                                                         "app/Http/Controllers/Payments/ShurjopayPaymentController.php",
+                                                                         "app/Http/Requests/Payments/InitiateShurjopayPaymentRequest.php",
+                                                                         "app/Http/Requests/Payments/ReviewManualBankPaymentRequest.php",
+                                                                         "app/Http/Requests/Payments/StoreManualBankPaymentRequest.php",
+                                                                         "app/Services/Payments/PaymentAuditLogger.php",
+                                                                         "app/Services/Payments/PaymentEventLogger.php",
+                                                                         "app/Services/Payments/PaymentFlowResult.php",
+                                                                         "app/Services/Payments/PaymentReferenceGenerator.php",
+                                                                         "app/Services/Payments/PaymentWorkflowService.php",
+                                                                         "app/Services/Payments/ResolvedPayable.php",
+                                                                         "app/Services/Payments/Shurjopay/ShurjopayClient.php",
+                                                                         "app/Services/Payments/StudentFeeInvoicePayableResolver.php",
+                                                                         "resources/views/management/manual-bank-payments/index.blade.php",
+                                                                         "resources/views/payments/manual-bank/show.blade.php",
+                                                                         "resources/views/payments/shurjopay/status.blade.php",
+                                                                         "routes/payments.php",
+                                                                         "tests/Feature/Phase5/PaymentIntegrationTest.php"
+                                                                     ],
+                                                       "modified_existing_files":  [
+                                                                                       ".env.example",
+                                                                                       "app/Models/Payment.php",
+                                                                                       "app/Models/PaymentGatewayEvent.php",
+                                                                                       "resources/views/guardian/invoices/show.blade.php",
+                                                                                       "routes/web.php",
+                                                                                       "docs/codex-autopilot/reports/PHASE_5_REPORT.md",
+                                                                                       "docs/codex-autopilot/handoff/CURRENT_HANDOFF.md",
+                                                                                       "docs/codex-autopilot/handoff/NEXT_THREAD_BOOTSTRAP.md",
+                                                                                       "docs/codex-autopilot/handoff/THREAD_HISTORY_INDEX.md",
+                                                                                       "docs/codex-autopilot/state/run_state.json",
+                                                                                       "docs/codex-autopilot/state/change_manifest.json",
+                                                                                       "docs/codex-autopilot/state/next_phase_adjustments.json",
+                                                                                       "docs/codex-autopilot/state/phase_manifest.md",
+                                                                                       "docs/codex-autopilot/state/validation_manifest.json",
+                                                                                       "docs/codex-autopilot/state/risk_register.md"
+                                                                                   ],
+                                                       "critical_existing_files":  [
+                                                                                       "routes/web.php"
+                                                                                   ],
+                                                       "change_impact_entries":  [
+                                                                                     {
+                                                                                         "path":  ".env.example",
+                                                                                         "impact_class":  "low",
+                                                                                         "reason":  "Documented the sandbox payment env keys without adding secrets, including the project-approved HFS order-prefix default.",
+                                                                                         "compatibility_note":  "The runtime .env file was intentionally left untouched.",
+                                                                                         "regression_checks":  [
+                                                                                                                   "php -l config/payments.php"
+                                                                                                               ]
+                                                                                     },
+                                                                                     {
+                                                                                         "path":  "app/Models/Payment.php",
+                                                                                         "impact_class":  "high",
+                                                                                         "reason":  "Added additive payment-state constants, verification fields, reviewer linkage, and terminal helpers needed by the Phase 5 workflow.",
+                                                                                         "compatibility_note":  "Existing Phase 1-4 payment and receipt relations remain intact.",
+                                                                                         "regression_checks":  [
+                                                                                                                   "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php",
+                                                                                                                   "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php"
+                                                                                                               ]
+                                                                                     },
+                                                                                     {
+                                                                                         "path":  "app/Models/PaymentGatewayEvent.php",
+                                                                                         "impact_class":  "medium",
+                                                                                         "reason":  "Added additive provider-order and request-source metadata for sandbox callback tracing.",
+                                                                                         "compatibility_note":  "Existing gateway-event relation behavior remains intact.",
+                                                                                         "regression_checks":  [
+                                                                                                                   "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php"
+                                                                                                               ]
+                                                                                     },
+                                                                                     {
+                                                                                         "path":  "resources/views/guardian/invoices/show.blade.php",
+                                                                                         "impact_class":  "medium",
+                                                                                         "reason":  "Exposed the new sandbox-only shurjoPay and manual-bank options on the guardian invoice detail page.",
+                                                                                         "compatibility_note":  "The invoice summary, item list, and payment history sections remain intact.",
+                                                                                         "regression_checks":  [
+                                                                                                                   "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php",
+                                                                                                                   "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php"
+                                                                                                               ]
+                                                                                     },
+                                                                                     {
+                                                                                         "path":  "routes/web.php",
+                                                                                         "impact_class":  "critical",
+                                                                                         "reason":  "Added the new isolated payment route file without renaming any existing route names.",
+                                                                                         "compatibility_note":  "All legacy management, dashboard, and portal route names remain unchanged.",
+                                                                                         "regression_checks":  [
+                                                                                                                   "php artisan route:list --path=payments",
+                                                                                                                   "php artisan route:list --path=manual-bank",
+                                                                                                                   "php artisan route:list --path=shurjopay -v"
+                                                                                                               ]
+                                                                                     }
+                                                                                 ],
+                                                       "notes":  [
+                                                                     "No historical migrations were edited.",
+                                                                     "No live gateway activation, merchant-panel change, or WordPress IPN cutover was performed.",
+                                                                     "Donor online payments remain out of scope because a dedicated donor payable model still does not exist.",
+                                                                     "Canonical posting was scaffolded but intentionally left disabled by default to protect existing reporting and accounting behavior during sandbox-only work.",
+                                                                     "Closeout correction aligned the default shurjoPay order prefix to HFS, forwarded the reserved fail return URL during initiation, and routed verification transport/auth failures to manual review instead of a raw exception."
+                                                                 ]
+                                                   },
+                   "PHASE_6_HARDENING_AND_FINAL_VERIFICATION":  {
+                                                                    "status":  "pending",
+                                                                    "allowed_touch_budget":  {
+                                                                                                 "existing_files_soft_max":  10,
+                                                                                                 "critical_existing_files_soft_max":  3
+                                                                                             },
+                                                                    "new_files":  [
+
+                                                                                  ],
+                                                                    "modified_existing_files":  [
+
+                                                                                                ],
+                                                                    "critical_existing_files":  [
+
+                                                                                                ],
+                                                                    "change_impact_entries":  [
+
+                                                                                              ],
+                                                                    "notes":  [
+
+                                                                              ]
+                                                                }
+               }
 }

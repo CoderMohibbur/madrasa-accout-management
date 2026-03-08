@@ -1,243 +1,261 @@
 {
-  "schema_version": 1,
-  "baseline": {
-    "captured_on": "2026-03-08T00:00:00+06:00",
-    "source_note": "Captured from uploaded structured test files and phpunit result cache; runtime reconfirmation still required.",
-    "known_preexisting_failures": [
-      "Tests\\Feature\\Auth\\AuthenticationTest::test_users_can_authenticate_using_the_login_screen",
-      "Tests\\Feature\\Auth\\AuthenticationTest::test_users_can_logout",
-      "Tests\\Feature\\Auth\\PasswordConfirmationTest::test_password_can_be_confirmed",
-      "Tests\\Feature\\Auth\\PasswordConfirmationTest::test_password_is_not_confirmed_with_invalid_password",
-      "Tests\\Feature\\Auth\\PasswordResetTest::test_reset_password_link_can_be_requested",
-      "Tests\\Feature\\Auth\\PasswordResetTest::test_reset_password_screen_can_be_rendered",
-      "Tests\\Feature\\Auth\\PasswordResetTest::test_password_can_be_reset_with_valid_token",
-      "Tests\\Feature\\Auth\\PasswordUpdateTest::test_password_can_be_updated",
-      "Tests\\Feature\\Auth\\PasswordUpdateTest::test_correct_password_must_be_provided_to_update_password",
-      "Tests\\Feature\\Auth\\RegistrationTest::test_new_users_can_register",
-      "Tests\\Feature\\ProfileTest::test_profile_information_can_be_updated",
-      "Tests\\Feature\\ProfileTest::test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged",
-      "Tests\\Feature\\ProfileTest::test_user_can_delete_their_account",
-      "Tests\\Feature\\ProfileTest::test_correct_password_must_be_provided_to_delete_account"
-    ],
-    "baseline_reasoning": [
-      "Current auth flow intentionally does not auto-login after registration.",
-      "Current login flow blocks users whose email_verified_at is null as an admin-approval gate.",
-      "Therefore stale Breeze-default tests must not be treated as authoritative behavior."
-    ]
-  },
-  "phase_validations": [
-    {
-      "phase": "PREFLIGHT",
-      "status": "passed",
-      "validated_at": "2026-03-08T16:29:50.7873571+06:00",
-      "command_results": [
-        {
-          "command": "php artisan test --env=testing",
-          "exit_code": 1,
-          "summary": "14 failures, 11 passes",
-          "classification": "known_preexisting_failures_only"
-        }
-      ],
-      "unexpected_failures": []
-    },
-    {
-      "phase": "PHASE_1_FOUNDATION",
-      "status": "passed",
-      "validated_at": "2026-03-08T16:32:01.3305912+06:00",
-      "command_results": [
-        {
-          "command": "php artisan route:list --path=management",
-          "exit_code": 0,
-          "summary": "2 management routes registered"
-        },
-        {
-          "command": "php artisan route:list --path=guardian",
-          "exit_code": 0,
-          "summary": "1 guardian route registered"
-        },
-        {
-          "command": "php artisan route:list --path=donor",
-          "exit_code": 0,
-          "summary": "1 donor dashboard route registered plus existing donor resource routes"
-        },
-        {
-          "command": "php artisan test --env=testing tests/Feature/Phase1 tests/Unit/Finance/CanonicalPostingServiceTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
-          "exit_code": 0,
-          "summary": "7 tests passed"
-        },
-        {
-          "command": "php artisan test --env=testing",
-          "exit_code": 1,
-          "summary": "14 failures, 18 passes",
-          "classification": "known_preexisting_failures_only"
-        }
-      ],
-      "unexpected_failures": [],
-      "new_regressions_detected": false,
-      "notes": [
-        "All newly added Phase 1 tests passed.",
-        "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest."
-      ]
-    },
-    {
-      "phase": "PHASE_2_GUARDIAN_PORTAL",
-      "status": "passed",
-      "validated_at": "2026-03-08T18:06:58.4430257+06:00",
-      "command_results": [
-        {
-          "command": "php artisan route:list --path=guardian",
-          "exit_code": 0,
-          "summary": "5 guardian portal routes registered"
-        },
-        {
-          "command": "php artisan route:list --path=dashboard",
-          "exit_code": 0,
-          "summary": "dashboard route preserved with portal landing and management-surface guard"
-        },
-        {
-          "command": "php artisan route:list --path=students",
-          "exit_code": 0,
-          "summary": "legacy student routes still registered while management-surface gating remains additive"
-        },
-        {
-          "command": "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
-          "exit_code": 0,
-          "summary": "5 tests passed"
-        },
-        {
-          "command": "php artisan test --env=testing",
-          "exit_code": 1,
-          "summary": "14 failures, 21 passes",
-          "classification": "known_preexisting_failures_only"
-        }
-      ],
-      "unexpected_failures": [],
-      "new_regressions_detected": false,
-      "notes": [
-        "Guardian dashboard, student profile, invoice visibility, and payment history tests all passed.",
-        "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest.",
-        "A temporary parallel test invocation dirtied the shared testing database, but a sequential rerun restored the expected 14-failure baseline with no additional regressions."
-      ]
-    },
-    {
-      "phase": "PHASE_3_DONOR_PORTAL",
-      "status": "passed",
-      "validated_at": "2026-03-08T18:23:31.9066412+06:00",
-      "command_results": [
-        {
-          "command": "php artisan route:list --path=donor",
-          "exit_code": 0,
-          "summary": "3 donor portal routes registered plus preserved donor resource routes"
-        },
-        {
-          "command": "php artisan route:list --path=dashboard",
-          "exit_code": 0,
-          "summary": "dashboard route preserved with existing portal landing and management-surface guard"
-        },
-        {
-          "command": "php artisan route:list --path=donors",
-          "exit_code": 0,
-          "summary": "legacy donor management routes still registered while donor portal routes remain additive"
-        },
-        {
-          "command": "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php tests/Feature/Phase3/DonorPortalTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
-          "exit_code": 0,
-          "summary": "8 tests passed"
-        },
-        {
-          "command": "php artisan test --env=testing",
-          "exit_code": 1,
-          "summary": "14 failures, 23 passes",
-          "classification": "known_preexisting_failures_only"
-        }
-      ],
-      "unexpected_failures": [],
-      "new_regressions_detected": false,
-      "notes": [
-        "Donor dashboard, donation history, and receipt history tests all passed.",
-        "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest.",
-        "Legacy donor management routes remained registered alongside the new donor portal routes with no route-name changes."
-      ]
-    },
-    {
-      "phase": "PHASE_4_MANAGEMENT_REPORTING",
-      "status": "passed",
-      "validated_at": "2026-03-08T18:37:03.2100457+06:00",
-      "command_results": [
-        {
-          "command": "php artisan route:list --path=management",
-          "exit_code": 0,
-          "summary": "3 management namespace routes registered including the new additive reporting route"
-        },
-        {
-          "command": "php artisan route:list --path=reporting",
-          "exit_code": 0,
-          "summary": "management.reporting.index route registered"
-        },
-        {
-          "command": "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php tests/Feature/Phase3/DonorPortalTest.php tests/Feature/Phase4/ManagementReportingTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
-          "exit_code": 0,
-          "summary": "10 tests passed"
-        },
-        {
-          "command": "php artisan test --env=testing",
-          "exit_code": 1,
-          "summary": "14 failures, 25 passes",
-          "classification": "known_preexisting_failures_only"
-        }
-      ],
-      "unexpected_failures": [],
-      "new_regressions_detected": false,
-      "notes": [
-        "Management reporting access control and date-range filtering tests both passed.",
-        "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest.",
-        "Legacy `reports.*` routes and controllers were intentionally left untouched while the new reporting page remained additive under `/management/reporting`."
-      ]
-    },
-    {
-      "phase": "PHASE_5_PAYMENT_INTEGRATION",
-      "status": "passed",
-      "validated_at": "2026-03-08T23:34:05.9002024+06:00",
-      "command_results": [
-        {
-          "command": "php artisan route:list --path=payments",
-          "exit_code": 0,
-          "summary": "10 payment and manual-bank routes registered"
-        },
-        {
-          "command": "php artisan route:list --path=manual-bank",
-          "exit_code": 0,
-          "summary": "5 manual-bank routes registered including the management review queue"
-        },
-        {
-          "command": "php artisan route:list --path=shurjopay -v",
-          "exit_code": 0,
-          "summary": "5 shurjopay routes registered including initiate, success/fail/cancel returns, and IPN"
-        },
-        {
-          "command": "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php",
-          "exit_code": 0,
-          "summary": "4 tests passed"
-        },
-        {
-          "command": "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php tests/Feature/Phase3/DonorPortalTest.php tests/Feature/Phase4/ManagementReportingTest.php tests/Feature/Phase5/PaymentIntegrationTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
-          "exit_code": 0,
-          "summary": "14 tests passed"
-        },
-        {
-          "command": "php artisan test --env=testing",
-          "exit_code": 1,
-          "summary": "14 failures, 29 passes",
-          "classification": "known_preexisting_failures_only"
-        }
-      ],
-      "unexpected_failures": [],
-      "new_regressions_detected": false,
-      "notes": [
-        "All Phase 5 payment integration tests passed.",
-        "The existing portal/reporting regression slice still passed with the new payment scaffold in place.",
-        "The broader suite continued to fail only in the 14 documented auth/profile baseline areas."
-      ]
-    }
-  ]
+    "schema_version":  1,
+    "baseline":  {
+                     "captured_on":  "2026-03-08T00:00:00+06:00",
+                     "source_note":  "Captured from uploaded structured test files and phpunit result cache; runtime reconfirmation still required.",
+                     "known_preexisting_failures":  [
+                                                        "Tests\\Feature\\Auth\\AuthenticationTest::test_users_can_authenticate_using_the_login_screen",
+                                                        "Tests\\Feature\\Auth\\AuthenticationTest::test_users_can_logout",
+                                                        "Tests\\Feature\\Auth\\PasswordConfirmationTest::test_password_can_be_confirmed",
+                                                        "Tests\\Feature\\Auth\\PasswordConfirmationTest::test_password_is_not_confirmed_with_invalid_password",
+                                                        "Tests\\Feature\\Auth\\PasswordResetTest::test_reset_password_link_can_be_requested",
+                                                        "Tests\\Feature\\Auth\\PasswordResetTest::test_reset_password_screen_can_be_rendered",
+                                                        "Tests\\Feature\\Auth\\PasswordResetTest::test_password_can_be_reset_with_valid_token",
+                                                        "Tests\\Feature\\Auth\\PasswordUpdateTest::test_password_can_be_updated",
+                                                        "Tests\\Feature\\Auth\\PasswordUpdateTest::test_correct_password_must_be_provided_to_update_password",
+                                                        "Tests\\Feature\\Auth\\RegistrationTest::test_new_users_can_register",
+                                                        "Tests\\Feature\\ProfileTest::test_profile_information_can_be_updated",
+                                                        "Tests\\Feature\\ProfileTest::test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged",
+                                                        "Tests\\Feature\\ProfileTest::test_user_can_delete_their_account",
+                                                        "Tests\\Feature\\ProfileTest::test_correct_password_must_be_provided_to_delete_account"
+                                                    ],
+                     "baseline_reasoning":  [
+                                                "Current auth flow intentionally does not auto-login after registration.",
+                                                "Current login flow blocks users whose email_verified_at is null as an admin-approval gate.",
+                                                "Therefore stale Breeze-default tests must not be treated as authoritative behavior."
+                                            ]
+                 },
+    "phase_validations":  [
+                              {
+                                  "phase":  "PREFLIGHT",
+                                  "status":  "passed",
+                                  "validated_at":  "2026-03-08T16:29:50.7873571+06:00",
+                                  "command_results":  [
+                                                          {
+                                                              "command":  "php artisan test --env=testing",
+                                                              "exit_code":  1,
+                                                              "summary":  "14 failures, 11 passes",
+                                                              "classification":  "known_preexisting_failures_only"
+                                                          }
+                                                      ],
+                                  "unexpected_failures":  [
+
+                                                          ]
+                              },
+                              {
+                                  "phase":  "PHASE_1_FOUNDATION",
+                                  "status":  "passed",
+                                  "validated_at":  "2026-03-08T16:32:01.3305912+06:00",
+                                  "command_results":  [
+                                                          {
+                                                              "command":  "php artisan route:list --path=management",
+                                                              "exit_code":  0,
+                                                              "summary":  "2 management routes registered"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan route:list --path=guardian",
+                                                              "exit_code":  0,
+                                                              "summary":  "1 guardian route registered"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan route:list --path=donor",
+                                                              "exit_code":  0,
+                                                              "summary":  "1 donor dashboard route registered plus existing donor resource routes"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing tests/Feature/Phase1 tests/Unit/Finance/CanonicalPostingServiceTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
+                                                              "exit_code":  0,
+                                                              "summary":  "7 tests passed"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing",
+                                                              "exit_code":  1,
+                                                              "summary":  "14 failures, 18 passes",
+                                                              "classification":  "known_preexisting_failures_only"
+                                                          }
+                                                      ],
+                                  "unexpected_failures":  [
+
+                                                          ],
+                                  "new_regressions_detected":  false,
+                                  "notes":  [
+                                                "All newly added Phase 1 tests passed.",
+                                                "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest."
+                                            ]
+                              },
+                              {
+                                  "phase":  "PHASE_2_GUARDIAN_PORTAL",
+                                  "status":  "passed",
+                                  "validated_at":  "2026-03-08T18:06:58.4430257+06:00",
+                                  "command_results":  [
+                                                          {
+                                                              "command":  "php artisan route:list --path=guardian",
+                                                              "exit_code":  0,
+                                                              "summary":  "5 guardian portal routes registered"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan route:list --path=dashboard",
+                                                              "exit_code":  0,
+                                                              "summary":  "dashboard route preserved with portal landing and management-surface guard"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan route:list --path=students",
+                                                              "exit_code":  0,
+                                                              "summary":  "legacy student routes still registered while management-surface gating remains additive"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
+                                                              "exit_code":  0,
+                                                              "summary":  "5 tests passed"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing",
+                                                              "exit_code":  1,
+                                                              "summary":  "14 failures, 21 passes",
+                                                              "classification":  "known_preexisting_failures_only"
+                                                          }
+                                                      ],
+                                  "unexpected_failures":  [
+
+                                                          ],
+                                  "new_regressions_detected":  false,
+                                  "notes":  [
+                                                "Guardian dashboard, student profile, invoice visibility, and payment history tests all passed.",
+                                                "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest.",
+                                                "A temporary parallel test invocation dirtied the shared testing database, but a sequential rerun restored the expected 14-failure baseline with no additional regressions."
+                                            ]
+                              },
+                              {
+                                  "phase":  "PHASE_3_DONOR_PORTAL",
+                                  "status":  "passed",
+                                  "validated_at":  "2026-03-08T18:23:31.9066412+06:00",
+                                  "command_results":  [
+                                                          {
+                                                              "command":  "php artisan route:list --path=donor",
+                                                              "exit_code":  0,
+                                                              "summary":  "3 donor portal routes registered plus preserved donor resource routes"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan route:list --path=dashboard",
+                                                              "exit_code":  0,
+                                                              "summary":  "dashboard route preserved with existing portal landing and management-surface guard"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan route:list --path=donors",
+                                                              "exit_code":  0,
+                                                              "summary":  "legacy donor management routes still registered while donor portal routes remain additive"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php tests/Feature/Phase3/DonorPortalTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
+                                                              "exit_code":  0,
+                                                              "summary":  "8 tests passed"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing",
+                                                              "exit_code":  1,
+                                                              "summary":  "14 failures, 23 passes",
+                                                              "classification":  "known_preexisting_failures_only"
+                                                          }
+                                                      ],
+                                  "unexpected_failures":  [
+
+                                                          ],
+                                  "new_regressions_detected":  false,
+                                  "notes":  [
+                                                "Donor dashboard, donation history, and receipt history tests all passed.",
+                                                "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest.",
+                                                "Legacy donor management routes remained registered alongside the new donor portal routes with no route-name changes."
+                                            ]
+                              },
+                              {
+                                  "phase":  "PHASE_4_MANAGEMENT_REPORTING",
+                                  "status":  "passed",
+                                  "validated_at":  "2026-03-08T18:37:03.2100457+06:00",
+                                  "command_results":  [
+                                                          {
+                                                              "command":  "php artisan route:list --path=management",
+                                                              "exit_code":  0,
+                                                              "summary":  "3 management namespace routes registered including the new additive reporting route"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan route:list --path=reporting",
+                                                              "exit_code":  0,
+                                                              "summary":  "management.reporting.index route registered"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php tests/Feature/Phase3/DonorPortalTest.php tests/Feature/Phase4/ManagementReportingTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
+                                                              "exit_code":  0,
+                                                              "summary":  "10 tests passed"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing",
+                                                              "exit_code":  1,
+                                                              "summary":  "14 failures, 25 passes",
+                                                              "classification":  "known_preexisting_failures_only"
+                                                          }
+                                                      ],
+                                  "unexpected_failures":  [
+
+                                                          ],
+                                  "new_regressions_detected":  false,
+                                  "notes":  [
+                                                "Management reporting access control and date-range filtering tests both passed.",
+                                                "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest.",
+                                                "Legacy `reports.*` routes and controllers were intentionally left untouched while the new reporting page remained additive under `/management/reporting`."
+                                            ]
+                              },
+                              {
+                                  "phase":  "PHASE_5_PAYMENT_INTEGRATION",
+                                  "status":  "passed",
+                                  "validated_at":  "2026-03-09T00:02:20.2868609+06:00",
+                                  "command_results":  [
+                                                          {
+                                                              "command":  "php artisan route:list --path=payments",
+                                                              "exit_code":  0,
+                                                              "summary":  "10 payment and manual-bank routes registered"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan route:list --path=manual-bank",
+                                                              "exit_code":  0,
+                                                              "summary":  "5 manual-bank routes registered including the management review queue"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan route:list --path=shurjopay -v",
+                                                              "exit_code":  0,
+                                                              "summary":  "5 shurjopay routes registered including initiate, success/fail/cancel returns, and IPN"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan migrate:status --env=testing",
+                                                              "exit_code":  0,
+                                                              "summary":  "Phase 5 migration is present and ran in the testing database"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php",
+                                                              "exit_code":  0,
+                                                              "summary":  "5 tests passed"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php tests/Feature/Phase3/DonorPortalTest.php tests/Feature/Phase4/ManagementReportingTest.php tests/Feature/Phase5/PaymentIntegrationTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
+                                                              "exit_code":  0,
+                                                              "summary":  "15 tests passed"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing",
+                                                              "exit_code":  1,
+                                                              "summary":  "14 failures, 30 passes",
+                                                              "classification":  "known_preexisting_failures_only"
+                                                          }
+                                                      ],
+                                  "unexpected_failures":  [
+
+                                                          ],
+                                  "new_regressions_detected":  false,
+                                  "notes":  [
+                                                "All Phase 5 payment integration tests passed after the closeout corrections.",
+                                                "The regression slice across Phases 1-5 and the student invoice policy still passed with the corrected payment scaffold in place.",
+                                                "The broader suite continued to fail only in the 14 documented auth/profile baseline areas; no new regressions were introduced by the Phase 5 closeout corrections.",
+                                                "The closeout added coverage for fail-url wiring and the manual-review fallback when shurjoPay verification transport/auth calls fail."
+                                            ]
+                              }
+                          ]
 }

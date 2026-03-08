@@ -109,7 +109,7 @@
   - `docs/codex-autopilot/docs/PHASE_5_PAYMENT_PROVIDER_SPEC.md`
   - `docs/codex-autopilot/phases/PHASE_5_PAYMENT_INTEGRATION.md`
 - Why it matters:
-  Phase 5 now uses a safe sandbox-only verify-API flow, but the official material available to this thread still did not expose a separate callback signature secret or a distinct fail-return contract for live readiness.
+  Phase 5 now uses a safe sandbox-only verify-API flow, but the official material available to this thread still did not expose a separate callback signature secret, authoritative provider event identifier, or a distinct fail-return contract for live readiness.
 - Protection in kit:
   Phase 5 implemented only the verify-based sandbox scope and still forbids live activation.
 - Runtime action:

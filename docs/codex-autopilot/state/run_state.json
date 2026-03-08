@@ -1,67 +1,70 @@
 {
-  "project_name": "Madrasa Account Management",
-  "implementation_series_id": "madrasa-autopilot-v4",
-  "base_branch": "master",
-  "safe_branch": "codex/2026-03-08-phase-1-foundation-safety",
-  "workflow_status": "phase_5_complete",
-  "current_phase": "PHASE_5_PAYMENT_INTEGRATION",
-  "current_phase_status": "completed",
-  "completed_phases": [
-    "PHASE_1_FOUNDATION",
-    "PHASE_2_GUARDIAN_PORTAL",
-    "PHASE_3_DONOR_PORTAL",
-    "PHASE_4_MANAGEMENT_REPORTING",
-    "PHASE_5_PAYMENT_INTEGRATION"
-  ],
-  "blocked_phases": [
-    "PHASE_5_PAYMENT_INTEGRATION"
-  ],
-  "last_completed_phase": "PHASE_5_PAYMENT_INTEGRATION",
-  "last_validation_result": "passed",
-  "current_thread_id": "thread-007-phase-5-sandbox-implementation",
-  "next_thread_required": true,
-  "blocker_present": false,
-  "blocker_category": null,
-  "blocker_summary": "",
-  "last_updated": "2026-03-08T23:34:05.9002024+06:00",
-  "final_verification_status": "pending",
-  "git_runtime": {
-    "actual_current_branch": "codex/2026-03-08-phase-1-foundation-safety",
-    "actual_head_sha": "0b416d6f9e82679c7b720a5119383f6dff8cef69",
-    "last_checkpoint_commit_sha": "0b416d6f9e82679c7b720a5119383f6dff8cef69",
-    "phase_start_commit_sha": "12187ebebb3a003dc6b20c7cbc979a305fe5f280",
-    "phase_end_commit_sha": "0b416d6f9e82679c7b720a5119383f6dff8cef69",
-    "handoff_checkpoint_commit_sha": "0b416d6f9e82679c7b720a5119383f6dff8cef69",
-    "populated_at_runtime": true,
-    "repository_confirmed": true,
-    "working_tree_clean": false,
-    "protected_branch_violation": false,
-    "required_safe_branch_exists": true,
-    "required_safe_branch_active": true,
-    "safe_directory_override_required": true,
-    "checked_at": "2026-03-08T23:34:05.9002024+06:00"
-  },
-  "baseline_validation": {
-    "known_preexisting_failures_documented": true,
-    "known_preexisting_failures_source": "docs/codex-autopilot/state/validation_manifest.json",
-    "runtime_reconfirmation_required": true,
-    "runtime_reconfirmed_at": "2026-03-08T23:34:05.9002024+06:00",
-    "runtime_command": "php artisan test --env=testing",
-    "runtime_exit_code": 1,
-    "runtime_status": "known_preexisting_failures_confirmed_only",
-    "runtime_known_preexisting_failures_confirmed_count": 14,
-    "runtime_unexpected_failures": [],
-    "runtime_unknown_status": false
-  },
-  "phase_gate_notes": [
-    "Do not rename existing route names.",
-    "Do not edit historical migrations.",
-    "The required safe branch remained active throughout Phase 5 implementation.",
-    "Phase 5 implementation began after the autopilot-only checkpoint `12187ebebb3a003dc6b20c7cbc979a305fe5f280` restored a clean preflight state.",
-    "Sandbox-only shurjoPay initiation, return handling, IPN scaffolding, verification, manual-bank review, receipt issuance, and invoice linkage are now implemented in Laravel.",
-    "Live payment activation, live merchant-panel changes, and the current WordPress-controlled live IPN routing remain out of scope and untouched.",
-    "shurjoPay authenticity is treated as verify-API based because the official docs available to this thread did not expose a separate callback signature secret for sandbox use.",
-    "Canonical posting remains scaffolded but disabled by default until an operator-approved account mapping exists; this preserves existing reporting and accounting behavior during sandbox-only work.",
-    "Donor online payments remain out of scope because the repository still lacks a dedicated donor payable model."
-  ]
+    "project_name":  "Madrasa Account Management",
+    "implementation_series_id":  "madrasa-autopilot-v4",
+    "base_branch":  "master",
+    "safe_branch":  "codex/2026-03-08-phase-1-foundation-safety",
+    "workflow_status":  "phase_5_complete",
+    "current_phase":  "PHASE_5_PAYMENT_INTEGRATION",
+    "current_phase_status":  "completed",
+    "completed_phases":  [
+                             "PHASE_1_FOUNDATION",
+                             "PHASE_2_GUARDIAN_PORTAL",
+                             "PHASE_3_DONOR_PORTAL",
+                             "PHASE_4_MANAGEMENT_REPORTING",
+                             "PHASE_5_PAYMENT_INTEGRATION"
+                         ],
+    "blocked_phases":  [
+
+                       ],
+    "last_completed_phase":  "PHASE_5_PAYMENT_INTEGRATION",
+    "last_validation_result":  "passed",
+    "current_thread_id":  "thread-008-phase-5-sandbox-correction-closeout",
+    "next_thread_required":  true,
+    "blocker_present":  false,
+    "blocker_category":  null,
+    "blocker_summary":  "",
+    "last_updated":  "2026-03-09T00:02:20.2868609+06:00",
+    "final_verification_status":  "pending",
+    "git_runtime":  {
+                        "actual_current_branch":  "codex/2026-03-08-phase-1-foundation-safety",
+                        "actual_head_sha":  "acc00f9aafe35cfd461266d0ae2754603acb5273",
+                        "last_checkpoint_commit_sha":  "acc00f9aafe35cfd461266d0ae2754603acb5273",
+                        "phase_start_commit_sha":  "12187ebebb3a003dc6b20c7cbc979a305fe5f280",
+                        "phase_end_commit_sha":  "acc00f9aafe35cfd461266d0ae2754603acb5273",
+                        "handoff_checkpoint_commit_sha":  "acc00f9aafe35cfd461266d0ae2754603acb5273",
+                        "populated_at_runtime":  true,
+                        "repository_confirmed":  true,
+                        "working_tree_clean":  true,
+                        "protected_branch_violation":  false,
+                        "required_safe_branch_exists":  true,
+                        "required_safe_branch_active":  true,
+                        "safe_directory_override_required":  true,
+                        "checked_at":  "2026-03-09T00:02:20.2868609+06:00"
+                    },
+    "baseline_validation":  {
+                                "known_preexisting_failures_documented":  true,
+                                "known_preexisting_failures_source":  "docs/codex-autopilot/state/validation_manifest.json",
+                                "runtime_reconfirmation_required":  true,
+                                "runtime_reconfirmed_at":  "2026-03-09T00:02:20.2868609+06:00",
+                                "runtime_command":  "php artisan test --env=testing",
+                                "runtime_exit_code":  1,
+                                "runtime_status":  "known_preexisting_failures_confirmed_only",
+                                "runtime_known_preexisting_failures_confirmed_count":  14,
+                                "runtime_unexpected_failures":  [
+
+                                                                ],
+                                "runtime_unknown_status":  false
+                            },
+    "phase_gate_notes":  [
+                             "Do not rename existing route names.",
+                             "Do not edit historical migrations.",
+                             "The required safe branch remained active throughout Phase 5 closeout.",
+                             "Sandbox-only shurjoPay and manual-bank invoice payments remain limited to guardian-backed StudentFeeInvoice rows.",
+                             "shurjoPay initiation now forwards success, fail, and cancel return URLs and defaults the order prefix to HFS when the env key is unset.",
+                             "shurjoPay verification transport or auth failures now route the payment to manual review instead of surfacing a raw 500 during browser return or IPN handling.",
+                             "Live payment activation, live merchant-panel changes, and the current WordPress-controlled live IPN routing remain out of scope and untouched.",
+                             "Canonical posting remains scaffolded but disabled by default until an operator-approved account mapping exists; this preserves existing reporting and accounting behavior during sandbox-only work.",
+                             "Donor online payments remain out of scope because the repository still lacks a dedicated donor payable model.",
+                             "Provider-native callback signature and authoritative event-id details are still not confirmed, so the sandbox flow remains verify-by-order-id based rather than live-ready."
+                         ]
 }

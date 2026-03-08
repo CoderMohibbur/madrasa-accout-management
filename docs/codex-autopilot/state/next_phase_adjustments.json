@@ -1,33 +1,34 @@
 {
-  "updated_at": "2026-03-08T23:34:05.9002024+06:00",
-  "current_basis_phase": "PHASE_5_PAYMENT_INTEGRATION",
-  "next_phase": "PHASE_6_HARDENING_AND_FINAL_VERIFICATION",
-  "adjustments_required": true,
-  "adjustments": [
-    {
-      "type": "sandbox_hardening_required",
-      "summary": "Validate the new sandbox payment routes, callback handling, and manual-bank review flow under a clean Phase 6 hardening pass."
-    },
-    {
-      "type": "posting_activation_deferred",
-      "summary": "Do not enable canonical posting for the new payment flow until an operator-approved account mapping exists for the legacy transactions surface."
-    },
-    {
-      "type": "live_cutover_still_forbidden",
-      "summary": "Keep live shurjoPay activation, live merchant-panel changes, and the current WordPress IPN cutover out of scope until explicit approval is recorded."
-    },
-    {
-      "type": "donor_payable_required",
-      "summary": "Do not extend online payments to donor flows until a dedicated donor payable model exists."
-    },
-    {
-      "type": "provider_contract_followup",
-      "summary": "If shurjoPay later supplies a distinct callback signature secret or updated return-contract details, review and integrate them during a controlled hardening or go-live phase rather than changing the sandbox scaffold ad hoc."
-    }
-  ],
-  "notes": [
-    "Phase 5 is complete for the safe sandbox-only invoice-payment scope.",
-    "The current implementation uses verify-API confirmation instead of an undocumented callback signature scheme.",
-    "The next thread should focus on hardening and final verification, not on live cutover."
-  ]
+    "updated_at":  "2026-03-09T00:02:20.2868609+06:00",
+    "current_basis_phase":  "PHASE_5_PAYMENT_INTEGRATION",
+    "next_phase":  "PHASE_6_HARDENING_AND_FINAL_VERIFICATION",
+    "adjustments_required":  true,
+    "adjustments":  [
+                        {
+                            "type":  "sandbox_hardening_required",
+                            "summary":  "Phase 6 should validate the corrected sandbox payment routes, hosted-checkout return behavior, verification-error fallback, and manual-bank review flow under a fresh hardening pass."
+                        },
+                        {
+                            "type":  "posting_activation_deferred",
+                            "summary":  "Do not enable canonical posting for the new payment flow until an operator-approved account mapping exists for the legacy transactions surface."
+                        },
+                        {
+                            "type":  "live_cutover_still_forbidden",
+                            "summary":  "Keep live shurjoPay activation, live merchant-panel changes, and the current WordPress IPN cutover out of scope until explicit approval is recorded."
+                        },
+                        {
+                            "type":  "donor_payable_required",
+                            "summary":  "Do not extend online payments to donor flows until a dedicated donor payable model exists."
+                        },
+                        {
+                            "type":  "provider_contract_followup",
+                            "summary":  "If shurjoPay later supplies a distinct callback signature secret, authoritative provider event identifier, or updated return/callback contract, review and integrate them during controlled hardening or go-live work rather than changing the sandbox scaffold ad hoc."
+                        }
+                    ],
+    "notes":  [
+                  "Phase 5 is partially complete but sandbox ready for guardian invoice payments with documented limits.",
+                  "The current implementation uses verify-API confirmation instead of an undocumented callback signature scheme.",
+                  "Closeout hardening aligned the HFS order-prefix default, forwarded the fail return URL, and converted verification transport/auth errors into manual-review outcomes instead of raw browser/IPN exceptions.",
+                  "The next thread should focus on hardening and final verification, not on live cutover."
+              ]
 }
