@@ -20,8 +20,8 @@ Prepare the foundational schema, role/auth boundaries, guardian/donor linkage gr
 - safe branch: `codex/2026-03-08-phase-1-foundation-safety`
 - phase start commit: `8b989bcaeff9634e3e8a3fb3d3182fab5f6f2f00`
 - phase end implementation commit: `4b02760ad036eb64d6d056965d0da0243fff4bb8`
-- handoff metadata commit: `5460a93715e88fa47d46cdf17d5c19ff95a0a468`
-- handoff checkpoint commit: `5460a93715e88fa47d46cdf17d5c19ff95a0a468`
+- handoff metadata commit: `2344df7c4d21604b0b64adfd7b849aa9fbf66916`
+- handoff checkpoint commit: `2344df7c4d21604b0b64adfd7b849aa9fbf66916`
 
 ## Files Touched
 - New files:
@@ -111,7 +111,7 @@ Prepare the foundational schema, role/auth boundaries, guardian/donor linkage gr
 ## Corrections Applied
 - Repaired autopilot preflight self-blocking so autopilot-only dirty artifacts are checkpointed and rerun instead of treated as application blockers.
 - Kept all legacy transaction controllers and legacy reporting flows untouched while introducing the future-safe posting boundary separately.
-- Reconciled malformed and stale Phase 1 SHA references against live git history before the next-thread handoff.
+- Reconciled malformed and stale Phase 1 SHA references against live git history before the next-thread handoff, superseding stale intermediate metadata commit `5460a93715e88fa47d46cdf17d5c19ff95a0a468` with clean restart checkpoint `2344df7c4d21604b0b64adfd7b849aa9fbf66916`.
 
 ## Remaining Risks
 - Existing auth/profile tests remain baseline-red and still cannot be used as a clean global regression gate.

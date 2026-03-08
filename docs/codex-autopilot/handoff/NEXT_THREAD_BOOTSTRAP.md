@@ -35,6 +35,7 @@ Update `run_state.json` and the upcoming phase report with the blocker.
 - next approved phase: `PHASE_2_GUARDIAN_PORTAL`
 - required branch: `codex/2026-03-08-phase-1-foundation-safety`
 - phase end implementation commit: `4b02760ad036eb64d6d056965d0da0243fff4bb8`
-- latest autopilot handoff metadata commit: `5460a93715e88fa47d46cdf17d5c19ff95a0a468`
-- handoff checkpoint commit to start from: `5460a93715e88fa47d46cdf17d5c19ff95a0a468`
+- latest autopilot handoff metadata commit: `2344df7c4d21604b0b64adfd7b849aa9fbf66916`
+- handoff checkpoint commit to start from: `2344df7c4d21604b0b64adfd7b849aa9fbf66916`
+- superseded stale intermediate metadata commit: `5460a93715e88fa47d46cdf17d5c19ff95a0a468`
 - do not treat the 14 documented auth/profile baseline failures as new regressions unless additional failures appear

@@ -9,11 +9,12 @@ Phase 1 foundation work is complete and validated. A fresh thread is now require
 - current thread id: `thread-002-runtime-preflight-rerun`
 - workflow status: `phase_1_complete`
 - actual branch: `codex/2026-03-08-phase-1-foundation-safety`
-- actual HEAD at reconciliation: `5460a93715e88fa47d46cdf17d5c19ff95a0a468`
+- actual HEAD at reconciliation: `2344df7c4d21604b0b64adfd7b849aa9fbf66916`
 - preflight pass commit: `8b989bcaeff9634e3e8a3fb3d3182fab5f6f2f00`
 - phase end implementation commit: `4b02760ad036eb64d6d056965d0da0243fff4bb8`
-- most recent autopilot handoff metadata commit: `5460a93715e88fa47d46cdf17d5c19ff95a0a468`
-- handoff checkpoint commit: `5460a93715e88fa47d46cdf17d5c19ff95a0a468`
+- most recent autopilot handoff metadata commit: `2344df7c4d21604b0b64adfd7b849aa9fbf66916`
+- handoff checkpoint commit: `2344df7c4d21604b0b64adfd7b849aa9fbf66916`
+- superseded stale intermediate metadata commit: `5460a93715e88fa47d46cdf17d5c19ff95a0a468`
 - baseline test status: `php artisan test --env=testing` still reproduces only the 14 known pre-existing auth/profile failures, with no unexpected regressions added by Phase 1
 
 ## Confirmed Runtime Safety Notes
