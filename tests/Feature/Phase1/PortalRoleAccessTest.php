@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Phase1;
 
+use App\Models\Guardian;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -40,6 +41,15 @@ class PortalRoleAccessTest extends TestCase
     {
         $guardian = User::factory()->create();
         $guardian->assignRole('guardian');
+
+        Guardian::query()->create([
+            'user_id' => $guardian->id,
+            'name' => 'Guardian Portal User',
+            'email' => $guardian->email,
+            'portal_enabled' => true,
+            'isActived' => true,
+            'isDeleted' => false,
+        ]);
 
         $donor = User::factory()->create();
         $donor->assignRole('donor');

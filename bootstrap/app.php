@@ -13,6 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
+            'management.surface' => \App\Http\Middleware\EnsureManagementSurfaceAccess::class,
+            'portal.home' => \App\Http\Middleware\RedirectPortalUsersFromLegacyDashboard::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
