@@ -1,47 +1,47 @@
 # CURRENT HANDOFF
 
 ## Current Status
-Phase 5 sandbox payment closeout is complete for the safe invoice-backed guardian scope. The Laravel application can initiate shurjoPay sandbox invoice payments, process sandbox return/IPN callbacks with verify-based finalization, fall back to manual review when verification transport/auth calls fail, and run a manual-bank evidence and approval flow without touching the live WordPress-controlled IPN path.
+Phase 6 hardening and final verification are complete for the approved sandbox-only guardian invoice payment scope. The Laravel application remains sandbox-ready for shurjoPay initiation/return/IPN verification plus manual-bank review, and the Phase 6 pass fixed the remaining pending manual-bank re-submission edge case without touching live gateway routing, the live merchant panel, donor online finalization, or the WordPress-controlled IPN path.
 
 Human status for this phase:
-`PHASE 5 PARTIALLY COMPLETE (SANDBOX READY WITH DOCUMENTED LIMITS)`
+`PHASE 6 COMPLETE WITH DOCUMENTED LIMITS`
 
 ## Latest Safe Position
-- last completed phase: `PHASE_5_PAYMENT_INTEGRATION`
-- current thread id: `thread-008-phase-5-sandbox-correction-closeout`
-- workflow status: `phase_5_complete`
+- last completed phase: `PHASE_6_HARDENING_AND_FINAL_VERIFICATION`
+- current thread id: `thread-009-phase-6-hardening-and-final-verification`
+- workflow status: `phase_6_complete`
 - active branch: `codex/2026-03-08-phase-1-foundation-safety`
-- phase start checkpoint: `12187ebebb3a003dc6b20c7cbc979a305fe5f280`
-- initial Phase 5 implementation checkpoint: `0b416d6f9e82679c7b720a5119383f6dff8cef69`
-- Phase 5 closeout correction checkpoint: `acc00f9aafe35cfd461266d0ae2754603acb5273`
+- Phase 6 start basis: `d1c8dc3a48610771ee94b2fbb79586a4690e4764`
+- Phase 6 hardening fix checkpoint: `12c96a0b16649bfd0c574a7fb90c8aa559d7a3e3`
 
-## What This Closeout Confirmed
-- Sandbox shurjoPay initiation, return handling, IPN handling, verify-based finalization, receipt issuance, and manual-bank review are all wired and validation-safe for guardian invoice payments.
-- No live payment flow activation, live merchant-panel change, or WordPress IPN cutover was performed.
-- No donor online payment finalization was introduced.
-- No historical migrations were edited.
-- No existing route names were renamed.
+## What Phase 6 Confirmed
+- The real repository still matched the recorded Phase 5 sandbox payment closeout state; the only drift beyond `acc00f9aafe35cfd461266d0ae2754603acb5273` was autopilot-owned docs/state/handoff/report content.
+- The two required Phase 5 checkpoints remained present and correctly reflected in the handoff/report/thread-history artifacts:
+  - `0b416d6f9e82679c7b720a5119383f6dff8cef69`
+  - `acc00f9aafe35cfd461266d0ae2754603acb5273`
+- Targeted payment, guardian invoice, manual-bank review, and management reporting validations all passed after the Phase 6 hardening fix.
+- The broader suite still fails only in the 14 documented auth/profile baseline tests; no new regressions were introduced.
 
-## Closeout Corrections Applied
-- Forwarded the reserved shurjoPay fail return URL during sandbox initiation.
-- Aligned the default shurjoPay order prefix to `HFS` in config, reference generation, and `.env.example`.
-- Routed shurjoPay verification transport/auth failures to manual review instead of a raw exception path.
-- Added focused Phase 5 test coverage for those closeout corrections.
+## Phase 6 Hardening Fix Applied
+- Pending manual-bank re-submissions with the same bank reference now reuse the existing payment-review row instead of being blocked by the active-attempt guard.
+- Stale manual review markers are cleared on that resubmission path.
+- Focused regression coverage now proves the pending resubmission behavior.
 
 ## Validation Snapshot
-- `php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php`: 5 passed
-- Cross-phase Phase 1-5 regression slice: 15 passed
-- Full suite: 14 failures, 30 passes
+- `php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php`: 6 passed
+- Targeted guardian/reporting/payment slice: 12 passed
+- Cross-phase Phase 1-5 regression slice: 16 passed
+- Full suite: 14 failures, 31 passes
 - Failure classification: only the 14 documented auth/profile baseline failures remain
 
-## Remaining Constraints For The Next Thread
-- Treat the current shurjoPay sandbox implementation as the maximum safe Laravel-side scope for Phase 5.
-- Do not enable live credentials or live callback routing without explicit go-live approval and provider-contract confirmation.
+## Remaining Constraints
+- Treat the current shurjoPay implementation as sandbox-ready only; it is not live-ready.
+- Do not enable live credentials or live callback routing without explicit go-live approval and confirmed provider contract details.
 - Do not enable canonical posting by default until an operator-approved account mapping exists for the legacy `transactions` surface.
 - Do not extend this online flow to donor payments until a dedicated donor payable model exists.
-- Reconfirm any provider-native callback signature or authoritative event-id contract before treating the flow as live-ready.
+- Do not modify the live merchant panel or cut over the existing WordPress IPN path under the guise of post-Phase 6 work.
 
 ## Next Phase May Start?
-Yes. `PHASE_6_HARDENING_AND_FINAL_VERIFICATION` may safely begin next in a fresh thread.
+No additional implementation phase is approved in the current six-phase program.
 
-That next thread should harden and verify what now exists. It should not perform live gateway cutover under the guise of Phase 6.
+The autonomous implementation program is complete for the approved scope. Any future thread must be explicitly approved for live activation, provider-contract completion, canonical posting activation, donor payable expansion, or other out-of-scope follow-up work.

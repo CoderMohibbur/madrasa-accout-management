@@ -377,7 +377,7 @@
                                                                  ]
                                                    },
                    "PHASE_6_HARDENING_AND_FINAL_VERIFICATION":  {
-                                                                    "status":  "pending",
+                                                                    "status":  "completed",
                                                                     "allowed_touch_budget":  {
                                                                                                  "existing_files_soft_max":  10,
                                                                                                  "critical_existing_files_soft_max":  3
@@ -386,16 +386,50 @@
 
                                                                                   ],
                                                                     "modified_existing_files":  [
-
+                                                                                                    "app/Services/Payments/PaymentWorkflowService.php",
+                                                                                                    "tests/Feature/Phase5/PaymentIntegrationTest.php",
+                                                                                                    "docs/codex-autopilot/reports/PHASE_6_REPORT.md",
+                                                                                                    "docs/codex-autopilot/handoff/CURRENT_HANDOFF.md",
+                                                                                                    "docs/codex-autopilot/handoff/NEXT_THREAD_BOOTSTRAP.md",
+                                                                                                    "docs/codex-autopilot/handoff/THREAD_HISTORY_INDEX.md",
+                                                                                                    "docs/codex-autopilot/state/run_state.json",
+                                                                                                    "docs/codex-autopilot/state/change_manifest.json",
+                                                                                                    "docs/codex-autopilot/state/next_phase_adjustments.json",
+                                                                                                    "docs/codex-autopilot/state/phase_manifest.md",
+                                                                                                    "docs/codex-autopilot/state/validation_manifest.json"
                                                                                                 ],
                                                                     "critical_existing_files":  [
-
+                                                                                                    "app/Services/Payments/PaymentWorkflowService.php"
                                                                                                 ],
                                                                     "change_impact_entries":  [
-
+                                                                                                  {
+                                                                                                      "path":  "app/Services/Payments/PaymentWorkflowService.php",
+                                                                                                      "impact_class":  "high",
+                                                                                                      "reason":  "Allowed pending/manual-review/rejected manual-bank resubmissions with the same bank reference to reuse the existing request instead of being blocked by the active-attempt guard.",
+                                                                                                      "compatibility_note":  "shurjoPay initiation/verification, manual-bank approval semantics, live activation boundaries, and canonical posting defaults remain unchanged.",
+                                                                                                      "regression_checks":  [
+                                                                                                                                "php -l app/Services/Payments/PaymentWorkflowService.php",
+                                                                                                                                "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php",
+                                                                                                                                "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php tests/Feature/Phase4/ManagementReportingTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php tests/Feature/Phase5/PaymentIntegrationTest.php",
+                                                                                                                                "php artisan test --env=testing"
+                                                                                                                            ]
+                                                                                                  },
+                                                                                                  {
+                                                                                                      "path":  "tests/Feature/Phase5/PaymentIntegrationTest.php",
+                                                                                                      "impact_class":  "low",
+                                                                                                      "reason":  "Added a focused regression test for pending manual-bank resubmission reuse.",
+                                                                                                      "compatibility_note":  "Existing Phase 5 payment assertions remain intact; the new coverage only exercises the Phase 6 hardening fix.",
+                                                                                                      "regression_checks":  [
+                                                                                                                                "php -l tests/Feature/Phase5/PaymentIntegrationTest.php",
+                                                                                                                                "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php"
+                                                                                                                            ]
+                                                                                                  }
                                                                                               ],
                                                                     "notes":  [
-
+                                                                                  "Phase 6 revalidated the recorded Phase 5 sandbox route, migration, and regression state against the real repository before making any application changes.",
+                                                                                  "The only safely-fixable application issue found was the pending manual-bank resubmission guard; no broader legacy route, auth, report, or posting refactor was required.",
+                                                                                  "No live gateway activation, merchant-panel change, WordPress IPN cutover, donor online payment finalization, or canonical posting activation was performed.",
+                                                                                  "The broader suite still fails only in the 14 documented auth/profile baseline tests, so the approved implementation program is complete for sandbox-ready scope with documented live blockers."
                                                                               ]
                                                                 }
                }

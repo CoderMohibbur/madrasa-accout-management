@@ -256,6 +256,73 @@
                                                 "The broader suite continued to fail only in the 14 documented auth/profile baseline areas; no new regressions were introduced by the Phase 5 closeout corrections.",
                                                 "The closeout added coverage for fail-url wiring and the manual-review fallback when shurjoPay verification transport/auth calls fail."
                                             ]
+                              },
+                              {
+                                  "phase":  "PHASE_6_HARDENING_AND_FINAL_VERIFICATION",
+                                  "status":  "passed",
+                                  "validated_at":  "2026-03-09T00:24:40.8247507+06:00",
+                                  "command_results":  [
+                                                          {
+                                                              "command":  "php artisan route:list --path=payments",
+                                                              "exit_code":  0,
+                                                              "summary":  "10 payment and manual-bank routes registered"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan route:list --path=manual-bank",
+                                                              "exit_code":  0,
+                                                              "summary":  "5 manual-bank routes registered including the management review queue"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan route:list --path=shurjopay -v",
+                                                              "exit_code":  0,
+                                                              "summary":  "5 shurjopay routes registered with the expected guardian/auth/IPN middleware split"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan route:list --path=guardian",
+                                                              "exit_code":  0,
+                                                              "summary":  "5 guardian routes registered for the invoice/payment portal surface"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan route:list --path=management",
+                                                              "exit_code":  0,
+                                                              "summary":  "6 management routes registered including reporting and manual-bank review"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan migrate:status --env=testing",
+                                                              "exit_code":  0,
+                                                              "summary":  "Phase 5 payment migration is present and ran in the testing database"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing tests/Feature/Phase5/PaymentIntegrationTest.php",
+                                                              "exit_code":  0,
+                                                              "summary":  "6 tests passed"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing tests/Feature/Phase2/GuardianPortalTest.php tests/Feature/Phase4/ManagementReportingTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php tests/Feature/Phase5/PaymentIntegrationTest.php",
+                                                              "exit_code":  0,
+                                                              "summary":  "12 tests passed"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php tests/Feature/Phase3/DonorPortalTest.php tests/Feature/Phase4/ManagementReportingTest.php tests/Feature/Phase5/PaymentIntegrationTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
+                                                              "exit_code":  0,
+                                                              "summary":  "16 tests passed"
+                                                          },
+                                                          {
+                                                              "command":  "php artisan test --env=testing",
+                                                              "exit_code":  1,
+                                                              "summary":  "14 failures, 31 passes",
+                                                              "classification":  "known_preexisting_failures_only"
+                                                          }
+                                                      ],
+                                  "unexpected_failures":  [
+
+                                                          ],
+                                  "new_regressions_detected":  false,
+                                  "notes":  [
+                                                "The real repository still matched the recorded Phase 5 sandbox closeout state; the only drift beyond `acc00f9...` was autopilot-owned documentation/state output in `d1c8dc3...`.",
+                                                "Phase 6 added coverage for pending manual-bank resubmission reuse and fixed the workflow to reopen the existing request instead of blocking it.",
+                                                "The broader suite continued to fail only in the documented auth/profile baseline areas; no new regressions were introduced by the Phase 6 hardening fix."
+                                            ]
                               }
                           ]
 }
