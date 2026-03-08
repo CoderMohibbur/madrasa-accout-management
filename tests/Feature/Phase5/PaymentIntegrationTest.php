@@ -313,6 +313,51 @@ class PaymentIntegrationTest extends TestCase
         ]);
     }
 
+    public function test_manual_bank_resubmission_reuses_the_pending_request_instead_of_blocking_it(): void
+    {
+        ['invoice' => $invoice, 'guardianUser' => $guardianUser] = $this->makeGuardianInvoiceFixture();
+
+        $this->actingAs($guardianUser)
+            ->post('/payments/manual-bank/requests', [
+                'invoice_id' => $invoice->id,
+                'payer_name' => 'Guardian One',
+                'bank_reference' => 'BANK-REF-2001',
+                'payment_channel' => 'Bank Transfer',
+                'transferred_at' => now()->subMinute()->toDateTimeString(),
+                'note' => 'Initial sandbox bank transfer',
+            ])
+            ->assertRedirect();
+
+        $payment = Payment::query()->where('provider', 'manual_bank')->firstOrFail();
+        $originalIdempotencyKey = $payment->idempotency_key;
+
+        $this->actingAs($guardianUser)
+            ->post('/payments/manual-bank/requests', [
+                'invoice_id' => $invoice->id,
+                'payer_name' => 'Guardian One Updated',
+                'bank_reference' => 'BANK-REF-2001',
+                'payment_channel' => 'Bank Transfer',
+                'transferred_at' => now()->toDateTimeString(),
+                'note' => 'Updated sandbox evidence',
+            ])
+            ->assertRedirect(route('payments.manual-bank.show', $payment, false));
+
+        $payment->refresh();
+
+        $this->assertSame(Payment::STATUS_AWAITING_MANUAL_PAYMENT, $payment->status);
+        $this->assertSame($originalIdempotencyKey, $payment->idempotency_key);
+        $this->assertSame('Guardian One Updated', data_get($payment->metadata, 'manual_bank.payer_name'));
+        $this->assertSame('Updated sandbox evidence', data_get($payment->metadata, 'manual_bank.note'));
+        $this->assertNull($payment->reviewed_by_user_id);
+        $this->assertNull($payment->reviewed_at);
+        $this->assertSame(1, Payment::query()->where('provider', 'manual_bank')->count());
+        $this->assertDatabaseHas('payment_gateway_events', [
+            'payment_id' => $payment->id,
+            'provider' => 'manual_bank',
+            'event_name' => 'manual_bank_resubmitted',
+        ]);
+    }
+
     private function makeGuardianInvoiceFixture(): array
     {
         $guardianUser = User::factory()->create();
@@ -358,3 +403,4 @@ class PaymentIntegrationTest extends TestCase
         return compact('guardianUser', 'guardian', 'student', 'invoice');
     }
 }
+

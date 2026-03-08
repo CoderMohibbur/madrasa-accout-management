@@ -272,7 +272,6 @@ class PaymentWorkflowService
         }
 
         $resolvedPayable = $this->payableResolver->resolveForUser($user, $invoice);
-        $this->ensureNoActiveAttempt($invoice);
 
         $existing = Payment::query()
             ->where('provider', 'manual_bank')
@@ -280,6 +279,7 @@ class PaymentWorkflowService
             ->where('user_id', $user->getKey())
             ->where('payable_type', StudentFeeInvoice::class)
             ->where('payable_id', $invoice->getKey())
+            ->latest('id')
             ->first();
 
         if ($existing && $existing->status === Payment::STATUS_PAID) {
@@ -287,6 +287,18 @@ class PaymentWorkflowService
                 'bank_reference' => ['This bank reference is already attached to a paid record.'],
             ]);
         }
+
+        if ($existing && ! in_array($existing->status, [
+            Payment::STATUS_AWAITING_MANUAL_PAYMENT,
+            Payment::STATUS_MANUAL_REVIEW,
+            Payment::STATUS_FAILED,
+        ], true)) {
+            throw ValidationException::withMessages([
+                'bank_reference' => ['This bank reference cannot be reused in its current state.'],
+            ]);
+        }
+
+        $this->ensureNoActiveAttempt($invoice, $existing?->getKey());
 
         $payment = $existing ?: Payment::query()->create([
             'user_id' => $user->getKey(),
@@ -301,6 +313,11 @@ class PaymentWorkflowService
 
         $before = $payment->only(['status', 'verification_status', 'status_reason', 'provider_reference']);
         $metadata = $payment->metadata ?? [];
+
+        if ($existing) {
+            unset($metadata['manual_bank_review']);
+        }
+
         $metadata['manual_bank'] = [
             'payer_name' => $evidence['payer_name'],
             'payment_channel' => $evidence['payment_channel'] ?? config('payments.manual_bank.display_name'),
@@ -320,14 +337,17 @@ class PaymentWorkflowService
             'metadata' => $metadata,
             'failed_at' => null,
             'cancelled_at' => null,
+            'reviewed_by_user_id' => null,
+            'reviewed_at' => null,
         ])->save();
 
         $this->eventLogger->record(
             $payment,
             'manual_bank',
-            'manual_bank_submitted',
+            $existing ? 'manual_bank_resubmitted' : 'manual_bank_submitted',
             [
                 'evidence' => Arr::except($metadata['manual_bank'], ['note']),
+                'resubmitted' => $existing !== null,
             ],
             'manual_bank',
             $payment->provider_reference,
@@ -338,8 +358,10 @@ class PaymentWorkflowService
         $this->auditLogger->record(
             $user,
             $payment,
-            'payment.manual_bank_submitted',
-            'Manual bank evidence was submitted for invoice payment review.',
+            $existing ? 'payment.manual_bank_resubmitted' : 'payment.manual_bank_submitted',
+            $existing
+                ? 'Manual bank evidence was resubmitted for invoice payment review.'
+                : 'Manual bank evidence was submitted for invoice payment review.',
             $before,
             $payment->only(['status', 'verification_status', 'status_reason', 'provider_reference']),
             [
@@ -1048,14 +1070,18 @@ class PaymentWorkflowService
         return null;
     }
 
-    private function ensureNoActiveAttempt(StudentFeeInvoice $invoice): void
+    private function ensureNoActiveAttempt(StudentFeeInvoice $invoice, ?int $exceptPaymentId = null): void
     {
-        $activeAttempt = Payment::query()
+        $query = Payment::query()
             ->where('payable_type', StudentFeeInvoice::class)
             ->where('payable_id', $invoice->getKey())
-            ->whereIn('status', Payment::ACTIVE_STATUSES)
-            ->latest('id')
-            ->first();
+            ->whereIn('status', Payment::ACTIVE_STATUSES);
+
+        if ($exceptPaymentId) {
+            $query->whereKeyNot($exceptPaymentId);
+        }
+
+        $activeAttempt = $query->latest('id')->first();
 
         if ($activeAttempt) {
             throw ValidationException::withMessages([
@@ -1095,3 +1121,4 @@ class PaymentWorkflowService
         return array_replace_recursive($existing ?? [], $patch);
     }
 }
+
