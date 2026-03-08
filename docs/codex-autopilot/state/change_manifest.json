@@ -229,16 +229,40 @@
       ]
     },
     "PHASE_4_MANAGEMENT_REPORTING": {
-      "status": "pending",
+      "status": "completed",
       "allowed_touch_budget": {
         "existing_files_soft_max": 10,
         "critical_existing_files_soft_max": 3
       },
-      "new_files": [],
-      "modified_existing_files": [],
+      "new_files": [
+        "app/Http/Controllers/Management/ManagementReportingController.php",
+        "app/Services/ManagementReporting/ManagementReportingData.php",
+        "resources/views/management/reporting.blade.php",
+        "tests/Feature/Phase4/ManagementReportingTest.php"
+      ],
+      "modified_existing_files": [
+        "routes/management.php"
+      ],
       "critical_existing_files": [],
-      "change_impact_entries": [],
-      "notes": []
+      "change_impact_entries": [
+        {
+          "path": "routes/management.php",
+          "impact_class": "medium",
+          "reason": "Added the new management-only reporting route and updated the management namespace copy to point operators toward the additive reporting surface.",
+          "compatibility_note": "Existing `management.dashboard`, `management.access-control`, and all legacy `reports.*` routes remain unchanged.",
+          "regression_checks": [
+            "php -l routes/management.php",
+            "php artisan route:list --path=management",
+            "php artisan route:list --path=reporting",
+            "php artisan test --env=testing tests/Feature/Phase4/ManagementReportingTest.php"
+          ]
+        }
+      ],
+      "notes": [
+        "No historical migrations were edited.",
+        "No legacy `ReportController`, `Reports/*` controller, dashboard controller, or shared navigation file was modified.",
+        "Management reporting remains additive under `/management/reporting` and documents its semantic separation from the existing legacy report totals."
+      ]
     },
     "PHASE_5_PAYMENT_INTEGRATION": {
       "status": "pending",

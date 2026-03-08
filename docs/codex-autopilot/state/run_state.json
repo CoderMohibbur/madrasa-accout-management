@@ -3,31 +3,34 @@
   "implementation_series_id": "madrasa-autopilot-v4",
   "base_branch": "master",
   "safe_branch": "codex/2026-03-08-phase-1-foundation-safety",
-  "workflow_status": "phase_3_complete",
-  "current_phase": "PHASE_3_DONOR_PORTAL",
+  "workflow_status": "phase_4_complete",
+  "current_phase": "PHASE_4_MANAGEMENT_REPORTING",
   "current_phase_status": "completed",
   "completed_phases": [
     "PHASE_1_FOUNDATION",
     "PHASE_2_GUARDIAN_PORTAL",
-    "PHASE_3_DONOR_PORTAL"
+    "PHASE_3_DONOR_PORTAL",
+    "PHASE_4_MANAGEMENT_REPORTING"
   ],
-  "blocked_phases": [],
-  "last_completed_phase": "PHASE_3_DONOR_PORTAL",
+  "blocked_phases": [
+    "PHASE_5_PAYMENT_INTEGRATION"
+  ],
+  "last_completed_phase": "PHASE_4_MANAGEMENT_REPORTING",
   "last_validation_result": "passed",
-  "current_thread_id": "thread-004-phase-3-donor-portal",
+  "current_thread_id": "thread-005-phase-4-management-reporting",
   "next_thread_required": true,
-  "blocker_present": false,
-  "blocker_category": null,
-  "blocker_summary": null,
-  "last_updated": "2026-03-08T18:23:31.9066412+06:00",
+  "blocker_present": true,
+  "blocker_category": "business_decision_required",
+  "blocker_summary": "PHASE_5_PAYMENT_INTEGRATION cannot start safely because no concrete payment provider, webhook/signature verification contract, or deployment configuration exists in the repository.",
+  "last_updated": "2026-03-08T18:37:03.2100457+06:00",
   "final_verification_status": "pending",
   "git_runtime": {
     "actual_current_branch": "codex/2026-03-08-phase-1-foundation-safety",
-    "actual_head_sha": "4bc465b47471cd925d8095b19956a12cdfd494a8",
-    "last_checkpoint_commit_sha": "4bc465b47471cd925d8095b19956a12cdfd494a8",
-    "phase_start_commit_sha": "894ea98174d129551fb9dbb8e0e746e75671c7ab",
-    "phase_end_commit_sha": "4bc465b47471cd925d8095b19956a12cdfd494a8",
-    "handoff_checkpoint_commit_sha": "4bc465b47471cd925d8095b19956a12cdfd494a8",
+    "actual_head_sha": "3e4588377616d35840c206def5029b18db0a00de",
+    "last_checkpoint_commit_sha": "3e4588377616d35840c206def5029b18db0a00de",
+    "phase_start_commit_sha": "8f6e3ef07ff9092ea7eb9c3169de5f277b2de4c7",
+    "phase_end_commit_sha": "3e4588377616d35840c206def5029b18db0a00de",
+    "handoff_checkpoint_commit_sha": "3e4588377616d35840c206def5029b18db0a00de",
     "populated_at_runtime": true,
     "repository_confirmed": true,
     "working_tree_clean": true,
@@ -35,13 +38,13 @@
     "required_safe_branch_exists": true,
     "required_safe_branch_active": true,
     "safe_directory_override_required": true,
-    "checked_at": "2026-03-08T18:23:31.9066412+06:00"
+    "checked_at": "2026-03-08T18:37:03.2100457+06:00"
   },
   "baseline_validation": {
     "known_preexisting_failures_documented": true,
     "known_preexisting_failures_source": "docs/codex-autopilot/state/validation_manifest.json",
     "runtime_reconfirmation_required": true,
-    "runtime_reconfirmed_at": "2026-03-08T18:23:31.9066412+06:00",
+    "runtime_reconfirmed_at": "2026-03-08T18:37:03.2100457+06:00",
     "runtime_command": "php artisan test --env=testing",
     "runtime_exit_code": 1,
     "runtime_status": "known_preexisting_failures_confirmed_only",
@@ -53,10 +56,10 @@
     "Do not rename existing route names.",
     "Do not edit historical migrations.",
     "Required safe branch is active and local protected base branch is `master` in this repository.",
-    "Phase 3 began from handoff checkpoint `894ea98174d129551fb9dbb8e0e746e75671c7ab` after the Phase 2 guardian portal metadata checkpoint.",
-    "Phase 3 delivered a donor-only read portal with dashboard, donation history, and receipt history using the additive donor linkage plus legacy donation ledger rows and explicit user-bound receipt records.",
-    "Legacy donor management write flows, transaction posting controllers, report controllers, shared management navigation, and historical migrations were left untouched during Phase 3.",
+    "Phase 4 began from handoff checkpoint `8f6e3ef07ff9092ea7eb9c3169de5f277b2de4c7` after the Phase 3 donor portal metadata checkpoint.",
+    "Phase 4 delivered an additive `/management/reporting` surface with source-wise inflow separation, fee-vs-donation visibility, invoice status summaries, and receipt visibility without touching legacy report routes.",
+    "Legacy transaction controllers, legacy report controllers/views, shared management navigation, dashboard totals, and historical migrations were left untouched during Phase 4.",
     "The broader suite still reproduces only the 14 documented auth/profile baseline failures.",
-    "A fresh thread is required before starting `PHASE_4_MANAGEMENT_REPORTING`."
+    "PHASE_5_PAYMENT_INTEGRATION is blocked until a concrete payment provider, webhook/signature verification model, and deployment configuration contract are supplied."
   ]
 }

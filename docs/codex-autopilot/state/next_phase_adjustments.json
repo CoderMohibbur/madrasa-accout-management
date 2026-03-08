@@ -1,12 +1,25 @@
 {
-  "updated_at": "2026-03-08T18:23:31.9066412+06:00",
-  "current_basis_phase": "PHASE_3_DONOR_PORTAL",
-  "next_phase": "PHASE_4_MANAGEMENT_REPORTING",
-  "adjustments_required": false,
-  "adjustments": [],
+  "updated_at": "2026-03-08T18:37:03.2100457+06:00",
+  "current_basis_phase": "PHASE_4_MANAGEMENT_REPORTING",
+  "next_phase": "PHASE_5_PAYMENT_INTEGRATION",
+  "adjustments_required": true,
+  "adjustments": [
+    {
+      "type": "business_decision_required",
+      "summary": "Choose the concrete payment provider and callback/webhook verification contract before Phase 5 begins."
+    },
+    {
+      "type": "configuration_required",
+      "summary": "Define the provider-specific credential, secret, and deployment configuration surface for payment initiation and webhook verification."
+    },
+    {
+      "type": "finalization_rule_required",
+      "summary": "Confirm the provider-specific receipt/finalization expectations so idempotent posting and receipt issuance can be implemented safely."
+    }
+  ],
   "notes": [
-    "Phase 3 established a donor-scoped portal surface using the linked donor profile, legacy donation ledger rows, and user-bound receipts without altering legacy donor management writes.",
-    "Phase 4 can add new reporting services and management-only summary views on top of the guardian, donor, invoice, payment, and receipt boundaries while preserving existing report route names and totals.",
-    "Any Phase 4 semantic difference from the legacy reporting totals must be documented explicitly instead of silently replacing the old reports."
+    "Phase 4 established an additive `/management/reporting` surface with source-wise inflow separation, fee-vs-donation visibility, invoice status summaries, and receipt visibility while leaving legacy report routes untouched.",
+    "Phase 5 is not safely unblocked because the repository does not define a concrete payment provider or webhook/signature verification contract.",
+    "Do not guess the gateway implementation details; wait for the real provider/business decision before adding live payment initiation or finalization code."
   ]
 }

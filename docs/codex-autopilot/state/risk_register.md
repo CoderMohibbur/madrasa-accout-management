@@ -99,3 +99,16 @@
   Phase 3 keeps donor receipt visibility strictly user-bound and read-only instead of inventing synthetic receipt records from legacy transactions.
 - Runtime action:
   Any later backfill or reporting reconciliation must be explicit and documented rather than inferred inside the portal views.
+
+## R-09 Payment provider contract is unspecified
+- Severity: critical
+- Files:
+  - `app/Models/Payment.php`
+  - `app/Models/PaymentGatewayEvent.php`
+  - `docs/codex-autopilot/phases/PHASE_5_PAYMENT_INTEGRATION.md`
+- Why it matters:
+  The repository has payment schema placeholders but no concrete provider choice, webhook signature model, or deployment configuration contract for live payment finalization.
+- Protection in kit:
+  Phase 5 is explicitly blocked until the provider/business decision exists.
+- Runtime action:
+  Do not implement live payment initiation, webhook handling, or finalization logic until the provider contract is supplied.

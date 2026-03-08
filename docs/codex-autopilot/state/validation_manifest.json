@@ -158,6 +158,41 @@
         "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest.",
         "Legacy donor management routes remained registered alongside the new donor portal routes with no route-name changes."
       ]
+    },
+    {
+      "phase": "PHASE_4_MANAGEMENT_REPORTING",
+      "status": "passed",
+      "validated_at": "2026-03-08T18:37:03.2100457+06:00",
+      "command_results": [
+        {
+          "command": "php artisan route:list --path=management",
+          "exit_code": 0,
+          "summary": "3 management namespace routes registered including the new additive reporting route"
+        },
+        {
+          "command": "php artisan route:list --path=reporting",
+          "exit_code": 0,
+          "summary": "management.reporting.index route registered"
+        },
+        {
+          "command": "php artisan test --env=testing tests/Feature/Phase1/PortalRoleAccessTest.php tests/Feature/Phase2/GuardianPortalTest.php tests/Feature/Phase3/DonorPortalTest.php tests/Feature/Phase4/ManagementReportingTest.php tests/Unit/Policies/StudentFeeInvoicePolicyTest.php",
+          "exit_code": 0,
+          "summary": "10 tests passed"
+        },
+        {
+          "command": "php artisan test --env=testing",
+          "exit_code": 1,
+          "summary": "14 failures, 25 passes",
+          "classification": "known_preexisting_failures_only"
+        }
+      ],
+      "unexpected_failures": [],
+      "new_regressions_detected": false,
+      "notes": [
+        "Management reporting access control and date-range filtering tests both passed.",
+        "The broader suite still failed only in the pre-existing auth/profile areas already captured in the baseline manifest.",
+        "Legacy `reports.*` routes and controllers were intentionally left untouched while the new reporting page remained additive under `/management/reporting`."
+      ]
     }
   ]
 }

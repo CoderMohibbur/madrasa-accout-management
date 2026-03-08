@@ -31,9 +31,10 @@ Do not begin the next phase.
 Update `run_state.json` and the upcoming phase report with the blocker.
 
 ## Current Bootstrap Target
-- previous completed phase: `PHASE_3_DONOR_PORTAL`
-- next approved phase: `PHASE_4_MANAGEMENT_REPORTING`
+- previous completed phase: `PHASE_4_MANAGEMENT_REPORTING`
+- next approved phase: `PHASE_5_PAYMENT_INTEGRATION`
 - required branch: `codex/2026-03-08-phase-1-foundation-safety`
-- phase end implementation commit: `4bc465b47471cd925d8095b19956a12cdfd494a8`
-- phase-end validation result: donor portal routes and tests passed; full suite remained at the 14 documented baseline auth/profile failures only
+- phase end implementation commit: `3e4588377616d35840c206def5029b18db0a00de`
+- phase-end validation result: management reporting routes and tests passed; full suite remained at the 14 documented baseline auth/profile failures only
+- blocker note: do not start Phase 5 until a concrete payment provider, webhook/signature verification model, and integration configuration contract exist
 - do not treat the 14 documented auth/profile baseline failures as new regressions unless additional failures appear
