@@ -1,0 +1,77 @@
+{
+  "schema_version": 2,
+  "phases": {
+    "PHASE_1_FOUNDATION": {
+      "status": "pending",
+      "allowed_touch_budget": {
+        "existing_files_soft_max": 12,
+        "critical_existing_files_soft_max": 4
+      },
+      "new_files": [],
+      "modified_existing_files": [],
+      "critical_existing_files": [],
+      "change_impact_entries": [],
+      "notes": []
+    },
+    "PHASE_2_GUARDIAN_PORTAL": {
+      "status": "pending",
+      "allowed_touch_budget": {
+        "existing_files_soft_max": 10,
+        "critical_existing_files_soft_max": 3
+      },
+      "new_files": [],
+      "modified_existing_files": [],
+      "critical_existing_files": [],
+      "change_impact_entries": [],
+      "notes": []
+    },
+    "PHASE_3_DONOR_PORTAL": {
+      "status": "pending",
+      "allowed_touch_budget": {
+        "existing_files_soft_max": 10,
+        "critical_existing_files_soft_max": 3
+      },
+      "new_files": [],
+      "modified_existing_files": [],
+      "critical_existing_files": [],
+      "change_impact_entries": [],
+      "notes": []
+    },
+    "PHASE_4_MANAGEMENT_REPORTING": {
+      "status": "pending",
+      "allowed_touch_budget": {
+        "existing_files_soft_max": 10,
+        "critical_existing_files_soft_max": 3
+      },
+      "new_files": [],
+      "modified_existing_files": [],
+      "critical_existing_files": [],
+      "change_impact_entries": [],
+      "notes": []
+    },
+    "PHASE_5_PAYMENT_INTEGRATION": {
+      "status": "pending",
+      "allowed_touch_budget": {
+        "existing_files_soft_max": 10,
+        "critical_existing_files_soft_max": 3
+      },
+      "new_files": [],
+      "modified_existing_files": [],
+      "critical_existing_files": [],
+      "change_impact_entries": [],
+      "notes": []
+    },
+    "PHASE_6_HARDENING_AND_FINAL_VERIFICATION": {
+      "status": "pending",
+      "allowed_touch_budget": {
+        "existing_files_soft_max": 10,
+        "critical_existing_files_soft_max": 3
+      },
+      "new_files": [],
+      "modified_existing_files": [],
+      "critical_existing_files": [],
+      "change_impact_entries": [],
+      "notes": []
+    }
+  }
+}
