@@ -12,7 +12,7 @@ class EnsureUserHasRole
     {
         $user = $request->user();
 
-        if (! $user || ! $user->hasAnyRole($roles)) {
+        if (! $user || ! $user->hasAccessibleAccountState() || ! $user->hasAnyRole($roles)) {
             abort(Response::HTTP_FORBIDDEN);
         }
 

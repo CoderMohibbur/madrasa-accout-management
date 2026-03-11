@@ -361,7 +361,6 @@ class PaymentIntegrationTest extends TestCase
     private function makeGuardianInvoiceFixture(): array
     {
         $guardianUser = User::factory()->create();
-        $guardianUser->assignRole('guardian');
 
         $guardian = Guardian::query()->create([
             'user_id' => $guardianUser->id,

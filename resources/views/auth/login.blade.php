@@ -1,49 +1,104 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <div class="ui-auth-section">
+        <x-auth-session-status :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
+        @if (session('google_auth_message'))
+            <x-ui.alert variant="success" title="Google sign-in ready">
+                {{ session('google_auth_message') }}
+            </x-ui.alert>
+        @endif
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required
-                autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        @if (session('google_auth_warning'))
+            <x-ui.alert variant="warning" title="Google sign-in notice">
+                {{ session('google_auth_warning') }}
+            </x-ui.alert>
+        @endif
+
+        <div class="grid gap-5 lg:grid-cols-[0.8fr,1.2fr]">
+            <article class="ui-public-card ui-public-card--soft">
+                <p class="ui-public-card__eyebrow">বিকল্প প্রবেশ</p>
+                <h3 class="ui-public-card__title">Google দিয়ে দ্রুত প্রবেশ</h3>
+                <p class="ui-public-card__body">
+                    একই shared account model বজায় রেখেই Google sign-in ব্যবহার করা যাবে। এতে donor, guardian বা
+                    management boundary বদলায় না; কেবল বিদ্যমান বা ন্যূনতম প্রয়োজনীয় account foundation-এই কাজ হয়।
+                </p>
+
+                <div class="mt-6 space-y-3">
+                    <div class="ui-auth-note ui-auth-note--soft">
+                        নতুন ব্যবহারকারীর ক্ষেত্রেও public-safe account foundation-এর বাইরে কিছুই খোলা হয় না।
+                    </div>
+
+                    <a href="{{ route('google.redirect', ['intent' => 'public']) }}" class="ui-public-action ui-public-action--secondary w-full justify-center">
+                        Google দিয়ে চালিয়ে যান
+                    </a>
+                </div>
+            </article>
+
+            <article class="ui-public-card">
+                <p class="ui-public-card__eyebrow">ইমেইল প্রবেশ</p>
+                <h3 class="ui-public-card__title">ইমেইল ও পাসওয়ার্ড দিয়ে লগইন করুন</h3>
+                <p class="ui-public-card__body">
+                    নিচের তথ্যগুলো আপনার বিদ্যমান অ্যাকাউন্টের সাথে যাচাই হবে। login flow, session behavior এবং
+                    access rules অপরিবর্তিত রাখা হয়েছে।
+                </p>
+
+                <form method="POST" action="{{ route('login') }}" class="mt-6 space-y-5">
+                    @csrf
+
+                    <div>
+                        <x-input-label for="email" :value="__('ইমেইল / Email')" />
+                        <x-text-input
+                            id="email"
+                            class="mt-1 block w-full"
+                            type="email"
+                            name="email"
+                            :value="old('email')"
+                            required
+                            autofocus
+                            autocomplete="username"
+                        />
+                        <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                    </div>
+
+                    <div>
+                        <x-input-label for="password" :value="__('পাসওয়ার্ড / Password')" />
+                        <x-text-input
+                            id="password"
+                            class="mt-1 block w-full"
+                            type="password"
+                            name="password"
+                            required
+                            autocomplete="current-password"
+                        />
+                        <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                    </div>
+
+                    <div class="ui-auth-note">
+                        <label for="remember_me" class="flex items-start gap-3">
+                            <input id="remember_me" type="checkbox" name="remember" class="ui-checkbox mt-1">
+
+                            <span>
+                                <span class="block text-sm font-semibold text-slate-900">{{ __('মনে রাখুন / Remember me') }}</span>
+                                <span class="mt-1 block text-sm leading-6 text-slate-600">
+                                    একই বিশ্বস্ত ব্রাউজার থেকে পরে দ্রুত প্রবেশের জন্য এই সেশন মনে রাখা যেতে পারে।
+                                </span>
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="ui-auth-actions">
+                        @if (Route::has('password.request'))
+                            <a href="{{ route('password.request') }}" class="ui-public-inline-link">
+                                {{ __('পাসওয়ার্ড ভুলে গেছেন?') }}
+                            </a>
+                        @endif
+
+                        <button type="submit" class="ui-public-action ui-public-action--primary">
+                            {{ __('লগইন করুন') }}
+                        </button>
+                    </div>
+                </form>
+            </article>
         </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required
-                autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox"
-                    class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800"
-                    name="remember">
-                <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Remember me') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800"
-                    href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
-        </div>
-    </form>
+    </div>
 </x-guest-layout>

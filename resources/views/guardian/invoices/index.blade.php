@@ -7,67 +7,105 @@
     description="Every invoice here is filtered through the guardian-student links and the Phase 1 invoice ownership policy."
 >
     <div class="grid gap-4 sm:grid-cols-3">
-        <div class="rounded-3xl border border-white/10 bg-white/5 p-5">
-            <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Visible Invoices</div>
-            <div class="mt-3 text-3xl font-semibold text-white">{{ $summary['invoice_count'] }}</div>
-        </div>
-        <div class="rounded-3xl border border-white/10 bg-white/5 p-5">
-            <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Overdue</div>
-            <div class="mt-3 text-3xl font-semibold text-white">{{ $summary['overdue_count'] }}</div>
-        </div>
-        <div class="rounded-3xl border border-white/10 bg-white/5 p-5">
-            <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Open Balance</div>
-            <div class="mt-3 text-3xl font-semibold text-white">{{ $money($summary['total_balance']) }}</div>
-        </div>
+        <x-ui.stat-card label="Visible invoices" value="{{ $summary['invoice_count'] }}" meta="Invoices currently visible through guardian-safe ownership rules." />
+        <x-ui.stat-card label="Overdue" value="{{ $summary['overdue_count'] }}" meta="Guardian-visible overdue invoices only." />
+        <x-ui.stat-card label="Open balance" value="{{ $money($summary['total_balance']) }}" meta="Total open balance across visible linked invoices." />
     </div>
 
-    <section class="mt-6 overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/70">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-white/10 text-sm">
-                <thead class="bg-white/5 text-left text-xs uppercase tracking-[0.2em] text-slate-500">
+    <div class="mt-6">
+        <x-ui.table
+            title="Guardian invoices"
+            description="Every row here remains filtered by guardian linkage plus the invoice ownership policy."
+        >
+            <thead>
+                <tr>
+                    <th>Invoice</th>
+                    <th>Student</th>
+                    <th>Issued</th>
+                    <th>Due</th>
+                    <th data-numeric="true">Total</th>
+                    <th data-numeric="true">Balance</th>
+                    <th data-numeric="true">Items</th>
+                    <th data-numeric="true">Payments</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($invoices as $invoice)
                     <tr>
-                        <th class="px-6 py-4">Invoice</th>
-                        <th class="px-6 py-4">Student</th>
-                        <th class="px-6 py-4">Issued</th>
-                        <th class="px-6 py-4">Due</th>
-                        <th class="px-6 py-4">Total</th>
-                        <th class="px-6 py-4">Balance</th>
-                        <th class="px-6 py-4">Items</th>
-                        <th class="px-6 py-4">Payments</th>
+                        <td>
+                            <a href="{{ route('guardian.invoices.show', $invoice) }}" class="font-semibold text-emerald-700 hover:text-emerald-800">
+                                {{ $invoice->invoice_number }}
+                            </a>
+                            <div class="mt-1 text-xs uppercase tracking-[0.16em] text-slate-500">{{ strtoupper($invoice->status) }}</div>
+                        </td>
+                        <td>{{ $invoice->student?->full_name ?: 'Student #'.$invoice->student_id }}</td>
+                        <td>{{ $invoice->issued_at?->format('Y-m-d') ?: '-' }}</td>
+                        <td>{{ $invoice->due_at?->format('Y-m-d') ?: '-' }}</td>
+                        <td data-numeric="true">{{ $money($invoice->total_amount) }}</td>
+                        <td data-numeric="true">{{ $money($invoice->balance_amount) }}</td>
+                        <td data-numeric="true">{{ $invoice->items_count }}</td>
+                        <td data-numeric="true">{{ $invoice->payments_count }}</td>
                     </tr>
-                </thead>
-                <tbody class="divide-y divide-white/10">
-                    @forelse ($invoices as $invoice)
-                        <tr class="text-slate-300">
-                            <td class="px-6 py-4">
-                                <a href="{{ route('guardian.invoices.show', $invoice) }}" class="font-semibold text-white hover:text-emerald-300">
+                @empty
+                    <tr>
+                        <td colspan="8" class="text-center text-slate-500">
+                            No guardian-visible invoices are available yet.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+
+            <x-slot name="mobile">
+                @forelse ($invoices as $invoice)
+                    <x-ui.card soft>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <a href="{{ route('guardian.invoices.show', $invoice) }}" class="text-sm font-semibold text-emerald-700 hover:text-emerald-800">
                                     {{ $invoice->invoice_number }}
                                 </a>
-                                <div class="mt-1 text-xs text-slate-500">{{ strtoupper($invoice->status) }}</div>
-                            </td>
-                            <td class="px-6 py-4">{{ $invoice->student?->full_name ?: 'Student #'.$invoice->student_id }}</td>
-                            <td class="px-6 py-4">{{ $invoice->issued_at?->format('Y-m-d') ?: '-' }}</td>
-                            <td class="px-6 py-4">{{ $invoice->due_at?->format('Y-m-d') ?: '-' }}</td>
-                            <td class="px-6 py-4">{{ $money($invoice->total_amount) }}</td>
-                            <td class="px-6 py-4">{{ $money($invoice->balance_amount) }}</td>
-                            <td class="px-6 py-4">{{ $invoice->items_count }}</td>
-                            <td class="px-6 py-4">{{ $invoice->payments_count }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="px-6 py-10 text-center text-sm text-slate-400">
-                                No guardian-visible invoices are available yet.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                                <x-ui.badge variant="info">{{ strtoupper($invoice->status) }}</x-ui.badge>
+                            </div>
+                            <dl class="grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <dt class="ui-stat-label">Student</dt>
+                                    <dd class="mt-2 text-sm text-slate-700">{{ $invoice->student?->full_name ?: 'Student #'.$invoice->student_id }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="ui-stat-label">Due</dt>
+                                    <dd class="mt-2 text-sm text-slate-700">{{ $invoice->due_at?->format('Y-m-d') ?: '-' }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="ui-stat-label">Total</dt>
+                                    <dd class="mt-2 text-sm font-semibold text-slate-900">{{ $money($invoice->total_amount) }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="ui-stat-label">Balance</dt>
+                                    <dd class="mt-2 text-sm font-semibold text-slate-900">{{ $money($invoice->balance_amount) }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="ui-stat-label">Items</dt>
+                                    <dd class="mt-2 text-sm text-slate-700">{{ $invoice->items_count }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="ui-stat-label">Payments</dt>
+                                    <dd class="mt-2 text-sm text-slate-700">{{ $invoice->payments_count }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+                    </x-ui.card>
+                @empty
+                    <x-ui.empty-state
+                        title="No invoices yet"
+                        description="No guardian-visible invoices are available yet."
+                    />
+                @endforelse
+            </x-slot>
+        </x-ui.table>
 
         @if ($invoices->hasPages())
-            <div class="border-t border-white/10 px-6 py-4">
+            <div class="mt-4">
                 {{ $invoices->links() }}
             </div>
         @endif
-    </section>
+    </div>
 </x-guardian-layout>

@@ -11,15 +11,68 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class GuardianPortalData
 {
-    public function requireGuardian(User $user): Guardian
+    public function resolveAccess(User $user): GuardianProtectedAccessState
     {
         $guardian = $user->guardianProfile()->first();
+        $profileEligible = ! is_null($guardian)
+            && $guardian->portal_enabled
+            && $guardian->isActived
+            && ! $guardian->isDeleted;
+        $hasLinkedStudents = ! is_null($guardian)
+            && $guardian->students()->exists();
+        $protectedEligible = $user->hasAccessibleAccountState()
+            && $user->hasVerifiedEmail()
+            && $profileEligible
+            && $hasLinkedStudents;
 
-        if (! $guardian || ! $guardian->portal_enabled || ! $guardian->isActived || $guardian->isDeleted) {
-            throw new HttpException(403, 'Guardian portal access is not enabled for this user.');
+        $reason = match (true) {
+            ! $user->hasAccessibleAccountState() => 'account_blocked',
+            ! $guardian && $user->hasRole('guardian') => 'role_only',
+            ! $guardian => 'none',
+            $guardian->isDeleted => 'profile_deleted',
+            ! $guardian->isActived => 'profile_inactive',
+            ! $guardian->portal_enabled => 'profile_pending',
+            ! $user->hasVerifiedEmail() => 'email_unverified',
+            ! $hasLinkedStudents => 'unlinked',
+            default => 'protected_eligible',
+        };
+
+        return new GuardianProtectedAccessState(
+            hasAccessibleAccountState: $user->hasAccessibleAccountState(),
+            hasVerifiedEmail: $user->hasVerifiedEmail(),
+            profileEligible: $profileEligible,
+            hasLinkedStudents: $hasLinkedStudents,
+            protectedEligible: $protectedEligible,
+            guardian: $guardian,
+            reason: $reason,
+        );
+    }
+
+    public function requireProtectedAccess(User $user): GuardianProtectedAccessState
+    {
+        $access = $this->resolveAccess($user);
+
+        if (! $access->protectedEligible || ! $access->guardian) {
+            throw new HttpException(403, 'Guardian protected portal access is not enabled for this user.');
         }
 
-        return $guardian;
+        return $access;
+    }
+
+    public function shouldUseProtectedHome(User $user): bool
+    {
+        if ($user->hasRole('management')) {
+            return false;
+        }
+
+        return $this->resolveAccess($user)->protectedEligible;
+    }
+
+    public function requireGuardian(User $user): Guardian
+    {
+        $access = $this->requireProtectedAccess($user);
+
+        return $access->guardian;
     }
 
     public function linkedStudentsQuery(Guardian $guardian)

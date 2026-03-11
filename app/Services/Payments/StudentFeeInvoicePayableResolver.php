@@ -4,6 +4,7 @@ namespace App\Services\Payments;
 
 use App\Models\StudentFeeInvoice;
 use App\Models\User;
+use App\Policies\StudentFeeInvoicePolicy;
 use Illuminate\Auth\Access\AuthorizationException;
 
 class StudentFeeInvoicePayableResolver
@@ -12,7 +13,7 @@ class StudentFeeInvoicePayableResolver
     {
         $invoice->loadMissing(['student', 'guardian']);
 
-        if (! $user->hasRole('management') && (int) $invoice->guardian?->user_id !== (int) $user->getKey()) {
+        if (! app(StudentFeeInvoicePolicy::class)->pay($user, $invoice)) {
             throw new AuthorizationException('You are not allowed to pay this invoice.');
         }
 
@@ -23,7 +24,7 @@ class StudentFeeInvoicePayableResolver
         }
 
         $customerDefaults = config('payments.customer_defaults');
-        $guardian = $invoice->guardian;
+        $guardian = $invoice->guardian ?: $user->guardianProfile()->first();
 
         return new ResolvedPayable(
             invoice: $invoice,

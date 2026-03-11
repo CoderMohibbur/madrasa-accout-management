@@ -1,31 +1,56 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
-    </div>
+    <div class="ui-auth-section">
+        <article class="ui-public-card ui-public-card--soft">
+            <p class="ui-public-card__eyebrow">ইমেইল নিশ্চিতকরণ</p>
+            <h3 class="ui-public-card__title">আপনার ইমেইল ঠিকানাটি যাচাই করুন</h3>
+            <p class="ui-public-card__body">
+                বর্তমান verified boundary বজায় রাখতে <span class="font-semibold text-slate-950">{{ $user->email }}</span>
+                ঠিকানায় পাঠানো লিংকটি ব্যবহার করুন। এতে approval state, donor access বা guardian linkage পরিবর্তন হয় না।
+            </p>
+        </article>
 
-    @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
-        </div>
-    @endif
+        @if (session('email_verification_message'))
+            <x-ui.alert variant="success" title="Email verification">
+                {{ session('email_verification_message') }}
+            </x-ui.alert>
+        @endif
 
-    <div class="mt-4 flex items-center justify-between">
-        <form method="POST" action="{{ route('verification.send') }}">
-            @csrf
+        @if (session('email_verification_warning'))
+            <x-ui.alert variant="warning" title="Email delivery pending">
+                {{ session('email_verification_warning') }}
+            </x-ui.alert>
+        @endif
 
-            <div>
-                <x-primary-button>
-                    {{ __('Resend Verification Email') }}
-                </x-primary-button>
+        @if ($errors->has('email_verification'))
+            <x-ui.alert variant="warning" title="Resend unavailable">
+                {{ $errors->first('email_verification') }}
+            </x-ui.alert>
+        @endif
+
+        <article class="ui-public-card">
+            <p class="ui-public-card__eyebrow">পরবর্তী ধাপ</p>
+            <h3 class="ui-public-card__title">ইমেইল লিংক না পেলে আবার পাঠান</h3>
+            <div class="mt-4 space-y-4 text-sm leading-7 text-slate-600">
+                <p>ইনবক্স বা স্প্যাম ফোল্ডার দেখুন। প্রয়োজনে নিচের বোতাম থেকে নতুন verification email অনুরোধ করুন।</p>
+
+                <form method="POST" action="{{ route('verification.send') }}">
+                    @csrf
+                    <button type="submit" class="ui-public-action ui-public-action--primary">আবার verification email পাঠান</button>
+                </form>
+
+                <div class="flex flex-wrap gap-3">
+                    @if ($user->hasRole(\App\Models\User::ROLE_REGISTERED_USER))
+                        <a href="{{ route('registration.onboarding') }}" class="ui-public-action ui-public-action--secondary">অনবোর্ডিং-এ ফিরুন</a>
+                    @else
+                        <a href="{{ route('profile.edit') }}" class="ui-public-action ui-public-action--secondary">প্রোফাইল সেটিংস</a>
+                    @endif
+                </div>
             </div>
-        </form>
+        </article>
 
-        <form method="POST" action="{{ route('logout') }}">
+        <form method="POST" action="{{ route('logout') }}" class="flex justify-end">
             @csrf
-
-            <button type="submit" class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">
-                {{ __('Log Out') }}
-            </button>
+            <button type="submit" class="ui-public-action ui-public-action--ghost">সাইন আউট</button>
         </form>
     </div>
 </x-guest-layout>

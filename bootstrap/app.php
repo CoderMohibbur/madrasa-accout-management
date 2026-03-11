@@ -13,7 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
+            'donor.access' => \App\Http\Middleware\EnsureDonorPortalAccess::class,
+            'guardian.info.access' => \App\Http\Middleware\EnsureGuardianInformationalAccess::class,
             'management.surface' => \App\Http\Middleware\EnsureManagementSurfaceAccess::class,
+            'guardian.protected' => \App\Http\Middleware\EnsureGuardianProtectedAccess::class,
             'portal.home' => \App\Http\Middleware\RedirectPortalUsersFromLegacyDashboard::class,
         ]);
     })

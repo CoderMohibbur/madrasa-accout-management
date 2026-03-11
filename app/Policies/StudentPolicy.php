@@ -4,18 +4,24 @@ namespace App\Policies;
 
 use App\Models\Student;
 use App\Models\User;
+use App\Services\GuardianPortal\GuardianPortalData;
 
 class StudentPolicy
 {
     public function view(User $user, Student $student): bool
     {
+        if (! $user->hasAccessibleAccountState()) {
+            return false;
+        }
+
         if ($user->hasRole('management')) {
             return true;
         }
 
-        $guardian = $user->guardianProfile;
+        $access = app(GuardianPortalData::class)->resolveAccess($user);
+        $guardian = $access->guardian;
 
-        if (! $guardian || ! $guardian->portal_enabled || ! $guardian->isActived || $guardian->isDeleted) {
+        if (! $access->protectedEligible || ! $guardian) {
             return false;
         }
 

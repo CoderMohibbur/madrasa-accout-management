@@ -108,7 +108,6 @@ class GuardianPortalTest extends TestCase
     private function makeGuardianFixture(): array
     {
         $guardianUser = User::factory()->create();
-        $guardianUser->assignRole('guardian');
 
         $guardian = Guardian::query()->create([
             'user_id' => $guardianUser->id,

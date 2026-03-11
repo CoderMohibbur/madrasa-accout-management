@@ -12,10 +12,13 @@ use App\Http\Controllers\Ajax\QuickCreateController;
 use App\Http\Controllers\BoardingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonorController;
+use App\Http\Controllers\Donations\DonationCheckoutController;
+use App\Http\Controllers\Donations\GuestDonationEntryController;
 use App\Http\Controllers\ExpensController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\LenderController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicAdmissionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Reports\ExpenseReportController;
 use App\Http\Controllers\Reports\MonthlyStatementController;
@@ -31,17 +34,44 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/admission', [PublicAdmissionController::class, 'show'])
+    ->name('admission');
+
+Route::prefix('donate')
+    ->as('donations.')
+    ->group(function (): void {
+        Route::get('/', [GuestDonationEntryController::class, 'show'])
+            ->name('guest.entry');
+        Route::post('/start', [GuestDonationEntryController::class, 'start'])
+            ->name('guest.start');
+        Route::post('/checkout', [DonationCheckoutController::class, 'checkout'])
+            ->name('checkout.start');
+        Route::get('/payments/{publicReference}', [DonationCheckoutController::class, 'status'])
+            ->name('payments.show');
+        Route::get('/return/success', [DonationCheckoutController::class, 'success'])
+            ->name('shurjopay.return.success');
+        Route::get('/return/fail', [DonationCheckoutController::class, 'fail'])
+            ->name('shurjopay.return.fail');
+        Route::get('/return/cancel', [DonationCheckoutController::class, 'cancel'])
+            ->name('shurjopay.return.cancel');
+    });
+
 Route::middleware(['auth', 'verified', 'role:management'])
     ->prefix('management')
     ->as('management.')
     ->group(base_path('routes/management.php'));
 
-Route::middleware(['auth', 'verified', 'role:guardian'])
+Route::middleware(['auth', 'guardian.info.access'])
+    ->prefix('guardian/info')
+    ->as('guardian.info.')
+    ->group(base_path('routes/guardian-info.php'));
+
+Route::middleware(['auth', 'guardian.protected'])
     ->prefix('guardian')
     ->as('guardian.')
     ->group(base_path('routes/guardian.php'));
 
-Route::middleware(['auth', 'verified', 'role:donor'])
+Route::middleware(['auth', 'donor.access'])
     ->prefix('donor')
     ->as('donor.')
     ->group(base_path('routes/donor.php'));
@@ -49,7 +79,7 @@ Route::middleware(['auth', 'verified', 'role:donor'])
 Route::group([], base_path('routes/payments.php'));
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified', 'portal.home', 'management.surface'])
+    ->middleware(['auth', 'portal.home'])
     ->name('dashboard');
 
 Route::middleware(['auth', 'verified', 'management.surface'])->group(function () {

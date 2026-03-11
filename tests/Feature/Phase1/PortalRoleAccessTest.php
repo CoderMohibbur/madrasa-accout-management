@@ -5,6 +5,7 @@ namespace Tests\Feature\Phase1;
 use App\Models\Donor;
 use App\Models\Guardian;
 use App\Models\Role;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -38,12 +39,15 @@ class PortalRoleAccessTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_guardian_and_donor_routes_use_their_dedicated_role_boundaries(): void
+    public function test_guardian_protected_and_donor_routes_use_their_dedicated_portal_boundaries(): void
     {
-        $guardian = User::factory()->create();
+        $guardian = User::factory()->create([
+            'approval_status' => User::APPROVAL_APPROVED,
+            'account_status' => User::ACCOUNT_STATUS_ACTIVE,
+        ]);
         $guardian->assignRole('guardian');
 
-        Guardian::query()->create([
+        $guardianProfile = Guardian::query()->create([
             'user_id' => $guardian->id,
             'name' => 'Guardian Portal User',
             'email' => $guardian->email,
@@ -52,7 +56,22 @@ class PortalRoleAccessTest extends TestCase
             'isDeleted' => false,
         ]);
 
-        $donor = User::factory()->create();
+        $student = Student::query()->create([
+            'full_name' => 'Guardian Linked Student',
+            'roll' => 101,
+            'isActived' => true,
+            'isDeleted' => false,
+        ]);
+
+        $guardianProfile->students()->attach($student->id, [
+            'relationship_label' => 'Parent',
+            'is_primary' => true,
+        ]);
+
+        $donor = User::factory()->create([
+            'approval_status' => User::APPROVAL_APPROVED,
+            'account_status' => User::ACCOUNT_STATUS_ACTIVE,
+        ]);
         $donor->assignRole('donor');
 
         Donor::query()->create([

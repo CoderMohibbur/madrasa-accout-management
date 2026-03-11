@@ -16,7 +16,27 @@ class EnsureManagementSurfaceAccess
             abort(Response::HTTP_FORBIDDEN);
         }
 
-        if ($user->hasRole('management') || ! $user->hasAnyRole(['guardian', 'donor'])) {
+        if (! $user->hasAccessibleAccountState()) {
+            abort(Response::HTTP_FORBIDDEN);
+        }
+
+        if ($user->hasRole('management')) {
+            return $next($request);
+        }
+
+        if ($user->hasRole(\App\Models\User::ROLE_REGISTERED_USER)) {
+            abort(Response::HTTP_FORBIDDEN);
+        }
+
+        if ($user->guardianProfile()->exists()) {
+            abort(Response::HTTP_FORBIDDEN);
+        }
+
+        if ($user->donorProfile()->exists()) {
+            abort(Response::HTTP_FORBIDDEN);
+        }
+
+        if (! $user->hasAnyRole(['guardian', 'donor'])) {
             return $next($request);
         }
 

@@ -6,6 +6,10 @@ use App\Models\Account;
 use App\Models\Student;
 use App\Models\Transactions;
 use App\Models\TransactionsType;
+use App\Models\User;
+use App\Services\MultiRole\MultiRoleContextResolver;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -91,8 +95,46 @@ class DashboardController extends Controller
         return $q;
     }
 
-    public function index(Request $request)
+    public function index(Request $request, MultiRoleContextResolver $multiRoleContextResolver): View|RedirectResponse
     {
+        $user = $request->user();
+
+        if ($user) {
+            if (! $user->hasAccessibleAccountState()) {
+                abort(403);
+            }
+
+            if (! $this->canUseManagementSurface($user)) {
+                $contexts = $multiRoleContextResolver->eligibleContexts($user);
+
+                if (count($contexts) === 1) {
+                    return redirect()->route($contexts[0]['route_name']);
+                }
+
+                if ($contexts === [] && ! $user->hasVerifiedEmail()) {
+                    return redirect()->route('verification.notice');
+                }
+
+                if ($contexts === [] && $user->hasRole(User::ROLE_REGISTERED_USER)) {
+                    return redirect()->route('registration.onboarding');
+                }
+
+                return view('dashboard.multi-role-home', [
+                    'contexts' => $contexts,
+                    'showChooser' => count($contexts) > 1,
+                    'stateSummary' => [
+                        'email_verified' => $user->hasVerifiedEmail(),
+                        'google_linked' => $user->googleIdentity()->exists(),
+                        'registered_user' => $user->hasRole(User::ROLE_REGISTERED_USER),
+                    ],
+                ]);
+            }
+
+            if (! $user->hasVerifiedEmail()) {
+                return redirect()->route('verification.notice');
+            }
+        }
+
         // ✅ Date defaults
         $from = $request->input('from') ?: now()->startOfMonth()->toDateString();
         $to   = $request->input('to')   ?: now()->toDateString();
@@ -447,5 +489,34 @@ class DashboardController extends Controller
             'incomeTypeId',
             'donationTypeId',
         ));
+    }
+
+    private function canUseManagementSurface(User $user): bool
+    {
+        if (! $user->hasAccessibleAccountState()) {
+            return false;
+        }
+
+        if ($user->hasRole('management')) {
+            return true;
+        }
+
+        if ($user->hasRole(User::ROLE_REGISTERED_USER)) {
+            return false;
+        }
+
+        if ($user->guardianProfile()->exists()) {
+            return false;
+        }
+
+        if ($user->donorProfile()->exists()) {
+            return false;
+        }
+
+        if (! $user->hasAnyRole(['guardian', 'donor'])) {
+            return true;
+        }
+
+        return false;
     }
 }

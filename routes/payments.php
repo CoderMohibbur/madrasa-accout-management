@@ -5,7 +5,7 @@ use App\Http\Controllers\Payments\ManualBankPaymentController;
 use App\Http\Controllers\Payments\ShurjopayPaymentController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified', 'role:guardian'])->group(function (): void {
+Route::middleware(['auth', 'guardian.protected'])->group(function (): void {
     Route::post('/payments/shurjopay/initiate', [ShurjopayPaymentController::class, 'initiate'])
         ->name('payments.shurjopay.initiate');
 
@@ -13,7 +13,7 @@ Route::middleware(['auth', 'verified', 'role:guardian'])->group(function (): voi
         ->name('payments.manual-bank.requests.store');
 });
 
-Route::middleware(['auth', 'verified'])->group(function (): void {
+Route::middleware(['auth'])->group(function (): void {
     Route::get('/payments/shurjopay/return/success', [ShurjopayPaymentController::class, 'success'])
         ->name('payments.shurjopay.return.success');
     Route::get('/payments/shurjopay/return/fail', [ShurjopayPaymentController::class, 'fail'])
@@ -21,6 +21,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('/payments/shurjopay/return/cancel', [ShurjopayPaymentController::class, 'cancel'])
         ->name('payments.shurjopay.return.cancel');
     Route::get('/payments/manual-bank/{payment}', [ManualBankPaymentController::class, 'show'])
+        ->middleware('can:view,payment')
         ->name('payments.manual-bank.show');
 });
 

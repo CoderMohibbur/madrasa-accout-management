@@ -4,63 +4,95 @@
 
 <x-donor-layout
     title="Receipt History"
-    description="Receipt visibility stays limited to records tied to your portal user. Phase 3 does not add live gateway callbacks or donor-side payment writes."
+    description="Only donor-scoped receipts appear here. New online donor receipts and legacy donor receipts stay visible together without broadening guest access."
 >
     <div class="grid gap-4 sm:grid-cols-3">
-        <div class="rounded-3xl border border-white/10 bg-white/5 p-5">
-            <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Receipts</div>
-            <div class="mt-3 text-3xl font-semibold text-white">{{ $summary['receipt_count'] }}</div>
-        </div>
-        <div class="rounded-3xl border border-white/10 bg-white/5 p-5">
-            <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Total Receipted</div>
-            <div class="mt-3 text-3xl font-semibold text-white">{{ $money($summary['receipt_total']) }}</div>
-        </div>
-        <div class="rounded-3xl border border-white/10 bg-white/5 p-5">
-            <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Latest Receipt</div>
-            <div class="mt-3 text-3xl font-semibold text-white">
-                {{ $summary['latest_receipt_at'] ? \Illuminate\Support\Carbon::parse($summary['latest_receipt_at'])->format('Y-m-d H:i') : '-' }}
-            </div>
-        </div>
+        <x-ui.stat-card label="Receipts" value="{{ $summary['receipt_count'] }}" meta="All donor-visible receipts linked to this account scope." />
+        <x-ui.stat-card label="Total receipted" value="{{ $money($summary['receipt_total']) }}" meta="Receipt total across legacy and online donor records." />
+        <x-ui.stat-card label="Latest receipt" value="{{ $summary['latest_receipt_at'] ? $summary['latest_receipt_at']->format('Y-m-d H:i') : '-' }}" meta="Most recent donor-visible receipt issue time." />
     </div>
 
-    <section class="mt-6 overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/70">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-white/10 text-sm">
-                <thead class="bg-white/5 text-left text-xs uppercase tracking-[0.2em] text-slate-500">
+    <div class="mt-6">
+        <x-ui.table
+            title="Receipt history"
+            description="Legacy and online donor receipts stay visible together while transaction-specific guest access remains separate."
+        >
+            <thead>
+                <tr>
+                    <th>Source</th>
+                    <th>Receipt</th>
+                    <th>Provider</th>
+                    <th>Status</th>
+                    <th data-numeric="true">Amount</th>
+                    <th>Reference</th>
+                    <th>Issued</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($receipts as $receipt)
                     <tr>
-                        <th class="px-6 py-4">Receipt</th>
-                        <th class="px-6 py-4">Provider</th>
-                        <th class="px-6 py-4">Status</th>
-                        <th class="px-6 py-4">Amount</th>
-                        <th class="px-6 py-4">Reference</th>
-                        <th class="px-6 py-4">Issued</th>
+                        <td>{{ data_get($receipt, 'source_label') }}</td>
+                        <td class="font-semibold text-slate-950">{{ data_get($receipt, 'receipt_number') }}</td>
+                        <td>{{ data_get($receipt, 'provider') }}</td>
+                        <td>{{ data_get($receipt, 'status_label') }}</td>
+                        <td data-numeric="true">{{ $money(data_get($receipt, 'amount')) }} {{ data_get($receipt, 'currency', 'BDT') }}</td>
+                        <td>{{ data_get($receipt, 'reference') }}</td>
+                        <td>{{ optional(data_get($receipt, 'issued_at'))->format('Y-m-d H:i') }}</td>
                     </tr>
-                </thead>
-                <tbody class="divide-y divide-white/10">
-                    @forelse ($receipts as $receipt)
-                        <tr class="text-slate-300">
-                            <td class="px-6 py-4 font-semibold text-white">{{ $receipt->receipt_number }}</td>
-                            <td class="px-6 py-4">{{ $receipt->payment?->provider ?: 'manual' }}</td>
-                            <td class="px-6 py-4">{{ strtoupper($receipt->payment?->status ?: 'recorded') }}</td>
-                            <td class="px-6 py-4">{{ $money($receipt->amount) }} {{ $receipt->currency ?: 'BDT' }}</td>
-                            <td class="px-6 py-4">{{ $receipt->payment?->provider_reference ?: $receipt->payment?->idempotency_key ?: '-' }}</td>
-                            <td class="px-6 py-4">{{ optional($receipt->issued_at ?? $receipt->created_at)->format('Y-m-d H:i') }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-10 text-center text-sm text-slate-400">
-                                No donor-visible receipts are available yet.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                @empty
+                    <tr>
+                        <td colspan="7" class="text-center text-slate-500">
+                            No donor-visible receipts are available yet.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+
+            <x-slot name="mobile">
+                @forelse ($receipts as $receipt)
+                    <x-ui.card soft>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="text-sm font-semibold text-slate-950">{{ data_get($receipt, 'receipt_number') }}</div>
+                                <x-ui.badge variant="warning">{{ data_get($receipt, 'source_label') }}</x-ui.badge>
+                            </div>
+                            <dl class="grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <dt class="ui-stat-label">Provider</dt>
+                                    <dd class="mt-2 text-sm text-slate-700">{{ data_get($receipt, 'provider') }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="ui-stat-label">Status</dt>
+                                    <dd class="mt-2 text-sm text-slate-700">{{ data_get($receipt, 'status_label') }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="ui-stat-label">Amount</dt>
+                                    <dd class="mt-2 text-sm font-semibold text-slate-900">{{ $money(data_get($receipt, 'amount')) }} {{ data_get($receipt, 'currency', 'BDT') }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="ui-stat-label">Issued</dt>
+                                    <dd class="mt-2 text-sm text-slate-700">{{ optional(data_get($receipt, 'issued_at'))->format('Y-m-d H:i') }}</dd>
+                                </div>
+                                <div class="sm:col-span-2">
+                                    <dt class="ui-stat-label">Reference</dt>
+                                    <dd class="mt-2 break-all text-sm text-slate-700">{{ data_get($receipt, 'reference') }}</dd>
+                                </div>
+                            </dl>
+                        </div>
+                    </x-ui.card>
+                @empty
+                    <x-ui.empty-state
+                        title="No donor-visible receipts yet"
+                        description="No donor-visible receipts are available yet."
+                    />
+                @endforelse
+            </x-slot>
+        </x-ui.table>
 
         @if ($receipts->hasPages())
-            <div class="border-t border-white/10 px-6 py-4">
+            <div class="mt-4">
                 {{ $receipts->links() }}
             </div>
         @endif
-    </section>
+    </div>
 </x-donor-layout>

@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Donor;
 use App\Http\Controllers\Controller;
 use App\Services\DonorPortal\DonorPortalData;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class DonorPortalController extends Controller
 {
@@ -16,29 +18,24 @@ class DonorPortalController extends Controller
 
     public function index(Request $request): View
     {
-        $donor = $this->donorPortalData->requireDonor($request->user());
+        $access = $this->donorPortalData->requireDonorAccess($request->user());
 
-        $donationQuery = $this->donorPortalData->donationQuery($donor);
-        $receiptQuery = $this->donorPortalData->receiptQuery($donor);
+        if ($access->requiresNoPortalView()) {
+            return view('donor.no-portal', [
+                'access' => $access,
+                'donor' => $access->donor,
+            ]);
+        }
 
-        $summary = [
-            'donation_count' => (clone $donationQuery)->count(),
-            'donation_total' => (float) (clone $donationQuery)->sum('credit'),
-            'latest_donation_at' => (clone $donationQuery)->max('transactions_date'),
-            'receipt_count' => (clone $receiptQuery)->count(),
+        $donor = $access->donor;
+        $donations = $this->donorPortalData->donationHistoryItems($donor);
+        $receipts = $this->donorPortalData->receiptHistoryItems($donor);
+
+        $summary = $this->buildDonationSummary($donations) + [
+            'receipt_count' => $receipts->count(),
         ];
-
-        $recentDonations = (clone $donationQuery)
-            ->orderByDesc('transactions_date')
-            ->orderByDesc('id')
-            ->limit(5)
-            ->get();
-
-        $recentReceipts = (clone $receiptQuery)
-            ->orderByDesc('issued_at')
-            ->orderByDesc('id')
-            ->limit(5)
-            ->get();
+        $recentDonations = $donations->take(5);
+        $recentReceipts = $receipts->take(5);
 
         return view('donor.dashboard', compact(
             'donor',
@@ -48,22 +45,18 @@ class DonorPortalController extends Controller
         ));
     }
 
-    public function donations(Request $request): View
+    public function donations(Request $request): View|RedirectResponse
     {
-        $donor = $this->donorPortalData->requireDonor($request->user());
-        $donationQuery = $this->donorPortalData->donationQuery($donor);
+        $access = $this->donorPortalData->requireDonorAccess($request->user());
 
-        $summary = [
-            'donation_count' => (clone $donationQuery)->count(),
-            'donation_total' => (float) (clone $donationQuery)->sum('credit'),
-            'latest_donation_at' => (clone $donationQuery)->max('transactions_date'),
-        ];
+        if ($access->requiresNoPortalView()) {
+            return $this->redirectToDonorHomeWithMessage('Donor portal history is not enabled for this account yet.');
+        }
 
-        $donations = $donationQuery
-            ->orderByDesc('transactions_date')
-            ->orderByDesc('id')
-            ->paginate(10)
-            ->withQueryString();
+        $donor = $access->donor;
+        $donationItems = $this->donorPortalData->donationHistoryItems($donor);
+        $summary = $this->buildDonationSummary($donationItems);
+        $donations = $this->donorPortalData->paginateItems($donationItems, 10)->withQueryString();
 
         return view('donor.donations.index', compact(
             'donor',
@@ -72,27 +65,43 @@ class DonorPortalController extends Controller
         ));
     }
 
-    public function receipts(Request $request): View
+    public function receipts(Request $request): View|RedirectResponse
     {
-        $donor = $this->donorPortalData->requireDonor($request->user());
-        $receiptQuery = $this->donorPortalData->receiptQuery($donor);
+        $access = $this->donorPortalData->requireDonorAccess($request->user());
 
+        if ($access->requiresNoPortalView()) {
+            return $this->redirectToDonorHomeWithMessage('Donor receipt history stays limited to portal-eligible accounts.');
+        }
+
+        $donor = $access->donor;
+        $receiptItems = $this->donorPortalData->receiptHistoryItems($donor);
         $summary = [
-            'receipt_count' => (clone $receiptQuery)->count(),
-            'receipt_total' => (float) (clone $receiptQuery)->sum('amount'),
-            'latest_receipt_at' => (clone $receiptQuery)->max('issued_at'),
+            'receipt_count' => $receiptItems->count(),
+            'receipt_total' => (float) $receiptItems->sum('amount'),
+            'latest_receipt_at' => $receiptItems->first()['issued_at'] ?? null,
         ];
-
-        $receipts = $receiptQuery
-            ->orderByDesc('issued_at')
-            ->orderByDesc('id')
-            ->paginate(10)
-            ->withQueryString();
+        $receipts = $this->donorPortalData->paginateItems($receiptItems, 10)->withQueryString();
 
         return view('donor.receipts.index', compact(
             'donor',
             'summary',
             'receipts',
         ));
+    }
+
+    private function buildDonationSummary(Collection $donations): array
+    {
+        return [
+            'donation_count' => $donations->count(),
+            'donation_total' => (float) $donations->sum('amount'),
+            'latest_donation_at' => $donations->first()['occurred_at'] ?? null,
+        ];
+    }
+
+    private function redirectToDonorHomeWithMessage(string $message): RedirectResponse
+    {
+        return redirect()
+            ->route('donor.dashboard')
+            ->with('error', $message);
     }
 }

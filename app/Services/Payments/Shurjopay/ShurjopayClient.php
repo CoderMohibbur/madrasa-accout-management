@@ -12,12 +12,7 @@ class ShurjopayClient
 {
     public function initiatePayment(ResolvedPayable $resolvedPayable, Payment $payment, string $merchantOrderId): array
     {
-        $config = $this->activeConfig();
-        $auth = $this->authenticate($config);
-
         $payload = [
-            'token' => $auth['token'],
-            'store_id' => $auth['store_id'],
             'prefix' => config('payments.shurjopay.order_prefix'),
             'return_url' => config('payments.shurjopay.success_url') ?: route('payments.shurjopay.return.success'),
             'fail_url' => config('payments.shurjopay.fail_url') ?: route('payments.shurjopay.return.fail'),
@@ -45,11 +40,23 @@ class ShurjopayClient
             'value4' => $payment->idempotency_key,
         ];
 
+        return $this->initiateCheckout($payload);
+    }
+
+    public function initiateCheckout(array $payload): array
+    {
+        $config = $this->activeConfig();
+        $auth = $this->authenticate($config);
+        $requestPayload = array_merge([
+            'token' => $auth['token'],
+            'store_id' => $auth['store_id'],
+        ], $payload);
+
         $response = Http::acceptJson()
             ->asJson()
             ->withToken($auth['token'])
             ->timeout(20)
-            ->post($config['base_url'].$config['endpoints']['payment'], $payload);
+            ->post($config['base_url'].$config['endpoints']['payment'], $requestPayload);
 
         if (! $response->successful()) {
             throw new RuntimeException('shurjoPay initiation failed with HTTP '.$response->status().'.');
@@ -65,7 +72,7 @@ class ShurjopayClient
 
         return [
             'auth' => $auth,
-            'request' => $payload,
+            'request' => $requestPayload,
             'response' => $responseData,
             'http_status' => $response->status(),
             'checkout_url' => $checkoutUrl,

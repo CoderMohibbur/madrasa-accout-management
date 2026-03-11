@@ -18,6 +18,13 @@ class LoginRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'email' => Str::lower(trim((string) $this->input('email'))),
+        ]);
+    }
+
     public function rules(): array
     {
         return [
@@ -45,8 +52,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        // ✅ Password ঠিক কিন্তু Active না (DB approval হয়নি)
-        if (is_null($user->email_verified_at)) {
+        if ($user->isAccountDeleted() || ! $user->hasActiveAccountStatus()) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'আপনার একাউন্ট বর্তমানে access এর জন্য available নয়। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন।',
+            ]);
+        }
+
+        if (! $user->hasApprovedAccountAccess()) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([

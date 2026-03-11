@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Payments;
 
 use App\Http\Controllers\Controller;
+use App\Models\DonationIntent;
+use App\Models\Payment;
 use App\Http\Requests\Payments\InitiateShurjopayPaymentRequest;
 use App\Models\StudentFeeInvoice;
+use App\Services\Donations\DonationCheckoutService;
 use App\Services\Payments\PaymentFlowResult;
 use App\Services\Payments\PaymentWorkflowService;
 use Illuminate\Contracts\View\View;
@@ -15,6 +18,7 @@ class ShurjopayPaymentController extends Controller
 {
     public function __construct(
         private readonly PaymentWorkflowService $paymentWorkflowService,
+        private readonly DonationCheckoutService $donationCheckoutService,
     ) {
     }
 
@@ -49,7 +53,17 @@ class ShurjopayPaymentController extends Controller
 
     public function ipn(Request $request): JsonResponse
     {
-        $result = $this->paymentWorkflowService->handleShurjopayIpn($request->all());
+        $providerOrderId = trim((string) $request->input('order_id', ''));
+        $donationPaymentExists = $providerOrderId !== ''
+            && Payment::query()
+                ->where('provider', 'shurjopay')
+                ->where('provider_reference', $providerOrderId)
+                ->where('payable_type', DonationIntent::class)
+                ->exists();
+
+        $result = $donationPaymentExists
+            ? $this->donationCheckoutService->handleShurjopayIpn($request->all())
+            : $this->paymentWorkflowService->handleShurjopayIpn($request->all());
 
         return response()->json([
             'status' => $result->status,

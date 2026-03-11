@@ -8,6 +8,7 @@ use App\Models\StudentFeeInvoice;
 use App\Models\Transactions;
 use App\Models\TransactionsType;
 use App\Models\User;
+use App\Policies\PaymentPolicy;
 use App\Services\Finance\CanonicalPostingService;
 use App\Services\Payments\Shurjopay\ShurjopayClient;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -1092,17 +1093,7 @@ class PaymentWorkflowService
 
     private function authorizeView(User $user, Payment $payment): void
     {
-        if ($user->hasRole('management')) {
-            return;
-        }
-
-        if ((int) $payment->user_id === (int) $user->getKey()) {
-            return;
-        }
-
-        $invoice = $payment->payable;
-
-        if ($invoice instanceof StudentFeeInvoice && (int) $invoice->guardian?->user_id === (int) $user->getKey()) {
+        if (app(PaymentPolicy::class)->view($user, $payment)) {
             return;
         }
 

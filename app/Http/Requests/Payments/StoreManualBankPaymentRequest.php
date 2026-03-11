@@ -2,13 +2,27 @@
 
 namespace App\Http\Requests\Payments;
 
+use App\Models\StudentFeeInvoice;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
 class StoreManualBankPaymentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        $user = $this->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        $invoice = $this->resolveInvoice();
+
+        if (! $invoice) {
+            return true;
+        }
+
+        return Gate::forUser($user)->allows('pay', $invoice);
     }
 
     public function rules(): array
@@ -22,5 +36,16 @@ class StoreManualBankPaymentRequest extends FormRequest
             'evidence_url' => ['nullable', 'url', 'max:2000'],
             'note' => ['nullable', 'string', 'max:1000'],
         ];
+    }
+
+    private function resolveInvoice(): ?StudentFeeInvoice
+    {
+        $invoiceId = $this->integer('invoice_id');
+
+        if ($invoiceId <= 0) {
+            return null;
+        }
+
+        return StudentFeeInvoice::query()->find($invoiceId);
     }
 }

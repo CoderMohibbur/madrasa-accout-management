@@ -10,6 +10,10 @@ class ReceiptPolicy
 {
     public function view(User $user, Receipt $receipt): bool
     {
+        if (! $user->hasAccessibleAccountState()) {
+            return false;
+        }
+
         if ($user->hasRole('management')) {
             return true;
         }
