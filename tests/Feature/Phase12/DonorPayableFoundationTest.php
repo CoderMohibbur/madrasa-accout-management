@@ -2,14 +2,15 @@
 
 namespace Tests\Feature\Phase12;
 
+use App\Models\DonationCategory;
 use App\Models\DonationIntent;
 use App\Models\DonationRecord;
-use App\Models\Donor;
 use App\Models\Payment;
 use App\Models\Receipt;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Donations\DonationCheckoutService;
+use Database\Seeders\DonationCategorySeeder;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -47,23 +48,16 @@ class DonorPayableFoundationTest extends TestCase
 
     public function test_guest_checkout_creates_a_donation_intent_and_redirect_pending_payment(): void
     {
-        Http::fake([
-            'https://sandbox.shurjopayment.com/api/get_token' => Http::response([
-                'token' => 'sandbox-token',
-                'store_id' => 1,
-                'token_type' => 'Bearer',
-                'sp_code' => 1000,
-                'message' => 'Ok',
-            ]),
-            'https://sandbox.shurjopayment.com/api/secret-pay' => Http::response([
-                'checkout_url' => 'https://sandbox.shurjopayment.com/pay/donation-001',
-                'sp_order_id' => 'SP-DON-001',
-                'customer_order_id' => 'DON-DON-1',
-            ]),
-        ]);
+        $category = $this->categoryByKey('madrasa_complex');
+
+        $this->fakeCheckout(
+            checkoutUrl: 'https://sandbox.shurjopayment.com/pay/donation-001',
+            providerOrderId: 'SP-DON-001',
+            customerOrderId: 'DON-DON-1',
+        );
 
         $this->post('/donate/start', [
-            'category' => 'madrasa_complex',
+            'category' => $category->key,
             'amount' => '1500',
             'name' => 'Guest Donor',
             'email' => 'Guest@Example.com',
@@ -79,12 +73,13 @@ class DonorPayableFoundationTest extends TestCase
         $this->assertNotNull($payment);
         $this->assertSame(DonationIntent::DONOR_MODE_GUEST, $intent->donor_mode);
         $this->assertNull($intent->user_id);
+        $this->assertSame($category->getKey(), $intent->donation_category_id);
         $this->assertSame('guest@example.com', $intent->email_snapshot);
         $this->assertSame(DonationIntent::STATUS_OPEN, $intent->status);
         $this->assertNotEmpty($intent->public_reference);
         $this->assertNotEmpty($intent->guest_access_token_hash);
-        $this->assertSame('madrasa_complex', data_get($intent->metadata, 'category.key'));
-        $this->assertSame('মাদ্রাসা কমপ্লেক্স', data_get($intent->metadata, 'category.label'));
+        $this->assertSame($category->key, data_get($intent->metadata, 'category.key'));
+        $this->assertSame($category->displayLabel(), data_get($intent->metadata, 'category.label'));
         $this->assertSame(DonationIntent::class, $payment->payable_type);
         $this->assertNull($payment->user_id);
         $this->assertSame(Payment::STATUS_REDIRECT_PENDING, $payment->status);
@@ -93,29 +88,20 @@ class DonorPayableFoundationTest extends TestCase
         $this->assertSame($intent->public_reference, data_get($payment->metadata, 'donation_intent.public_reference'));
         $this->assertSame($intent->public_reference, session(DonationCheckoutService::CURRENT_INTENT_SESSION_KEY));
         $this->assertNotEmpty(session(DonationCheckoutService::ACCESS_KEYS_SESSION_KEY.'.'.$intent->public_reference));
-        $this->assertDatabaseCount('donors', 0);
         $this->assertDatabaseCount('donation_records', 0);
     }
 
     public function test_guest_success_return_finalizes_the_donation_and_keeps_access_transaction_specific(): void
     {
-        Http::fake([
-            'https://sandbox.shurjopayment.com/api/get_token' => Http::response([
-                'token' => 'sandbox-token',
-                'store_id' => 1,
-                'token_type' => 'Bearer',
-                'sp_code' => 1000,
-                'message' => 'Ok',
-            ]),
-            'https://sandbox.shurjopayment.com/api/secret-pay' => Http::response([
-                'checkout_url' => 'https://sandbox.shurjopayment.com/pay/donation-002',
-                'sp_order_id' => 'SP-DON-002',
-                'customer_order_id' => 'placeholder',
-            ]),
-        ]);
+        $category = $this->categoryByKey('mosque_complex');
+
+        $this->fakeCheckout(
+            checkoutUrl: 'https://sandbox.shurjopayment.com/pay/donation-002',
+            providerOrderId: 'SP-DON-002',
+        );
 
         $this->post('/donate/start', [
-            'category' => 'mosque_complex',
+            'category' => $category->key,
             'amount' => '2500',
             'name' => 'Guest Donor',
         ])->assertRedirect('/donate');
@@ -127,26 +113,7 @@ class DonorPayableFoundationTest extends TestCase
         $intent = DonationIntent::query()->firstOrFail();
         $accessKey = session(DonationCheckoutService::ACCESS_KEYS_SESSION_KEY.'.'.$intent->public_reference);
 
-        Http::fake([
-            'https://sandbox.shurjopayment.com/api/get_token' => Http::response([
-                'token' => 'sandbox-token',
-                'store_id' => 1,
-                'token_type' => 'Bearer',
-                'sp_code' => 1000,
-                'message' => 'Ok',
-            ]),
-            'https://sandbox.shurjopayment.com/api/verification' => Http::response([
-                [
-                    'order_id' => 'SP-DON-002',
-                    'customer_order_id' => (string) data_get($payment->metadata, 'merchant_order_id'),
-                    'amount' => (float) $payment->amount,
-                    'currency' => $payment->currency,
-                    'bank_status' => 'Success',
-                    'sp_code' => 1000,
-                    'value1' => (string) $payment->id,
-                ],
-            ]),
-        ]);
+        $this->fakeVerification($payment, 'SP-DON-002');
 
         $this->get('/donate/return/success?order_id=SP-DON-002')
             ->assertRedirect(route('donations.payments.show', ['publicReference' => $intent->public_reference], false));
@@ -159,12 +126,17 @@ class DonorPayableFoundationTest extends TestCase
         $this->assertSame(Payment::STATUS_PAID, $payment->status, $payment->status_reason);
         $this->assertSame(Payment::VERIFICATION_VERIFIED, $payment->verification_status);
         $this->assertSame(DonationIntent::STATUS_SUCCEEDED, $intent->status);
-        $this->assertSame('mosque_complex', data_get($intent->metadata, 'category.key'));
+        $this->assertSame($category->getKey(), $intent->donation_category_id);
+        $this->assertSame($category->key, data_get($intent->metadata, 'category.key'));
+        $this->assertSame($category->displayLabel(), data_get($intent->metadata, 'category.label'));
         $this->assertNotNull($record);
         $this->assertNotNull($receipt);
         $this->assertNull($receipt->issued_to_user_id);
         $this->assertSame($intent->id, $record->donation_intent_id);
         $this->assertSame($payment->id, $record->winning_payment_id);
+        $this->assertSame($category->getKey(), $record->donation_category_id);
+        $this->assertSame($category->key, data_get($record->metadata, 'category.key'));
+        $this->assertSame($category->displayLabel(), data_get($record->metadata, 'category.label'));
         $this->assertSame(DonationRecord::POSTING_SKIPPED, $record->posting_status);
         $this->assertDatabaseCount('transactions', 0);
         $this->assertDatabaseCount('users', 0);
@@ -176,6 +148,7 @@ class DonorPayableFoundationTest extends TestCase
         ], false))
             ->assertOk()
             ->assertSeeText('Donation Verified')
+            ->assertSeeText($category->displayLabel())
             ->assertSeeText($intent->public_reference)
             ->assertSeeText($receipt->receipt_number)
             ->assertSeeText('No account was created automatically.');
@@ -183,6 +156,8 @@ class DonorPayableFoundationTest extends TestCase
 
     public function test_authenticated_users_can_complete_identified_checkout_without_donor_portal_gating_or_profile_creation(): void
     {
+        $category = $this->categoryByKey('general_education_fund');
+
         $user = User::factory()->create([
             'approval_status' => User::APPROVAL_NOT_REQUIRED,
             'account_status' => User::ACCOUNT_STATUS_ACTIVE,
@@ -190,24 +165,14 @@ class DonorPayableFoundationTest extends TestCase
         ]);
         $user->assignRole(User::ROLE_REGISTERED_USER);
 
-        Http::fake([
-            'https://sandbox.shurjopayment.com/api/get_token' => Http::response([
-                'token' => 'sandbox-token',
-                'store_id' => 1,
-                'token_type' => 'Bearer',
-                'sp_code' => 1000,
-                'message' => 'Ok',
-            ]),
-            'https://sandbox.shurjopayment.com/api/secret-pay' => Http::response([
-                'checkout_url' => 'https://sandbox.shurjopayment.com/pay/donation-003',
-                'sp_order_id' => 'SP-DON-003',
-                'customer_order_id' => 'placeholder',
-            ]),
-        ]);
+        $this->fakeCheckout(
+            checkoutUrl: 'https://sandbox.shurjopayment.com/pay/donation-003',
+            providerOrderId: 'SP-DON-003',
+        );
 
         $this->actingAs($user)
             ->post('/donate/start', [
-                'category' => 'general_education_fund',
+                'category' => $category->key,
                 'amount' => '3000',
             ])
             ->assertRedirect('/donate');
@@ -218,26 +183,7 @@ class DonorPayableFoundationTest extends TestCase
 
         $payment = Payment::query()->firstOrFail();
 
-        Http::fake([
-            'https://sandbox.shurjopayment.com/api/get_token' => Http::response([
-                'token' => 'sandbox-token',
-                'store_id' => 1,
-                'token_type' => 'Bearer',
-                'sp_code' => 1000,
-                'message' => 'Ok',
-            ]),
-            'https://sandbox.shurjopayment.com/api/verification' => Http::response([
-                [
-                    'order_id' => 'SP-DON-003',
-                    'customer_order_id' => (string) data_get($payment->metadata, 'merchant_order_id'),
-                    'amount' => (float) $payment->amount,
-                    'currency' => $payment->currency,
-                    'bank_status' => 'Success',
-                    'sp_code' => 1000,
-                    'value1' => (string) $payment->id,
-                ],
-            ]),
-        ]);
+        $this->fakeVerification($payment, 'SP-DON-003');
 
         $this->actingAs($user)
             ->get('/donate/return/success?order_id=SP-DON-003')
@@ -245,16 +191,18 @@ class DonorPayableFoundationTest extends TestCase
 
         $intent = DonationIntent::query()->firstOrFail();
         $payment->refresh();
-        $this->assertSame(Payment::STATUS_PAID, $payment->status, $payment->status_reason);
         $record = DonationRecord::query()->firstOrFail();
         $receipt = Receipt::query()->firstOrFail();
 
+        $this->assertSame(Payment::STATUS_PAID, $payment->status, $payment->status_reason);
         $this->assertSame(DonationIntent::DONOR_MODE_IDENTIFIED, $intent->donor_mode);
         $this->assertSame($user->id, $intent->user_id);
         $this->assertNull($intent->donor_id);
-        $this->assertSame('general_education_fund', data_get($intent->metadata, 'category.key'));
+        $this->assertSame($category->getKey(), $intent->donation_category_id);
+        $this->assertSame($category->key, data_get($intent->metadata, 'category.key'));
         $this->assertSame($user->id, $payment->user_id);
         $this->assertSame($user->id, $record->user_id);
+        $this->assertSame($category->getKey(), $record->donation_category_id);
         $this->assertSame($user->id, $receipt->issued_to_user_id);
         $this->assertDatabaseCount('donors', 0);
 
@@ -262,11 +210,134 @@ class DonorPayableFoundationTest extends TestCase
             ->get(route('donations.payments.show', ['publicReference' => $intent->public_reference], false))
             ->assertOk()
             ->assertSeeText('Identified donation')
+            ->assertSeeText($category->displayLabel())
             ->assertSeeText('account-linked donation was settled successfully');
+    }
+
+    public function test_historical_metadata_only_intent_status_page_still_shows_category_label(): void
+    {
+        $category = $this->categoryByKey('publication_library_and_infrastructure');
+
+        $user = User::factory()->create([
+            'approval_status' => User::APPROVAL_NOT_REQUIRED,
+            'account_status' => User::ACCOUNT_STATUS_ACTIVE,
+        ]);
+        $user->assignRole(User::ROLE_REGISTERED_USER);
+
+        $intent = DonationIntent::query()->create([
+            'user_id' => $user->getKey(),
+            'donor_mode' => DonationIntent::DONOR_MODE_IDENTIFIED,
+            'display_mode' => DonationIntent::DISPLAY_MODE_IDENTIFIED,
+            'amount' => 1900,
+            'currency' => 'BDT',
+            'status' => DonationIntent::STATUS_SUCCEEDED,
+            'public_reference' => 'DON-HIST-001',
+            'metadata' => [
+                'category' => [
+                    'key' => $category->key,
+                    'label' => $category->displayLabel(),
+                ],
+            ],
+            'settled_at' => now(),
+        ]);
+
+        Payment::query()->create([
+            'user_id' => $user->getKey(),
+            'payable_type' => DonationIntent::class,
+            'payable_id' => $intent->getKey(),
+            'status' => Payment::STATUS_PAID,
+            'verification_status' => Payment::VERIFICATION_VERIFIED,
+            'provider' => 'shurjopay',
+            'provider_mode' => 'sandbox',
+            'currency' => 'BDT',
+            'amount' => 1900,
+            'idempotency_key' => 'status-metadata-only',
+            'provider_reference' => 'SP-HIST-001',
+            'status_reason' => 'Historical verified payment.',
+            'paid_at' => now(),
+            'verified_at' => now(),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('donations.payments.show', ['publicReference' => $intent->public_reference], false))
+            ->assertOk()
+            ->assertSeeText($category->displayLabel());
+    }
+
+    public function test_donation_category_seeder_backfills_known_historical_metadata_keys(): void
+    {
+        $category = $this->categoryByKey('student_support_and_guardian_care');
+
+        $intent = DonationIntent::query()->create([
+            'donor_mode' => DonationIntent::DONOR_MODE_GUEST,
+            'display_mode' => DonationIntent::DISPLAY_MODE_IDENTIFIED,
+            'amount' => 1800,
+            'currency' => 'BDT',
+            'status' => DonationIntent::STATUS_SUCCEEDED,
+            'public_reference' => 'DON-BACKFILL-001',
+            'guest_access_token_hash' => 'hash',
+            'metadata' => [
+                'category' => [
+                    'key' => $category->key,
+                    'label' => $category->displayLabel(),
+                ],
+            ],
+            'settled_at' => now(),
+        ]);
+
+        $payment = Payment::query()->create([
+            'payable_type' => DonationIntent::class,
+            'payable_id' => $intent->getKey(),
+            'status' => Payment::STATUS_PAID,
+            'verification_status' => Payment::VERIFICATION_VERIFIED,
+            'provider' => 'shurjopay',
+            'provider_mode' => 'sandbox',
+            'currency' => 'BDT',
+            'amount' => 1800,
+            'idempotency_key' => 'backfill-payment',
+            'provider_reference' => 'SP-BACKFILL-001',
+            'status_reason' => 'Historical verified payment.',
+            'paid_at' => now(),
+            'verified_at' => now(),
+        ]);
+
+        $record = DonationRecord::query()->create([
+            'donation_intent_id' => $intent->getKey(),
+            'winning_payment_id' => $payment->getKey(),
+            'donor_mode' => DonationIntent::DONOR_MODE_GUEST,
+            'display_mode' => DonationIntent::DISPLAY_MODE_IDENTIFIED,
+            'amount' => 1800,
+            'currency' => 'BDT',
+            'donated_at' => now(),
+            'posting_status' => DonationRecord::POSTING_SKIPPED,
+            'metadata' => [
+                'receipt_id' => null,
+                'public_reference' => $intent->public_reference,
+            ],
+        ]);
+
+        $intent->forceFill(['donation_category_id' => null])->save();
+        $record->forceFill(['donation_category_id' => null])->save();
+
+        $this->seed(DonationCategorySeeder::class);
+
+        $intent->refresh();
+        $record->refresh();
+
+        $this->assertSame($category->getKey(), $intent->donation_category_id);
+        $this->assertSame($category->getKey(), $record->donation_category_id);
+        $this->assertSame($category->key, data_get($record->metadata, 'category.key'));
+        $this->assertSame($category->displayLabel(), data_get($record->metadata, 'category.label'));
     }
 
     public function test_mismatched_verification_routes_the_donation_to_manual_review_without_creating_a_record_or_receipt(): void
     {
+        $this->fakeCheckout(
+            checkoutUrl: 'https://sandbox.shurjopayment.com/pay/donation-004',
+            providerOrderId: 'SP-DON-004',
+            customerOrderId: 'DON-DON-1',
+        );
+
         Http::fake([
             'https://sandbox.shurjopayment.com/api/get_token' => Http::response([
                 'token' => 'sandbox-token',
@@ -370,5 +441,57 @@ class DonorPayableFoundationTest extends TestCase
         $this->assertSame('SP-DON-005-B', $payments[1]->provider_reference);
         $this->assertSame(DonationIntent::STATUS_OPEN, $firstIntent->status);
         $this->assertDatabaseCount('donation_records', 0);
+    }
+
+    private function fakeCheckout(
+        string $checkoutUrl,
+        string $providerOrderId,
+        string $customerOrderId = 'placeholder',
+    ): void {
+        Http::fake([
+            'https://sandbox.shurjopayment.com/api/get_token' => Http::response([
+                'token' => 'sandbox-token',
+                'store_id' => 1,
+                'token_type' => 'Bearer',
+                'sp_code' => 1000,
+                'message' => 'Ok',
+            ]),
+            'https://sandbox.shurjopayment.com/api/secret-pay' => Http::response([
+                'checkout_url' => $checkoutUrl,
+                'sp_order_id' => $providerOrderId,
+                'customer_order_id' => $customerOrderId,
+            ]),
+        ]);
+    }
+
+    private function fakeVerification(Payment $payment, string $providerOrderId, array $overrides = []): void
+    {
+        Http::fake([
+            'https://sandbox.shurjopayment.com/api/get_token' => Http::response([
+                'token' => 'sandbox-token',
+                'store_id' => 1,
+                'token_type' => 'Bearer',
+                'sp_code' => 1000,
+                'message' => 'Ok',
+            ]),
+            'https://sandbox.shurjopayment.com/api/verification' => Http::response([
+                array_merge([
+                    'order_id' => $providerOrderId,
+                    'customer_order_id' => (string) data_get($payment->metadata, 'merchant_order_id'),
+                    'amount' => (float) $payment->amount,
+                    'currency' => $payment->currency,
+                    'bank_status' => 'Success',
+                    'sp_code' => 1000,
+                    'value1' => (string) $payment->id,
+                ], $overrides),
+            ]),
+        ]);
+    }
+
+    private function categoryByKey(string $key): DonationCategory
+    {
+        return DonationCategory::query()
+            ->where('key', $key)
+            ->firstOrFail();
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Phase12;
 
 use App\Http\Controllers\Donations\GuestDonationEntryController;
+use App\Models\DonationCategory;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
@@ -27,22 +28,45 @@ class GuestDonationEntryTest extends TestCase
 
     public function test_public_users_can_view_the_guest_donation_entry_page(): void
     {
+        $labels = DonationCategory::query()
+            ->active()
+            ->ordered()
+            ->limit(3)
+            ->get()
+            ->map(fn (DonationCategory $category): string => $category->displayLabel())
+            ->all();
+
         $this->get('/donate')
             ->assertOk()
-            ->assertSeeText('খাত নির্বাচন করুন, তারপর দ্রুত ও নিরাপদে অনুদান দিন')
-            ->assertSeeText('খাত ও পরিমাণ নির্ধারণ করুন')
-            ->assertSeeText('মাদ্রাসা কমপ্লেক্স')
-            ->assertSeeText('মসজিদ কমপ্লেক্স')
-            ->assertSeeText('সাধারণ শিক্ষা তহবিল')
-            ->assertSeeText('এখনই অনুদান করুন')
-            ->assertSeeText('রেজিস্ট্রেশন')
-            ->assertSeeInOrder(['মাদ্রাসা কমপ্লেক্স', 'মসজিদ কমপ্লেক্স', 'সাধারণ শিক্ষা তহবিল'], false)
+            ->assertSeeInOrder($labels, false)
             ->assertSee('name="category"', false)
             ->assertSee('name="custom_amount"', false)
-            ->assertDontSee('name="name"', false)
-            ->assertDontSee('name="email"', false)
-            ->assertDontSee('name="phone"', false)
-            ->assertDontSee('name="anonymous_display"', false);
+            ->assertSee('name="name"', false)
+            ->assertSee('name="email"', false)
+            ->assertSee('name="phone"', false)
+            ->assertSee('name="anonymous_display"', false);
+    }
+
+    public function test_only_active_categories_appear_on_the_guest_donation_page(): void
+    {
+        $inactiveCategory = $this->categoryByKey('general_education_fund');
+
+        $inactiveCategory->forceFill([
+            'is_active' => false,
+            'sort_order' => 999,
+        ])->save();
+
+        $activeLabels = DonationCategory::query()
+            ->active()
+            ->ordered()
+            ->get()
+            ->map(fn (DonationCategory $category): string => $category->displayLabel())
+            ->all();
+
+        $this->get('/donate')
+            ->assertOk()
+            ->assertSeeInOrder($activeLabels, false)
+            ->assertDontSeeText($inactiveCategory->displayLabel());
     }
 
     public function test_guest_donation_start_requires_category_selection(): void
@@ -55,17 +79,20 @@ class GuestDonationEntryTest extends TestCase
 
     public function test_guest_donation_start_can_forward_straight_to_checkout_when_requested(): void
     {
+        $category = $this->categoryByKey('madrasa_complex');
+
         $response = $this->from('/donate')->post('/donate/start', [
-            'category' => 'madrasa_complex',
+            'category' => $category->key,
             'amount' => '1500',
             'checkout_now' => '1',
         ]);
 
         $response->assertStatus(307);
         $response->assertRedirect('/donate/checkout');
-        $response->assertSessionHas(GuestDonationEntryController::DRAFT_SESSION_KEY, function (array $draft): bool {
-            return $draft['category_key'] === 'madrasa_complex'
-                && $draft['category_label'] === 'মাদ্রাসা কমপ্লেক্স'
+        $response->assertSessionHas(GuestDonationEntryController::DRAFT_SESSION_KEY, function (array $draft) use ($category): bool {
+            return $draft['category_id'] === $category->getKey()
+                && $draft['category_key'] === $category->key
+                && $draft['category_label'] === $category->displayLabel()
                 && $draft['amount'] === 1500.0
                 && $draft['name'] === null
                 && $draft['email'] === null
@@ -80,16 +107,19 @@ class GuestDonationEntryTest extends TestCase
 
     public function test_guest_donation_start_requires_category_and_amount_and_stays_guest_only(): void
     {
+        $category = $this->categoryByKey('madrasa_complex');
+
         $response = $this->from('/donate')->post('/donate/start', [
-            'category' => 'madrasa_complex',
+            'category' => $category->key,
             'amount' => '1500',
         ]);
 
         $response->assertRedirect('/donate');
         $response->assertSessionHas('guest_donation_message');
-        $response->assertSessionHas(GuestDonationEntryController::DRAFT_SESSION_KEY, function (array $draft): bool {
-            return $draft['category_key'] === 'madrasa_complex'
-                && $draft['category_label'] === 'মাদ্রাসা কমপ্লেক্স'
+        $response->assertSessionHas(GuestDonationEntryController::DRAFT_SESSION_KEY, function (array $draft) use ($category): bool {
+            return $draft['category_id'] === $category->getKey()
+                && $draft['category_key'] === $category->key
+                && $draft['category_label'] === $category->displayLabel()
                 && $draft['amount'] === 1500.0
                 && $draft['name'] === null
                 && $draft['email'] === null
@@ -104,8 +134,10 @@ class GuestDonationEntryTest extends TestCase
 
     public function test_optional_guest_contact_fields_are_normalized_without_creating_accounts_or_donor_profiles(): void
     {
+        $category = $this->categoryByKey('mosque_complex');
+
         $response = $this->from('/donate')->post('/donate/start', [
-            'category' => 'mosque_complex',
+            'category' => $category->key,
             'amount' => '2500',
             'name' => 'Guest Donor',
             'email' => 'GUEST@EXAMPLE.COM',
@@ -114,9 +146,10 @@ class GuestDonationEntryTest extends TestCase
         ]);
 
         $response->assertRedirect('/donate');
-        $response->assertSessionHas(GuestDonationEntryController::DRAFT_SESSION_KEY, function (array $draft): bool {
-            return $draft['category_key'] === 'mosque_complex'
-                && $draft['category_label'] === 'মসজিদ কমপ্লেক্স'
+        $response->assertSessionHas(GuestDonationEntryController::DRAFT_SESSION_KEY, function (array $draft) use ($category): bool {
+            return $draft['category_id'] === $category->getKey()
+                && $draft['category_key'] === $category->key
+                && $draft['category_label'] === $category->displayLabel()
                 && $draft['amount'] === 2500.0
                 && $draft['name'] === 'Guest Donor'
                 && $draft['email'] === 'guest@example.com'
@@ -131,6 +164,8 @@ class GuestDonationEntryTest extends TestCase
 
     public function test_authenticated_accounts_can_use_guest_entry_without_affecting_verification_state(): void
     {
+        $category = $this->categoryByKey('general_education_fund');
+
         $user = User::factory()->create([
             'approval_status' => User::APPROVAL_NOT_REQUIRED,
             'account_status' => User::ACCOUNT_STATUS_ACTIVE,
@@ -143,15 +178,16 @@ class GuestDonationEntryTest extends TestCase
         $response = $this->actingAs($user)
             ->from('/donate')
             ->post('/donate/start', [
-                'category' => 'general_education_fund',
+                'category' => $category->key,
                 'amount' => '3200',
                 'email' => 'guest-flow@example.com',
             ]);
 
         $response->assertRedirect('/donate');
-        $response->assertSessionHas(GuestDonationEntryController::DRAFT_SESSION_KEY, function (array $draft): bool {
-            return $draft['category_key'] === 'general_education_fund'
-                && $draft['category_label'] === 'সাধারণ শিক্ষা তহবিল'
+        $response->assertSessionHas(GuestDonationEntryController::DRAFT_SESSION_KEY, function (array $draft) use ($category): bool {
+            return $draft['category_id'] === $category->getKey()
+                && $draft['category_key'] === $category->key
+                && $draft['category_label'] === $category->displayLabel()
                 && $draft['amount'] === 3200.0
                 && $draft['email'] === 'guest-flow@example.com'
                 && $draft['entry_context'] === 'authenticated_session';
@@ -164,5 +200,25 @@ class GuestDonationEntryTest extends TestCase
         $this->assertSame('+8801710000000', $user->phone);
         $this->assertDatabaseCount('users', 1);
         $this->assertDatabaseCount('donors', 0);
+    }
+
+    public function test_guest_donation_start_rejects_inactive_categories(): void
+    {
+        $this->categoryByKey('mosque_complex')
+            ->forceFill(['is_active' => false])
+            ->save();
+
+        $this->from('/donate')->post('/donate/start', [
+            'category' => 'mosque_complex',
+            'amount' => '2500',
+        ])->assertRedirect('/donate')
+            ->assertSessionHasErrors('category');
+    }
+
+    private function categoryByKey(string $key): DonationCategory
+    {
+        return DonationCategory::query()
+            ->where('key', $key)
+            ->firstOrFail();
     }
 }

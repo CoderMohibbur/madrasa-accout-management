@@ -19,6 +19,7 @@ class DonationRecord extends Model
         'winning_payment_id',
         'user_id',
         'donor_id',
+        'donation_category_id',
         'donor_mode',
         'display_mode',
         'amount',
@@ -47,6 +48,11 @@ class DonationRecord extends Model
         return $this->belongsTo(Payment::class, 'winning_payment_id');
     }
 
+    public function donationCategory(): BelongsTo
+    {
+        return $this->belongsTo(DonationCategory::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -55,5 +61,22 @@ class DonationRecord extends Model
     public function donor(): BelongsTo
     {
         return $this->belongsTo(Donor::class);
+    }
+
+    public function resolvedDonationCategoryLabel(): ?string
+    {
+        $categoryLabel = $this->donationCategory?->displayLabel();
+
+        if (is_string($categoryLabel) && $categoryLabel !== '') {
+            return $categoryLabel;
+        }
+
+        $metadataLabel = data_get($this->metadata, 'category.label');
+
+        if (is_string($metadataLabel) && $metadataLabel !== '') {
+            return $metadataLabel;
+        }
+
+        return $this->donationIntent?->resolvedDonationCategoryLabel();
     }
 }

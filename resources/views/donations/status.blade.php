@@ -60,6 +60,11 @@
                 meta="Anonymous display কেবল visibility preference."
             />
             <x-ui.stat-card
+                label="Category"
+                value="{{ $intent->resolvedDonationCategoryLabel() ?: 'General donation' }}"
+                meta="Resolved from the live relation when available, otherwise from the stored metadata snapshot."
+            />
+            <x-ui.stat-card
                 label="Receipt"
                 value="{{ $receipt?->receipt_number ?: 'Not issued yet' }}"
                 meta="{{ $receipt ? 'Issued after verified settlement only.' : 'Receipts are created only after verified settlement.' }}"

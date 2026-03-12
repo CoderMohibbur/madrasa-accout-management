@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Donations;
 
-use App\Support\Donations\GuestDonationCategoryCatalog;
 use App\Support\PhoneNumber;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
@@ -39,7 +38,13 @@ class StartGuestDonationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category' => ['required', 'string', Rule::in(GuestDonationCategoryCatalog::keys())],
+            'category' => [
+                'required',
+                'string',
+                Rule::exists('donation_categories', 'key')->where(
+                    fn ($query) => $query->where('is_active', true)
+                ),
+            ],
             'amount' => ['required', 'numeric', 'min:1'],
             'name' => ['nullable', 'string', 'max:120'],
             'email' => ['nullable', 'email', 'max:255'],
