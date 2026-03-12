@@ -87,6 +87,8 @@
         ['label' => 'ভর্তি তথ্য', 'href' => route('admission')],
         ['label' => 'পাবলিক হোম', 'href' => url('/')],
     ];
+
+    $isLoginPage = request()->routeIs('login');
 @endphp
 
 <body class="font-sans antialiased">
@@ -96,57 +98,61 @@
         <div class="relative min-h-screen">
             <x-public-header :nav-links="$navLinks" />
 
-            <main class="ui-container ui-container--public ui-auth-main">
-                <div class="ui-auth-stage">
-                    <div class="grid gap-6 xl:grid-cols-[0.92fr,1.08fr] xl:items-start">
-                        <section class="space-y-5">
-                            <div class="ui-auth-aside">
-                                <span class="ui-public-kicker">{{ $pageMeta['eyebrow'] }}</span>
-                                <h1 class="ui-auth-page__title">{{ $pageMeta['title'] }}</h1>
-                                <p class="ui-auth-page__description">{{ $pageMeta['description'] }}</p>
+                <main class="ui-container ui-container--public py-6 sm:py-8 lg:py-10">
+                    {{ $slot }}
+                </main>
+                {{-- <main class="ui-container ui-container--public ui-auth-main">
+                    <div class="ui-auth-stage">
+                        <div class="grid gap-6 xl:grid-cols-2 xl:items-start">
+                            <section class="space-y-5">
+                                <div class="ui-auth-aside">
+                                    <span class="ui-public-kicker">{{ $pageMeta['eyebrow'] }}</span>
+                                    <h1 class="ui-auth-page__title">{{ $pageMeta['title'] }}</h1>
+                                    <p class="ui-auth-page__description">{{ $pageMeta['description'] }}</p>
 
-                                <div class="mt-5 flex flex-wrap gap-2.5">
-                                    <span class="ui-public-chip">Bangla-first</span>
-                                    <span class="ui-public-chip">Trusted access</span>
-                                    <span class="ui-public-chip">Institutional continuity</span>
-                                </div>
-                            </div>
-
-                            <div class="grid gap-4">
-                                @foreach ($principles as $principle)
-                                    <div class="ui-auth-principle">
-                                        {{ $principle }}
+                                    <div class="mt-5 flex flex-wrap gap-2.5">
+                                        <span class="ui-public-chip">Bangla-first</span>
+                                        <span class="ui-public-chip">Trusted access</span>
+                                        <span class="ui-public-chip">Institutional continuity</span>
                                     </div>
-                                @endforeach
-                            </div>
-
-                            <div class="grid gap-3 sm:grid-cols-3">
-                                @foreach ($quickLinks as $link)
-                                    <a href="{{ $link['href'] }}" class="ui-auth-quick-link">
-                                        {{ $link['label'] }}
-                                    </a>
-                                @endforeach
-                            </div>
-                        </section>
-
-                        <section class="w-full">
-                            <div class="ui-auth-card">
-                                <div class="ui-auth-card__top">
-                                    <span class="ui-public-kicker">ফর্ম ও নির্দেশনা</span>
-                                    <h2 class="ui-auth-card__title">{{ $pageMeta['title'] }}</h2>
-                                    <p class="ui-auth-card__description">
-                                        প্রয়োজনীয় তথ্য পূরণ করুন। সব route, validation, auth rule এবং backend behavior অপরিবর্তিত রাখা হয়েছে।
-                                    </p>
                                 </div>
 
-                                <div class="mt-8">
-                                    {{ $slot }}
+                                <div class="grid gap-4">
+                                    @foreach ($principles as $principle)
+                                        <div class="ui-auth-principle">
+                                            {{ $principle }}
+                                        </div>
+                                    @endforeach
                                 </div>
-                            </div>
-                        </section>
+
+                                <div class="grid gap-3 sm:grid-cols-3">
+                                    @foreach ($quickLinks as $link)
+                                        <a href="{{ $link['href'] }}" class="ui-auth-quick-link">
+                                            {{ $link['label'] }}
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </section>
+
+                            <section class="w-full">
+                                <div class="ui-auth-card">
+                                    <div class="ui-auth-card__top">
+                                        <span class="ui-public-kicker">ফর্ম ও নির্দেশনা</span>
+                                        <h2 class="ui-auth-card__title">{{ $pageMeta['title'] }}</h2>
+                                        <p class="ui-auth-card__description">
+                                            প্রয়োজনীয় তথ্য পূরণ করুন। সব route, validation, auth rule এবং backend behavior অপরিবর্তিত রাখা হয়েছে।
+                                        </p>
+                                    </div>
+
+                                    <div class="mt-8">
+                                        {{ $slot }}
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
                     </div>
-                </div>
-            </main>
+                </main>
+            @endif --}}
 
             <x-public-footer :nav-links="$navLinks" :show-cta="false" />
         </div>
