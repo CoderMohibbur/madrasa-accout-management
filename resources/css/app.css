@@ -752,33 +752,114 @@
     }
 
     .ui-public-navbar {
-        @apply flex flex-col gap-5 border px-5 py-5 backdrop-blur lg:px-6 lg:py-6 xl:flex-row xl:items-center xl:justify-between;
+        @apply relative overflow-hidden border px-4 py-4 backdrop-blur sm:px-5 sm:py-4 lg:px-6 lg:py-4;
         border-color: rgba(255, 255, 255, 0.78);
-        border-radius: 1.95rem;
-        background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 250, 241, 0.9)),
-            linear-gradient(90deg, rgba(184, 137, 44, 0.08), rgba(15, 86, 68, 0.05));
-        box-shadow: 0 26px 60px -42px rgba(15, 23, 42, 0.48);
+        border-radius: 2rem;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(251, 247, 239, 0.93) 54%, rgba(243, 248, 245, 0.92) 100%);
+        box-shadow: 0 24px 56px -38px rgba(15, 23, 42, 0.4);
+    }
+
+    .ui-public-navbar::before {
+        content: "";
+        position: absolute;
+        top: -5.5rem;
+        right: 13%;
+        width: 17rem;
+        height: 17rem;
+        border-radius: 9999px;
+        background: radial-gradient(circle, rgba(184, 137, 44, 0.16), rgba(184, 137, 44, 0));
+        pointer-events: none;
+    }
+
+    .ui-public-navbar::after {
+        content: "";
+        position: absolute;
+        inset: auto 1.5rem 0.75rem;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(15, 86, 68, 0), rgba(15, 86, 68, 0.12), rgba(15, 86, 68, 0));
+        opacity: 0.72;
+        pointer-events: none;
+    }
+
+    .ui-public-navbar__top {
+        @apply relative flex items-start justify-between gap-3 lg:grid lg:items-center lg:gap-8;
+        z-index: 1;
+        grid-template-columns: minmax(0, 1fr) auto;
     }
 
     .ui-public-brand {
-        @apply flex items-center gap-4;
+        @apply flex min-w-0 items-center gap-3 sm:gap-4;
+        max-width: 100%;
+    }
+
+    .ui-public-brand__body {
+        @apply min-w-0;
     }
 
     .ui-public-brand__mark {
-        @apply h-16 w-16 rounded-[1.6rem] p-2.5;
-        background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 243, 233, 0.96));
-        border-color: rgba(184, 137, 44, 0.18);
-        box-shadow: 0 16px 34px -24px rgba(15, 23, 42, 0.45);
+        @apply h-14 w-14 shrink-0 rounded-[1.45rem] p-2 sm:h-16 sm:w-16 sm:rounded-[1.7rem] sm:p-2.5;
+        border: 1px solid rgba(184, 137, 44, 0.2);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(247, 243, 233, 0.96));
+        box-shadow:
+            0 18px 36px -24px rgba(15, 23, 42, 0.32),
+            inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    }
+
+    .ui-public-brand .ui-brand-kicker {
+        @apply block;
+        color: rgb(var(--public-green-800));
     }
 
     .ui-public-brand__title {
-        @apply mt-1 block max-w-xl text-sm leading-6 text-slate-700 sm:text-base;
+        @apply mt-1 block text-sm leading-6 text-slate-700 sm:text-base;
+        max-width: min(36rem, 100%);
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .ui-public-navbar__desktop {
+        @apply hidden lg:flex lg:items-center lg:gap-3;
+        padding: 0.625rem;
+        border: 1px solid rgba(15, 86, 68, 0.08);
+        border-radius: 1.65rem;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(248, 244, 236, 0.88));
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.82),
+            0 18px 34px -28px rgba(15, 23, 42, 0.28);
     }
 
     .ui-public-navbar__panel {
-        @apply flex flex-col gap-4 xl:items-end;
+        @apply relative mt-4 rounded-[1.55rem] border p-4;
+        border-color: rgba(15, 86, 68, 0.08);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.93), rgba(248, 244, 236, 0.96));
+        box-shadow: 0 20px 36px -28px rgba(15, 23, 42, 0.28);
+        z-index: 1;
+    }
+
+    .ui-public-nav-toggle {
+        @apply inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-3.5 text-sm font-semibold text-slate-700 transition;
+        border-color: rgba(15, 86, 68, 0.1);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 243, 233, 0.9));
+        box-shadow: 0 14px 30px -22px rgba(15, 23, 42, 0.28);
+    }
+
+    .ui-public-nav-toggle__label {
+        @apply leading-none;
+    }
+
+    .ui-public-nav-toggle__icon {
+        @apply inline-flex h-7 w-7 items-center justify-center rounded-full;
+        background: rgba(15, 86, 68, 0.08);
+        color: rgb(var(--public-green-900));
+    }
+
+    .ui-public-nav-toggle:hover,
+    .ui-public-nav-toggle[aria-expanded='true'] {
+        border-color: rgba(15, 86, 68, 0.16);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(237, 246, 241, 0.96));
+        color: rgb(var(--public-green-900));
     }
 
     .ui-shell--public .ui-page-header,
@@ -1046,22 +1127,59 @@
     }
 
     .ui-public-nav {
-        @apply flex flex-wrap items-center gap-2;
+        @apply flex flex-col gap-2;
+    }
+
+    .ui-public-nav--mobile {
+        @apply gap-2.5;
+    }
+
+    .ui-public-navbar__desktop .ui-public-nav {
+        @apply flex-row items-center gap-1.5;
     }
 
     .ui-public-nav__link {
-        @apply inline-flex items-center rounded-full px-4 py-2.5 text-sm font-semibold text-slate-700 transition;
-        border: 1px solid rgba(15, 86, 68, 0.08);
-        background: rgba(255, 255, 255, 0.76);
+        @apply inline-flex items-center justify-center rounded-full px-4 py-2.5 text-sm font-semibold text-slate-700 transition;
+        border: 1px solid transparent;
+        white-space: nowrap;
+    }
+
+    .ui-public-navbar__desktop .ui-public-nav__link {
+        background: transparent;
+    }
+
+    .ui-public-nav--mobile .ui-public-nav__link {
+        @apply justify-between px-4 py-3;
+        border-color: rgba(15, 86, 68, 0.08);
+        background: rgba(255, 255, 255, 0.78);
     }
 
     .ui-public-nav__link:hover {
+        border-color: rgba(15, 86, 68, 0.08);
         background: rgba(15, 86, 68, 0.08);
         color: rgb(var(--public-green-900));
     }
 
     .ui-public-nav__auth {
-        @apply flex flex-wrap items-center gap-3;
+        @apply flex flex-col gap-3 sm:flex-row;
+    }
+
+    .ui-public-navbar__desktop .ui-public-nav__auth {
+        @apply items-center gap-2 pl-3;
+        border-left: 1px solid rgba(15, 86, 68, 0.08);
+    }
+
+    .ui-public-navbar__desktop .ui-public-action {
+        @apply px-4 py-2.5;
+    }
+
+    .ui-public-navbar__panel .ui-public-nav__auth {
+        @apply mt-1 flex-row gap-3 pt-4;
+        border-top: 1px solid rgba(15, 86, 68, 0.08);
+    }
+
+    .ui-public-navbar__panel .ui-public-action {
+        @apply min-w-0 flex-1 justify-center px-4 py-3;
     }
 
     .ui-public-main {
@@ -1684,6 +1802,19 @@
             border-radius: 1.6rem;
         }
 
+        .ui-public-brand {
+            max-width: calc(100% - 7rem);
+        }
+
+        .ui-public-brand .ui-brand-kicker {
+            letter-spacing: 0.28em;
+        }
+
+        .ui-public-brand__title {
+            @apply text-[0.95rem] leading-5;
+            max-width: 15rem;
+        }
+
         .ui-public-title {
             @apply text-[2.2rem];
         }
@@ -1705,6 +1836,51 @@
 
         .ui-public-title {
             @apply text-[1.9rem];
+        }
+
+        .ui-public-navbar {
+            @apply px-3.5 py-3.5;
+            border-radius: 1.45rem;
+        }
+
+        .ui-public-brand {
+            @apply gap-2.5;
+            max-width: calc(100% - 6.75rem);
+        }
+
+        .ui-public-brand__mark {
+            @apply h-12 w-12 rounded-[1.25rem];
+        }
+
+        .ui-public-brand .ui-brand-kicker {
+            font-size: 0.58rem;
+            letter-spacing: 0.24em;
+        }
+
+        .ui-public-brand__title {
+            @apply text-[0.9rem] leading-5;
+            max-width: 11rem;
+        }
+
+        .ui-public-nav-toggle {
+            @apply h-10 gap-1.5 px-3 text-[0.82rem];
+        }
+
+        .ui-public-nav-toggle__icon {
+            @apply h-6 w-6;
+        }
+
+        .ui-public-navbar__panel {
+            @apply mt-3 p-3.5;
+            border-radius: 1.35rem;
+        }
+
+        .ui-public-navbar__panel .ui-public-nav__auth {
+            @apply flex-col pt-3;
+        }
+
+        .ui-public-navbar__panel .ui-public-action {
+            @apply w-full;
         }
 
         .ui-donation-refined__title {
