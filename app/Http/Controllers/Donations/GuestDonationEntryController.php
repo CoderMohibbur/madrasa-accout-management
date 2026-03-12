@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Donations;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Donations\StartGuestDonationRequest;
-use App\Support\Donations\GuestDonationCategoryCatalog;
+use App\Models\DonationCategory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -16,7 +16,12 @@ class GuestDonationEntryController extends Controller
     public function show(Request $request): View
     {
         return view('donations.guest-entry', [
-            'categories' => GuestDonationCategoryCatalog::all(),
+            'categories' => DonationCategory::query()
+                ->active()
+                ->ordered()
+                ->get()
+                ->map(fn (DonationCategory $category): array => $category->toPublicFormOption())
+                ->all(),
             'draft' => $request->session()->get(self::DRAFT_SESSION_KEY),
         ]);
     }
@@ -24,13 +29,17 @@ class GuestDonationEntryController extends Controller
     public function start(StartGuestDonationRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $category = GuestDonationCategoryCatalog::find((string) $validated['category']);
+        $category = DonationCategory::query()
+            ->active()
+            ->where('key', (string) $validated['category'])
+            ->firstOrFail();
 
         $request->session()->forget('donations.current_intent_public_reference');
 
         $request->session()->put(self::DRAFT_SESSION_KEY, [
-            'category_key' => $category['key'] ?? null,
-            'category_label' => $category['label'] ?? null,
+            'category_id' => $category->getKey(),
+            'category_key' => $category->key,
+            'category_label' => $category->displayLabel(),
             'amount' => round((float) $validated['amount'], 2),
             'name' => $validated['name'] ?? null,
             'email' => $validated['email'] ?? null,

@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
         // ✅ Transaction types MUST seed (Phase 1)
         $this->call([
             TransactionsTypeSeeder::class,
+            DonationCategorySeeder::class,
             MadrasaDemoSeeder::class,
             BoardingDefaultsSeeder::class,
         ]);

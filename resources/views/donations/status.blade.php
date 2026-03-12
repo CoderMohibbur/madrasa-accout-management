@@ -216,6 +216,7 @@
             {{ $statusMessage }}
         </x-ui.alert>
 
+<<<<<<< HEAD
         <div class="grid gap-6 lg:grid-cols-[1.08fr,0.92fr]">
             <div class="space-y-6">
                 <div class="rounded-[1.95rem] border border-emerald-900/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,244,236,0.94))] p-5 shadow-[0_24px_56px_-40px_rgba(15,23,42,0.38)] sm:p-6">
@@ -227,6 +228,35 @@
                                 payment, verification, provider reference এবং accounting posting-এর নিরাপদ সারাংশ এখানে দেখানো হচ্ছে।
                             </p>
                         </div>
+=======
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <x-ui.stat-card
+                label="Amount"
+                value="{{ number_format((float) $intent->amount, 2) }} {{ $intent->currency }}"
+                meta="Settled donor amount remains separate from legacy accounting posting."
+            />
+            <x-ui.stat-card
+                label="Public reference"
+                value="{{ $intent->public_reference }}"
+                meta="Support বা future lookup-এর জন্য এই reference সংরক্ষণ করুন।"
+            />
+            <x-ui.stat-card
+                label="Display mode"
+                value="{{ $displayModeLabel }}"
+                meta="Anonymous display কেবল visibility preference."
+            />
+            <x-ui.stat-card
+                label="Category"
+                value="{{ $intent->resolvedDonationCategoryLabel() ?: 'General donation' }}"
+                meta="Resolved from the live relation when available, otherwise from the stored metadata snapshot."
+            />
+            <x-ui.stat-card
+                label="Receipt"
+                value="{{ $receipt?->receipt_number ?: 'Not issued yet' }}"
+                meta="{{ $receipt ? 'Issued after verified settlement only.' : 'Receipts are created only after verified settlement.' }}"
+            />
+        </div>
+>>>>>>> codex/2026-03-08-phase-1-foundation-safety
 
                         <span class="inline-flex w-fit items-center rounded-full border px-4 py-2 text-sm font-semibold {{ $statusPillClasses }}">
                             {{ $statusLabel }}

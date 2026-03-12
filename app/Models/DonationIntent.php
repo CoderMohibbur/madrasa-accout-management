@@ -27,6 +27,7 @@ class DonationIntent extends Model
     protected $fillable = [
         'user_id',
         'donor_id',
+        'donation_category_id',
         'donor_mode',
         'display_mode',
         'amount',
@@ -59,6 +60,11 @@ class DonationIntent extends Model
         return $this->belongsTo(Donor::class);
     }
 
+    public function donationCategory(): BelongsTo
+    {
+        return $this->belongsTo(DonationCategory::class);
+    }
+
     public function payments(): MorphMany
     {
         return $this->morphMany(Payment::class, 'payable');
@@ -72,6 +78,32 @@ class DonationIntent extends Model
     public function donationRecord(): HasOne
     {
         return $this->hasOne(DonationRecord::class);
+    }
+
+    public function resolvedDonationCategoryKey(): ?string
+    {
+        $categoryKey = $this->donationCategory?->key;
+
+        if (is_string($categoryKey) && $categoryKey !== '') {
+            return $categoryKey;
+        }
+
+        $metadataKey = data_get($this->metadata, 'category.key');
+
+        return is_string($metadataKey) && $metadataKey !== '' ? $metadataKey : null;
+    }
+
+    public function resolvedDonationCategoryLabel(): ?string
+    {
+        $categoryLabel = $this->donationCategory?->displayLabel();
+
+        if (is_string($categoryLabel) && $categoryLabel !== '') {
+            return $categoryLabel;
+        }
+
+        $metadataLabel = data_get($this->metadata, 'category.label');
+
+        return is_string($metadataLabel) && $metadataLabel !== '' ? $metadataLabel : null;
     }
 
     public function isSettled(): bool
