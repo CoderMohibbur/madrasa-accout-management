@@ -133,21 +133,23 @@ class ShurjopayClient
 
     private function activeConfig(): array
     {
-        if (config('payments.provider_mode') !== 'sandbox') {
-            throw new RuntimeException('Live shurjoPay mode is intentionally disabled in this phase.');
+        $mode = (string) config('payments.provider_mode', 'sandbox');
+
+        if (! in_array($mode, ['sandbox', 'live'], true)) {
+            throw new RuntimeException('Invalid shurjoPay provider mode configuration.');
         }
 
-        $sandbox = config('payments.shurjopay.sandbox');
-        $baseUrl = rtrim((string) ($sandbox['base_url'] ?? ''), '/');
+        $settings = config('payments.shurjopay.'.$mode, []);
+        $baseUrl = rtrim((string) ($settings['base_url'] ?? ''), '/');
 
-        if ($baseUrl === '' || ! ($sandbox['username'] ?? null) || ! ($sandbox['password'] ?? null)) {
-            throw new RuntimeException('Sandbox shurjoPay credentials are not configured.');
+        if ($baseUrl === '' || ! ($settings['username'] ?? null) || ! ($settings['password'] ?? null)) {
+            throw new RuntimeException(ucfirst($mode).' shurjoPay credentials are not configured.');
         }
 
         return [
             'base_url' => $baseUrl,
-            'username' => $sandbox['username'],
-            'password' => $sandbox['password'],
+            'username' => $settings['username'],
+            'password' => $settings['password'],
             'endpoints' => config('payments.shurjopay.endpoints'),
         ];
     }
