@@ -5,6 +5,7 @@ namespace App\Services\Payments\Shurjopay;
 use App\Models\Payment;
 use App\Services\Payments\ResolvedPayable;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -63,11 +64,28 @@ class ShurjopayClient
         }
 
         $responseData = $response->json();
-        $checkoutUrl = $responseData['checkout_url'] ?? null;
-        $providerOrderId = $responseData['sp_order_id'] ?? $responseData['order_id'] ?? null;
+        $checkoutUrl = $responseData['checkout_url'] ?? $responseData['payment_url'] ?? $responseData['redirect_url'] ?? null;
+        $providerOrderId = $responseData['sp_order_id']
+            ?? $responseData['order_id']
+            ?? $responseData['customer_order_id']
+            ?? $this->providerOrderIdFromCheckoutUrl($checkoutUrl);
 
         if (! $checkoutUrl || ! $providerOrderId) {
-            throw new RuntimeException('shurjoPay initiation response did not include checkout details.');
+            $providerMessage = Arr::first([
+                $responseData['message'] ?? null,
+                $responseData['error'] ?? null,
+                $responseData['errors'] ?? null,
+            ], fn ($value) => filled($value));
+
+            if (is_array($providerMessage)) {
+                $providerMessage = json_encode($providerMessage);
+            }
+
+            throw new RuntimeException(
+                $providerMessage
+                    ? 'shurjoPay initiation response did not include checkout details. Provider said: '.$providerMessage
+                    : 'shurjoPay initiation response did not include checkout details.'
+            );
         }
 
         return [
@@ -152,5 +170,24 @@ class ShurjopayClient
             'password' => $settings['password'],
             'endpoints' => config('payments.shurjopay.endpoints'),
         ];
+    }
+
+    private function providerOrderIdFromCheckoutUrl(?string $checkoutUrl): ?string
+    {
+        if (! is_string($checkoutUrl) || $checkoutUrl === '') {
+            return null;
+        }
+
+        $query = parse_url($checkoutUrl, PHP_URL_QUERY);
+
+        if (! is_string($query) || $query === '') {
+            return null;
+        }
+
+        parse_str($query, $parts);
+
+        return is_string($parts['order_id'] ?? null) && $parts['order_id'] !== ''
+            ? $parts['order_id']
+            : null;
     }
 }
