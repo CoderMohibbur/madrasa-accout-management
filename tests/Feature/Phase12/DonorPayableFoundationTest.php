@@ -86,6 +86,8 @@ class DonorPayableFoundationTest extends TestCase
         $this->assertSame('SP-DON-001', $payment->provider_reference);
         $this->assertSame($intent->id, $payment->payable_id);
         $this->assertSame($intent->public_reference, data_get($payment->metadata, 'donation_intent.public_reference'));
+        $this->assertSame($category->key, data_get($payment->metadata, 'category.key'));
+        $this->assertSame($category->displayLabel(), data_get($payment->metadata, 'fund.label'));
         $this->assertSame($intent->public_reference, session(DonationCheckoutService::CURRENT_INTENT_SESSION_KEY));
         $this->assertNotEmpty(session(DonationCheckoutService::ACCESS_KEYS_SESSION_KEY.'.'.$intent->public_reference));
         $this->assertDatabaseCount('donation_records', 0);
@@ -147,7 +149,7 @@ class DonorPayableFoundationTest extends TestCase
             'access_key' => $accessKey,
         ], false))
             ->assertOk()
-            ->assertSeeText('Donation Verified')
+            ->assertSeeText('অনুদান ভেরিফাইড')
             ->assertSeeText($category->displayLabel())
             ->assertSeeText($intent->public_reference)
             ->assertSeeText($receipt->receipt_number)
@@ -209,7 +211,7 @@ class DonorPayableFoundationTest extends TestCase
         $this->actingAs($user)
             ->get(route('donations.payments.show', ['publicReference' => $intent->public_reference], false))
             ->assertOk()
-            ->assertSeeText('Identified donation')
+            ->assertSeeText('অ্যাকাউন্ট-সংযুক্ত অনুদান')
             ->assertSeeText($category->displayLabel())
             ->assertSeeText('account-linked donation was settled successfully');
     }

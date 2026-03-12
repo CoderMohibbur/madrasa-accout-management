@@ -39,12 +39,15 @@ class GuestDonationEntryTest extends TestCase
         $this->get('/donate')
             ->assertOk()
             ->assertSeeInOrder($labels, false)
-            ->assertSee('name="category"', false)
-            ->assertSee('name="custom_amount"', false)
-            ->assertSee('name="name"', false)
-            ->assertSee('name="email"', false)
+            ->assertSee('/donate/quick-checkout', false)
+            ->assertSee('name="fund"', false)
+            ->assertSee('name="amount"', false)
             ->assertSee('name="phone"', false)
-            ->assertSee('name="anonymous_display"', false);
+            ->assertDontSee('name="category"', false)
+            ->assertDontSee('name="custom_amount"', false)
+            ->assertDontSee('name="name"', false)
+            ->assertDontSee('name="email"', false)
+            ->assertDontSee('name="anonymous_display"', false);
     }
 
     public function test_only_active_categories_appear_on_the_guest_donation_page(): void

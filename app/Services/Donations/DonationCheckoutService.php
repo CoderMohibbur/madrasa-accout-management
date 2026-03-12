@@ -51,6 +51,7 @@ class DonationCheckoutService
         $this->storeAccessKey($request, $intent->public_reference, $plainAccessKey);
         $request->session()->put(self::CURRENT_INTENT_SESSION_KEY, $intent->public_reference);
         $this->ensureNoActiveAttempt($intent);
+        $categorySnapshot = $this->intentCategorySnapshot($intent);
 
         $payment = Payment::query()->create([
             'user_id' => $user?->getKey(),
@@ -70,6 +71,8 @@ class DonationCheckoutService
                     'donor_mode' => $intent->donor_mode,
                     'display_mode' => $intent->display_mode,
                 ],
+                'category' => $categorySnapshot,
+                'fund' => $categorySnapshot,
             ],
         ]);
 
@@ -341,6 +344,7 @@ class DonationCheckoutService
             'phone_snapshot' => $contactSnapshot['phone'],
             'metadata' => [
                 'category' => $categorySnapshot,
+                'fund' => $categorySnapshot,
                 'entry_context' => $draft['entry_context'] ?? null,
                 'captured_at' => $draft['captured_at'] ?? null,
                 'checkout_started_at' => now()->toIso8601String(),
@@ -685,26 +689,32 @@ class DonationCheckoutService
                 'metadata' => [
                     'receipt_id' => $receipt->getKey(),
                     'public_reference' => $intent->public_reference,
-                    'category' => array_filter([
-                        'key' => $intent->resolvedDonationCategoryKey(),
-                        'label' => $intent->resolvedDonationCategoryLabel(),
-                    ], static fn ($value): bool => is_string($value) && $value !== ''),
+                    'category' => $this->intentCategorySnapshot($intent),
+                    'fund' => $this->intentCategorySnapshot($intent),
                 ],
             ]);
 
             if ($intent->donationRecord instanceof DonationRecord) {
                 $recordUpdates = [];
                 $recordMetadata = is_array($donationRecord->metadata) ? $donationRecord->metadata : [];
+                $categorySnapshot = $this->intentCategorySnapshot($intent);
+                $metadataChanged = false;
 
                 if ($donationRecord->donation_category_id === null && $intent->donation_category_id) {
                     $recordUpdates['donation_category_id'] = $intent->donation_category_id;
                 }
 
                 if (! data_get($recordMetadata, 'category.key') && ! data_get($recordMetadata, 'category.label')) {
-                    $recordMetadata['category'] = array_filter([
-                        'key' => $intent->resolvedDonationCategoryKey(),
-                        'label' => $intent->resolvedDonationCategoryLabel(),
-                    ], static fn ($value): bool => is_string($value) && $value !== '');
+                    $recordMetadata['category'] = $categorySnapshot;
+                    $metadataChanged = true;
+                }
+
+                if (! data_get($recordMetadata, 'fund.key') && ! data_get($recordMetadata, 'fund.label')) {
+                    $recordMetadata['fund'] = $categorySnapshot;
+                    $metadataChanged = true;
+                }
+
+                if ($metadataChanged) {
                     $recordUpdates['metadata'] = $recordMetadata;
                 }
 
@@ -1135,7 +1145,7 @@ class DonationCheckoutService
             }
         }
 
-        $categoryKey = trim((string) ($draft['category_key'] ?? ''));
+        $categoryKey = trim((string) ($draft['category_key'] ?? $draft['fund_key'] ?? ''));
 
         if ($categoryKey === '') {
             return null;
@@ -1149,8 +1159,16 @@ class DonationCheckoutService
     private function draftCategorySnapshot(array $draft, ?DonationCategory $category): array
     {
         return array_filter([
-            'key' => $draft['category_key'] ?? $category?->key,
-            'label' => $draft['category_label'] ?? $category?->displayLabel(),
+            'key' => $draft['category_key'] ?? $draft['fund_key'] ?? $category?->key,
+            'label' => $draft['category_label'] ?? $draft['fund_label'] ?? $category?->displayLabel(),
+        ], static fn ($value): bool => is_string($value) && $value !== '');
+    }
+
+    private function intentCategorySnapshot(DonationIntent $intent): array
+    {
+        return array_filter([
+            'key' => $intent->resolvedDonationCategoryKey(),
+            'label' => $intent->resolvedDonationCategoryLabel(),
         ], static fn ($value): bool => is_string($value) && $value !== '');
     }
 }

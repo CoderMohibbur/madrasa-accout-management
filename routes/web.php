@@ -14,6 +14,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DonorController;
 use App\Http\Controllers\Donations\DonationCheckoutController;
 use App\Http\Controllers\Donations\GuestDonationEntryController;
+use App\Http\Controllers\Donations\HeroQuickDonationCheckoutController;
 use App\Http\Controllers\ExpensController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\LenderController;
@@ -44,6 +45,8 @@ Route::prefix('donate')
             ->name('guest.entry');
         Route::post('/start', [GuestDonationEntryController::class, 'start'])
             ->name('guest.start');
+        Route::post('/quick-checkout', [HeroQuickDonationCheckoutController::class, 'store'])
+            ->name('quick.checkout');
         Route::post('/checkout', [DonationCheckoutController::class, 'checkout'])
             ->name('checkout.start');
         Route::get('/payments/{publicReference}', [DonationCheckoutController::class, 'status'])
