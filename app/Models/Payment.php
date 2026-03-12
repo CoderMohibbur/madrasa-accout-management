@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Str;
 use App\Models\Transactions;
 
 class Payment extends Model
@@ -108,5 +109,12 @@ class Payment extends Model
             self::STATUS_FAILED,
             self::STATUS_CANCELLED,
         ], true);
+    }
+
+    public function setStatusReasonAttribute($value): void
+    {
+        $this->attributes['status_reason'] = filled($value)
+            ? Str::limit((string) $value, 255, '')
+            : null;
     }
 }

@@ -15,6 +15,7 @@ use App\Services\Payments\Shurjopay\ShurjopayClient;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -379,7 +380,10 @@ class DonationCheckoutService
         $customerPhone = trim((string) ($intent->phone_snapshot ?: ($intent->user?->phone ?: '')));
 
         if ($customerEmail === '') {
-            $customerEmail = strtolower('donation+'.preg_replace('/[^a-zA-Z0-9]/', '', $intent->public_reference).'@example.invalid');
+            $host = parse_url((string) config('app.url'), PHP_URL_HOST) ?: 'example.com';
+            $reference = Str::lower(Str::limit(preg_replace('/[^a-zA-Z0-9]/', '', $intent->public_reference) ?: 'donor', 8, ''));
+
+            $customerEmail = "donor+{$reference}@{$host}";
         }
 
         if ($customerPhone === '') {
