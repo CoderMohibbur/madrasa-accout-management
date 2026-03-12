@@ -8,157 +8,339 @@
         ['label' => 'লগইন', 'url' => route('login')],
     ];
 
-    $statusLabel = match ($payment?->status) {
-        Payment::STATUS_PAID => 'Donation Verified',
-        Payment::STATUS_FAILED => 'Donation Not Verified',
-        Payment::STATUS_CANCELLED => 'Donation Cancelled',
-        Payment::STATUS_MANUAL_REVIEW => 'Manual Review Needed',
-        Payment::STATUS_PENDING_VERIFICATION => 'Pending Verification',
-        Payment::STATUS_REDIRECT_PENDING => 'Redirect Pending',
-        default => 'Donation Pending',
+    $bn = static fn ($value) => strtr((string) $value, [
+        '0' => '০',
+        '1' => '১',
+        '2' => '২',
+        '3' => '৩',
+        '4' => '৪',
+        '5' => '৫',
+        '6' => '৬',
+        '7' => '৭',
+        '8' => '৮',
+        '9' => '৯',
+    ]);
+
+    $status = $payment?->status ?? 'pending';
+    $receipt = $payment?->receipt;
+    $categoryLabel = data_get($intent->metadata, 'category.label') ?: 'সাধারণ অনুদান';
+
+    $statusLabel = match ($status) {
+        Payment::STATUS_PAID => 'অনুদান ভেরিফাইড',
+        Payment::STATUS_FAILED => 'অনুদান নিশ্চিত হয়নি',
+        Payment::STATUS_CANCELLED => 'অনুদান বাতিল হয়েছে',
+        Payment::STATUS_MANUAL_REVIEW => 'ম্যানুয়াল রিভিউ প্রয়োজন',
+        Payment::STATUS_PENDING_VERIFICATION => 'ভেরিফিকেশন অপেক্ষমাণ',
+        Payment::STATUS_REDIRECT_PENDING => 'চেকআউট অগ্রগতিতে আছে',
+        default => 'অনুদান প্রক্রিয়াধীন',
     };
 
-    $donorModeLabel = $intent->donor_mode === DonationIntent::DONOR_MODE_GUEST ? 'Guest donation' : 'Identified donation';
-    $displayModeLabel = $intent->display_mode === DonationIntent::DISPLAY_MODE_ANONYMOUS ? 'Anonymous display' : 'Named display';
-    $receipt = $payment?->receipt;
+    $statusKicker = match ($status) {
+        Payment::STATUS_PAID => 'নিরাপদ যাচাই সম্পন্ন',
+        Payment::STATUS_FAILED => 'পেমেন্ট নিশ্চিত হয়নি',
+        Payment::STATUS_CANCELLED => 'ব্যবহারকারী অগ্রগতি থামিয়েছেন',
+        Payment::STATUS_MANUAL_REVIEW => 'অতিরিক্ত যাচাই প্রয়োজন',
+        Payment::STATUS_PENDING_VERIFICATION, Payment::STATUS_REDIRECT_PENDING => 'সার্ভার-সাইড যাচাই চলমান',
+        default => 'বর্তমান donation অবস্থা',
+    };
+
+    $statusDescription = match ($status) {
+        Payment::STATUS_PAID => 'আপনার অনুদান সার্ভার-সাইড যাচাই হয়ে সফলভাবে নিশ্চিত হয়েছে। এই পেজে সেই নির্দিষ্ট donation reference-এর নিরাপদ অবস্থা দেখানো হচ্ছে।',
+        Payment::STATUS_FAILED => 'এই attempt সফলভাবে ভেরিফাই হয়নি। প্রয়োজনে নতুন করে অনুদান শুরু করতে পারেন বা reference ধরে support-এর সাথে যোগাযোগ করতে পারেন।',
+        Payment::STATUS_CANCELLED => 'চেকআউট প্রক্রিয়া মাঝপথে থেমে গেছে। পুনরায় অনুদান শুরু করতে চাইলে নিচের নিরাপদ action থেকে এগোতে পারেন।',
+        Payment::STATUS_MANUAL_REVIEW => 'স্বয়ংক্রিয়ভাবে চূড়ান্ত সিদ্ধান্ত নেওয়া যায়নি, তাই donation-টি ম্যানুয়াল রিভিউ পর্যায়ে আছে।',
+        Payment::STATUS_PENDING_VERIFICATION, Payment::STATUS_REDIRECT_PENDING => 'চেকআউট শুরু হয়েছে, তবে সার্ভার-সাইড ভেরিফিকেশন এখনো সম্পূর্ণ হয়নি। কিছু সময় পর আবার status দেখুন।',
+        default => 'এই reference-এর donation অবস্থা এখনো চূড়ান্ত হয়নি।',
+    };
+
+    $statusPillClasses = match ($statusVariant) {
+        'success' => 'border-emerald-200/80 bg-emerald-50 text-emerald-950',
+        'warning' => 'border-amber-200/80 bg-amber-50 text-amber-950',
+        default => 'border-sky-200/80 bg-sky-50 text-sky-950',
+    };
+
+    $heroSurfaceClasses = match ($statusVariant) {
+        'success' => 'bg-[linear-gradient(135deg,rgba(8,70,56,0.98),rgba(15,86,68,0.96)_48%,rgba(28,110,89,0.88))] text-white',
+        'warning' => 'bg-[linear-gradient(135deg,rgba(84,54,12,0.98),rgba(134,86,18,0.94)_48%,rgba(15,86,68,0.72))] text-white',
+        default => 'bg-[linear-gradient(135deg,rgba(8,47,73,0.98),rgba(5,93,124,0.94)_50%,rgba(15,86,68,0.75))] text-white',
+    };
+
+    $amountLabel = $intent->currency === 'BDT'
+        ? '৳ '.$bn(number_format((float) $intent->amount, 2))
+        : $bn(number_format((float) $intent->amount, 2)).' '.$intent->currency;
+
+    $donorModeLabel = $intent->donor_mode === DonationIntent::DONOR_MODE_GUEST ? 'গেস্ট অনুদান' : 'অ্যাকাউন্ট-সংযুক্ত অনুদান';
+    $displayModeLabel = $intent->display_mode === DonationIntent::DISPLAY_MODE_ANONYMOUS ? 'গোপন পরিচয় প্রদর্শন' : 'নাম প্রদর্শন';
+
+    $paymentStatusLabel = match ($payment?->status) {
+        Payment::STATUS_PAID => 'পরিশোধিত',
+        Payment::STATUS_FAILED => 'ব্যর্থ',
+        Payment::STATUS_CANCELLED => 'বাতিল',
+        Payment::STATUS_MANUAL_REVIEW => 'ম্যানুয়াল রিভিউ',
+        Payment::STATUS_PENDING_VERIFICATION => 'ভেরিফিকেশন অপেক্ষমাণ',
+        Payment::STATUS_REDIRECT_PENDING => 'রিডাইরেক্ট অপেক্ষমাণ',
+        default => 'অপেক্ষমাণ',
+    };
+
+    $verificationStatusLabel = match ($payment?->verification_status) {
+        Payment::VERIFICATION_VERIFIED => 'ভেরিফাইড',
+        Payment::VERIFICATION_FAILED => 'ভেরিফিকেশন ব্যর্থ',
+        Payment::VERIFICATION_MANUAL_REVIEW => 'ম্যানুয়াল রিভিউ',
+        default => 'অপেক্ষমাণ',
+    };
+
+    $postingStatusLabel = match ($donationRecord?->posting_status) {
+        'posted' => 'পোস্টেড',
+        'pending' => 'অপেক্ষমাণ',
+        'failed' => 'ব্যর্থ',
+        'not_started', null => 'শুরু হয়নি',
+        default => $donationRecord?->posting_status,
+    };
+
+    $settledAt = optional($donationRecord?->donated_at ?? $payment?->paid_at ?? $payment?->initiated_at)->format('d M Y, h:i A');
+    $settledAtLabel = $settledAt ? $bn($settledAt) : 'এখনও নিশ্চিত হয়নি';
+
+    $receiptIssuedAt = optional($receipt?->issued_at)->format('d M Y, h:i A');
+    $receiptIssuedAtLabel = $receiptIssuedAt ? $bn($receiptIssuedAt) : null;
+
+    $providerReference = $payment?->provider_reference ?: $payment?->idempotency_key ?: 'সংরক্ষিত হয়নি';
+    $statusReason = $payment?->status_reason ?: 'এই donation-এর জন্য অতিরিক্ত কোনো কারণ এখনো সংরক্ষিত হয়নি।';
+    $systemNoteTitle = $statusVariant === 'success' ? 'সিস্টেম কনফার্মেশন' : 'সিস্টেম নোট';
 @endphp
 
 <x-public-shell
     title="অনুদান অবস্থা"
-    description="এই পেজটি শুধু নির্দিষ্ট donation reference-টির সীমিত status দেখায়; donor portal history বা broader account access খোলে না।"
+    description="এই পেজে শুধু নির্দিষ্ট donation reference-এর নিরাপদ status দেখানো হয়; broader donor portal access খোলে না।"
     :nav-links="$navLinks"
 >
     <section class="space-y-6">
-        <x-ui.page-header
-            eyebrow="Donation status"
-            title="{{ $statusLabel }}"
-            description="Server-side verification-ই donation outcome নির্ধারণ করে। Browser return alone payment settle করে না।"
-        >
-            <x-slot:actions>
-                <x-ui.badge variant="info">{{ $donorModeLabel }}</x-ui.badge>
-            </x-slot:actions>
-        </x-ui.page-header>
+        <div class="relative overflow-hidden rounded-[2.1rem] border border-white/75 p-5 shadow-[0_32px_72px_-48px_rgba(15,23,42,0.42)] sm:p-6 lg:p-8 {{ $heroSurfaceClasses }}">
+            <div class="pointer-events-none absolute -left-10 top-0 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
+            <div class="pointer-events-none absolute bottom-0 right-0 h-56 w-56 rounded-full bg-amber-200/15 blur-3xl"></div>
 
-        <x-ui.alert :variant="$statusVariant" title="Current status">
+            <div class="relative grid gap-6 xl:grid-cols-[1.06fr,0.94fr] xl:items-start">
+                <div>
+                    <span class="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.34em] text-white/75">
+                        {{ $statusKicker }}
+                    </span>
+
+                    <div class="mt-5 inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white">
+                        @if ($statusVariant === 'success')
+                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/14">
+                                <svg class="h-[1.125rem] w-[1.125rem]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 010 1.42l-7.29 7.29a1 1 0 01-1.414 0l-3-3a1 1 0 111.414-1.414l2.293 2.293 6.583-6.59a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </span>
+                        @elseif ($statusVariant === 'warning')
+                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/14">
+                                <svg class="h-[1.125rem] w-[1.125rem]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.72-1.36 3.486 0l6.518 11.596c.75 1.334-.213 2.996-1.742 2.996H3.48c-1.53 0-2.492-1.662-1.742-2.996L8.257 3.1zM11 13a1 1 0 10-2 0 1 1 0 002 0zm-1-6a1 1 0 00-1 1v3a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </span>
+                        @else
+                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/14">
+                                <svg class="h-[1.125rem] w-[1.125rem]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M18 10A8 8 0 112 10a8 8 0 0116 0zm-7-3a1 1 0 10-2 0 1 1 0 002 0zm-1 3a1 1 0 00-.993.883L9 11v3a1 1 0 001.993.117L11 14v-3a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </span>
+                        @endif
+
+                        <span>{{ $statusLabel }}</span>
+                    </div>
+
+                    <h1 class="mt-5 max-w-3xl text-3xl font-semibold leading-tight sm:text-4xl xl:text-[3.15rem]">
+                        {{ $statusLabel }}
+                    </h1>
+
+                    <p class="mt-4 max-w-3xl text-base leading-8 text-white/82 sm:text-lg">
+                        {{ $statusDescription }}
+                    </p>
+
+                    <div class="mt-6 grid gap-3 sm:grid-cols-2">
+                        <div class="rounded-[1.45rem] border border-white/12 bg-white/10 px-4 py-4 backdrop-blur-sm">
+                            <p class="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/65">অনুদানের পরিমাণ</p>
+                            <p class="mt-2 text-2xl font-semibold text-white">{{ $amountLabel }}</p>
+                            <p class="mt-1 text-sm leading-6 text-white/70">ভেরিফাইড outcome এই reference-এর সাথেই সীমাবদ্ধ।</p>
+                        </div>
+                        <div class="rounded-[1.45rem] border border-white/12 bg-white/10 px-4 py-4 backdrop-blur-sm">
+                            <p class="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/65">অনুদানের খাত</p>
+                            <p class="mt-2 text-xl font-semibold text-white">{{ $categoryLabel }}</p>
+                            <p class="mt-1 text-sm leading-6 text-white/70">{{ $donorModeLabel }} · {{ $displayModeLabel }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="rounded-[1.85rem] border border-white/14 bg-white/10 p-5 shadow-[0_24px_50px_-38px_rgba(15,23,42,0.55)] backdrop-blur-md sm:p-6">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.32em] text-white/65">দ্রুত সারাংশ</p>
+
+                    <div class="mt-5 space-y-4">
+                        <div class="rounded-[1.35rem] border border-white/12 bg-white/10 px-4 py-4">
+                            <p class="text-sm text-white/65">Public reference</p>
+                            <p class="mt-2 break-all text-lg font-semibold text-white">{{ $intent->public_reference }}</p>
+                        </div>
+
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <div class="rounded-[1.35rem] border border-white/12 bg-white/10 px-4 py-4">
+                                <p class="text-sm text-white/65">রসিদ</p>
+                                <p class="mt-2 text-base font-semibold text-white">{{ $receipt?->receipt_number ?: 'এখনও ইস্যু হয়নি' }}</p>
+                            </div>
+                            <div class="rounded-[1.35rem] border border-white/12 bg-white/10 px-4 py-4">
+                                <p class="text-sm text-white/65">সময়</p>
+                                <p class="mt-2 text-base font-semibold text-white">{{ $settledAtLabel }}</p>
+                            </div>
+                        </div>
+
+                        @if ($receiptIssuedAtLabel)
+                            <div class="rounded-[1.35rem] border border-emerald-200/10 bg-emerald-50/10 px-4 py-4 text-sm leading-7 text-white/82">
+                                রসিদ <strong>{{ $receipt->receipt_number }}</strong> ইস্যু হয়েছে <strong>{{ $receiptIssuedAtLabel }}</strong> সময়ে।
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+                        <a href="{{ route('donations.guest.entry') }}" class="ui-public-action ui-public-action--primary w-full justify-center sm:w-auto">
+                            নতুন অনুদান দিন
+                        </a>
+
+                        @if (Route::has('login'))
+                            <a href="{{ route('login') }}" class="ui-public-action ui-public-action--ghost w-full justify-center sm:w-auto">
+                                লগইন
+                            </a>
+                        @endif
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <x-ui.alert :variant="$statusVariant" :title="$systemNoteTitle">
             {{ $statusMessage }}
         </x-ui.alert>
 
-        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <x-ui.stat-card
-                label="Amount"
-                value="{{ number_format((float) $intent->amount, 2) }} {{ $intent->currency }}"
-                meta="Settled donor amount remains separate from legacy accounting posting."
-            />
-            <x-ui.stat-card
-                label="Public reference"
-                value="{{ $intent->public_reference }}"
-                meta="Support বা future lookup-এর জন্য এই reference সংরক্ষণ করুন।"
-            />
-            <x-ui.stat-card
-                label="Display mode"
-                value="{{ $displayModeLabel }}"
-                meta="Anonymous display কেবল visibility preference."
-            />
-            <x-ui.stat-card
-                label="Receipt"
-                value="{{ $receipt?->receipt_number ?: 'Not issued yet' }}"
-                meta="{{ $receipt ? 'Issued after verified settlement only.' : 'Receipts are created only after verified settlement.' }}"
-            />
-        </div>
+        <div class="grid gap-6 lg:grid-cols-[1.08fr,0.92fr]">
+            <div class="space-y-6">
+                <div class="rounded-[1.95rem] border border-emerald-900/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,244,236,0.94))] p-5 shadow-[0_24px_56px_-40px_rgba(15,23,42,0.38)] sm:p-6">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                            <p class="text-[11px] font-semibold uppercase tracking-[0.32em] text-emerald-800">ভেরিফিকেশন বিশদ</p>
+                            <h2 class="mt-3 text-2xl font-semibold leading-tight text-slate-950 sm:text-[2.2rem]">এই অনুদানের বর্তমান outcome</h2>
+                            <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+                                payment, verification, provider reference এবং accounting posting-এর নিরাপদ সারাংশ এখানে দেখানো হচ্ছে।
+                            </p>
+                        </div>
 
-        <div class="grid gap-6 lg:grid-cols-[1.1fr,0.9fr]">
-            <x-ui.card
-                title="Donation outcome"
-                description="বর্তমান attempt, receipt state এবং donor-safe next steps এখানে দেখানো হচ্ছে।"
-            >
-                <dl class="grid gap-4 text-sm text-slate-600 sm:grid-cols-2">
-                    <div>
-                        <dt class="ui-stat-label">Payment status</dt>
-                        <dd class="mt-2 font-semibold text-slate-950">{{ strtoupper($payment?->status ?: 'pending') }}</dd>
+                        <span class="inline-flex w-fit items-center rounded-full border px-4 py-2 text-sm font-semibold {{ $statusPillClasses }}">
+                            {{ $statusLabel }}
+                        </span>
                     </div>
-                    <div>
-                        <dt class="ui-stat-label">Verification status</dt>
-                        <dd class="mt-2 font-semibold text-slate-950">{{ strtoupper($payment?->verification_status ?: 'pending') }}</dd>
-                    </div>
-                    <div>
-                        <dt class="ui-stat-label">Provider</dt>
-                        <dd class="mt-2">{{ strtoupper($payment?->provider ?: 'shurjopay') }}</dd>
-                    </div>
-                    <div>
-                        <dt class="ui-stat-label">Provider reference</dt>
-                        <dd class="mt-2 break-all">{{ $payment?->provider_reference ?: $payment?->idempotency_key ?: 'Unavailable' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="ui-stat-label">Donated at</dt>
-                        <dd class="mt-2">
-                            {{ optional($donationRecord?->donated_at ?? $payment?->paid_at ?? $payment?->initiated_at)->format('Y-m-d H:i') ?: 'Not settled yet' }}
-                        </dd>
-                    </div>
-                    <div>
-                        <dt class="ui-stat-label">Posting status</dt>
-                        <dd class="mt-2">{{ strtoupper($donationRecord?->posting_status ?: 'not_started') }}</dd>
-                    </div>
-                    <div class="sm:col-span-2">
-                        <dt class="ui-stat-label">Status reason</dt>
-                        <dd class="mt-2 leading-7">{{ $payment?->status_reason ?: 'No extra detail was recorded for this donation yet.' }}</dd>
-                    </div>
-                </dl>
 
-                @if ($receipt)
-                    <div class="ui-auth-note mt-6">
-                        Receipt <strong>{{ $receipt->receipt_number }}</strong> was issued on
-                        <strong>{{ optional($receipt->issued_at)->format('Y-m-d H:i') }}</strong>.
-                    </div>
-                @endif
+                    <dl class="mt-6 grid gap-4 md:grid-cols-2">
+                        <div class="rounded-[1.45rem] border border-emerald-900/8 bg-white/82 px-4 py-4">
+                            <dt class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Payment status</dt>
+                            <dd class="mt-2 text-lg font-semibold text-slate-950">{{ $paymentStatusLabel }}</dd>
+                        </div>
+                        <div class="rounded-[1.45rem] border border-emerald-900/8 bg-white/82 px-4 py-4">
+                            <dt class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Verification</dt>
+                            <dd class="mt-2 text-lg font-semibold text-slate-950">{{ $verificationStatusLabel }}</dd>
+                        </div>
+                        <div class="rounded-[1.45rem] border border-emerald-900/8 bg-white/82 px-4 py-4">
+                            <dt class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Provider</dt>
+                            <dd class="mt-2 text-lg font-semibold text-slate-950">{{ strtoupper($payment?->provider ?: 'shurjopay') }}</dd>
+                        </div>
+                        <div class="rounded-[1.45rem] border border-emerald-900/8 bg-white/82 px-4 py-4">
+                            <dt class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Posting status</dt>
+                            <dd class="mt-2 text-lg font-semibold text-slate-950">{{ $postingStatusLabel }}</dd>
+                        </div>
+                        <div class="rounded-[1.45rem] border border-emerald-900/8 bg-white/82 px-4 py-4 md:col-span-2">
+                            <dt class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Provider reference</dt>
+                            <dd class="mt-2 break-all text-sm leading-7 text-slate-800">{{ $providerReference }}</dd>
+                        </div>
+                        <div class="rounded-[1.45rem] border border-emerald-900/8 bg-white/82 px-4 py-4 md:col-span-2">
+                            <dt class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Status reason</dt>
+                            <dd class="mt-2 text-sm leading-7 text-slate-700">{{ $statusReason }}</dd>
+                        </div>
+                    </dl>
+                </div>
 
-                @if ($intent->donor_mode === DonationIntent::DONOR_MODE_GUEST)
-                    <div class="ui-auth-note mt-6">
-                        Guest donation স্বয়ংক্রিয়ভাবে account বা donor portal access তৈরি করে না।
+                <div class="rounded-[1.95rem] border border-emerald-900/8 bg-white/92 p-5 shadow-[0_20px_48px_-38px_rgba(15,23,42,0.34)] sm:p-6">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.32em] text-emerald-800">নিরাপদ সীমা</p>
+                    <div class="mt-5 grid gap-4 lg:grid-cols-2">
+                        <div class="rounded-[1.45rem] border border-emerald-900/8 bg-emerald-50/55 px-4 py-4">
+                            <p class="text-base font-semibold text-slate-950">এই পেজের সীমা</p>
+                            <p class="mt-2 text-sm leading-7 text-slate-600">
+                                এই status page শুধু নির্দিষ্ট donation reference-এর সীমিত অবস্থা দেখায়। broader donor portal history বা protected account data এখানে খোলে না।
+                            </p>
+                        </div>
+
+                        <div class="rounded-[1.45rem] border border-emerald-900/8 bg-white px-4 py-4">
+                            <p class="text-base font-semibold text-slate-950">{{ $donorModeLabel }}</p>
+                            <p class="mt-2 text-sm leading-7 text-slate-600">
+                                @if ($intent->donor_mode === DonationIntent::DONOR_MODE_GUEST)
+                                    গেস্ট অনুদান স্বয়ংক্রিয়ভাবে donor portal access তৈরি করে না। এই reference ও access material-ই আপনার transaction-specific lookup মাধ্যম।
+                                @else
+                                    এই donation বর্তমান account ownership-এর সাথে সীমিতভাবে যুক্ত। broader donor history বা অতিরিক্ত portal access আলাদা flow-এর বিষয়।
+                                @endif
+                            </p>
+                        </div>
                     </div>
-                @else
-                    <div class="ui-auth-note mt-6">
-                        এই donation transaction-specific ownership-এর জন্য বর্তমান account-এর সাথে সীমিতভাবে যুক্ত। broader donor portal history পরে আসে।
-                    </div>
-                @endif
-            </x-ui.card>
+                </div>
+            </div>
 
             <div class="space-y-6">
-                <x-ui.card
-                    title="Access key"
-                    description="Guest এবং narrow transaction-specific access এই public reference ও opaque key-এর ওপর নির্ভর করে।"
-                    soft
-                >
-                    @if ($accessKeyForDisplay)
-                        <p class="text-sm leading-7 text-slate-600">
-                            এই key-টি public reference-এর সাথে সংরক্ষণ করুন। এটি শুধুমাত্র এই donation-এর সীমিত access material।
-                        </p>
-                        <div class="mt-4 rounded-[1.5rem] border border-slate-200 bg-white px-4 py-3 font-mono text-sm text-slate-900">
-                            {{ $accessKeyForDisplay }}
-                        </div>
-                        <p class="mt-4 text-xs uppercase tracking-[0.22em] text-slate-500">
-                            Direct status link
-                        </p>
-                        <div class="mt-2 break-all text-sm text-slate-700">
-                            {{ $statusLink }}
-                        </div>
-                    @else
-                        <p class="text-sm leading-7 text-slate-600">
-                            এই session-এ key সংরক্ষিত নেই। সংরক্ষিত access key ব্যবহার করুন, অথবা প্রয়োজন হলে sign in করুন।
-                        </p>
-                    @endif
-                </x-ui.card>
+                <div class="rounded-[1.95rem] border border-emerald-900/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,244,236,0.94))] p-5 shadow-[0_22px_52px_-40px_rgba(15,23,42,0.34)] sm:p-6">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.32em] text-emerald-800">Access material</p>
+                    <h3 class="mt-3 text-2xl font-semibold leading-tight text-slate-950">Reference, key ও direct link</h3>
+                    <p class="mt-3 text-sm leading-7 text-slate-600">
+                        guest access বা transaction-specific narrow access-এর জন্য নিচের তথ্যগুলোই গুরুত্বপূর্ণ।
+                    </p>
 
-                <x-ui.card
-                    title="Next safe actions"
-                    description="এই donation reference-টির সীমার মধ্যেই পরবর্তী পদক্ষেপগুলো রাখুন।"
-                    soft
-                >
-                    <ul class="space-y-3 text-sm leading-7 text-slate-600">
-                        <li>public reference ও access key একসাথে সংরক্ষণ করুন।</li>
-                        <li><a href="{{ route('donations.guest.entry') }}" class="font-semibold text-emerald-700 hover:text-emerald-600">Donation entry page</a> থেকে নতুন donation শুরু করুন।</li>
-                        <li>broader donor portal history, account linking ও claim flow এখনও deferred।</li>
+                    <div class="mt-5 space-y-4">
+                        <div class="rounded-[1.35rem] border border-emerald-900/8 bg-white/88 px-4 py-4">
+                            <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Public reference</p>
+                            <p class="mt-2 break-all font-mono text-sm text-slate-900">{{ $intent->public_reference }}</p>
+                        </div>
+
+                        @if ($accessKeyForDisplay)
+                            <div class="rounded-[1.35rem] border border-emerald-900/8 bg-white/88 px-4 py-4">
+                                <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Access key</p>
+                                <p class="mt-2 break-all font-mono text-sm text-slate-900">{{ $accessKeyForDisplay }}</p>
+                            </div>
+                        @endif
+
+                        <div class="rounded-[1.35rem] border border-emerald-900/8 bg-white/88 px-4 py-4">
+                            <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">Direct status link</p>
+                            <p class="mt-2 break-all text-sm leading-7 text-slate-700">{{ $statusLink }}</p>
+                        </div>
+                    </div>
+
+                    @unless ($accessKeyForDisplay)
+                        <div class="mt-5 rounded-[1.35rem] border border-amber-200 bg-amber-50/90 px-4 py-4 text-sm leading-7 text-slate-700">
+                            এই session-এ access key সংরক্ষিত নেই। প্রয়োজনে সংরক্ষিত key ব্যবহার করুন, অথবা appropriate account দিয়ে sign in করুন।
+                        </div>
+                    @endunless
+                </div>
+
+                <div class="rounded-[1.95rem] border border-emerald-900/8 bg-white/92 p-5 shadow-[0_22px_52px_-40px_rgba(15,23,42,0.34)] sm:p-6">
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.32em] text-emerald-800">পরবর্তী নিরাপদ পদক্ষেপ</p>
+                    <h3 class="mt-3 text-2xl font-semibold leading-tight text-slate-950">এখন কী করবেন</h3>
+
+                    <ul class="mt-5 space-y-3 text-sm leading-7 text-slate-600">
+                        <li class="rounded-[1.25rem] border border-emerald-900/8 bg-emerald-50/45 px-4 py-3">এই public reference এবং access key একসাথে নিরাপদে সংরক্ষণ করুন।</li>
+                        <li class="rounded-[1.25rem] border border-emerald-900/8 bg-white px-4 py-3">নতুন অনুদান প্রয়োজন হলে donation entry page থেকে নতুন করে শুরু করুন।</li>
+                        <li class="rounded-[1.25rem] border border-emerald-900/8 bg-white px-4 py-3">যদি verified status, receipt বা provider outcome নিয়ে প্রশ্ন থাকে, support-এর সাথে reference ব্যবহার করে যোগাযোগ করুন।</li>
                     </ul>
-                </x-ui.card>
+
+                    <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+                        <a href="{{ route('donations.guest.entry') }}" class="ui-public-action ui-public-action--primary w-full justify-center sm:w-auto">
+                            আবার অনুদান দিন
+                        </a>
+
+                        @if (Route::has('login'))
+                            <a href="{{ route('login') }}" class="ui-public-action ui-public-action--ghost w-full justify-center sm:w-auto">
+                                অ্যাকাউন্টে প্রবেশ
+                            </a>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
     </section>
