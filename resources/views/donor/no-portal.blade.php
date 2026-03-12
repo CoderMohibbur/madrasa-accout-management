@@ -1,60 +1,60 @@
 @php
     if ($access->reason === 'profile_pending') {
         $state = [
-            'title' => 'Donor access is ready, but portal history is still off',
-            'description' => 'Your shared account can sign in and use donor checkout safely, but this donor profile has not been enabled for the full donor portal yet.',
+            'title' => 'ডোনার অ্যাক্সেস প্রস্তুত, তবে পোর্টালের ইতিহাস এখনো চালু নয়',
+            'description' => 'আপনার শেয়ারড অ্যাকাউন্ট নিরাপদে সাইন ইন করতে এবং ডোনার চেকআউট ব্যবহার করতে পারে, তবে এই ডোনার প্রোফাইলটি এখনো পূর্ণাঙ্গ ডোনার পোর্টালের জন্য সক্রিয় করা হয়নি।',
             'items' => [
-                'Registration, login, and identified donation stay separate from donor portal eligibility.',
-                'Email and phone verification are still independent trust signals; completing them does not unlock portal history by itself.',
-                'Use the secure checkout and transaction-specific status links for current donations until donor portal access is enabled.',
+                'রেজিস্ট্রেশন, লগইন এবং পরিচয়যুক্ত অনুদান — এগুলো ডোনার পোর্টাল ব্যবহারের যোগ্যতা থেকে আলাদা থাকে।',
+                'ইমেইল ও ফোন ভেরিফিকেশন এখনো স্বতন্ত্র বিশ্বাসযোগ্যতার সংকেত; এগুলো সম্পন্ন করলেও স্বয়ংক্রিয়ভাবে পোর্টালের ইতিহাস আনলক হবে না।',
+                'ডোনার পোর্টাল অ্যাক্সেস সক্রিয় না হওয়া পর্যন্ত বর্তমান অনুদানের জন্য নিরাপদ চেকআউট এবং নির্দিষ্ট লেনদেনভিত্তিক স্ট্যাটাস লিংক ব্যবহার করুন।',
             ],
         ];
     } elseif (in_array($access->reason, ['profile_inactive', 'profile_deleted'], true)) {
         $state = [
-            'title' => 'This donor profile is not portal-eligible right now',
-            'description' => 'Your account remains separate from donor portal eligibility. A donor profile exists, but its current state does not allow the read-only donor portal.',
+            'title' => 'এই ডোনার প্রোফাইলটি এই মুহূর্তে পোর্টালের জন্য উপযুক্ত নয়',
+            'description' => 'আপনার অ্যাকাউন্ট ডোনার পোর্টাল ব্যবহারের যোগ্যতা থেকে আলাদা থাকে। একটি ডোনার প্রোফাইল রয়েছে, কিন্তু এর বর্তমান অবস্থা রিড-অনলি ডোনার পোর্টাল ব্যবহারের অনুমতি দেয় না।',
             'items' => [
-                'Donation capability and donor portal history remain separate permissions.',
-                'Transaction-specific status and receipt access stay narrower than full donor history.',
-                'Profile and verification updates remain available without widening donor access automatically.',
+                'অনুদান দেওয়ার সক্ষমতা এবং ডোনার পোর্টালের ইতিহাস দেখার অনুমতি — এই দুটি আলাদা পারমিশন।',
+                'নির্দিষ্ট লেনদেনভিত্তিক স্ট্যাটাস ও রসিদ দেখার সুবিধা পূর্ণাঙ্গ ডোনার ইতিহাস দেখার চেয়ে আরও সীমিত থাকে।',
+                'প্রোফাইল ও ভেরিফিকেশন আপডেট করা যাবে, তবে এতে স্বয়ংক্রিয়ভাবে ডোনার অ্যাক্সেস বিস্তৃত হবে না।',
             ],
         ];
     } elseif ($access->reason === 'identified_only') {
         $state = [
-            'title' => 'Your account-linked donations stay narrow by design',
-            'description' => 'This account has identified donor activity, but payment completion does not auto-grant donor portal access or donation-history browsing.',
+            'title' => 'আপনার অ্যাকাউন্ট-সংযুক্ত অনুদানগুলো পরিকল্পিতভাবেই সীমিত রাখা হয়েছে',
+            'description' => 'এই অ্যাকাউন্টে পরিচয়যুক্ত ডোনার কার্যক্রম রয়েছে, তবে পেমেন্ট সম্পন্ন হলেই স্বয়ংক্রিয়ভাবে ডোনার পোর্টাল অ্যাক্সেস বা অনুদানের ইতিহাস ব্রাউজ করার অনুমতি দেওয়া হয় না।',
             'items' => [
-                'Continue to use the same account for identified checkout on /donate.',
-                'Keep using transaction-specific checkout and status links for settled donations.',
-                'A later explicit donor-profile enablement step is still required before full donor history appears here.',
+                'পরিচয়যুক্ত চেকআউটের জন্য /donate এ একই অ্যাকাউন্ট ব্যবহার করতে থাকুন।',
+                'সম্পন্ন অনুদানের জন্য নির্দিষ্ট লেনদেনভিত্তিক চেকআউট ও স্ট্যাটাস লিংক ব্যবহার করতে থাকুন।',
+                'এখানে পূর্ণাঙ্গ ডোনার ইতিহাস দেখানোর আগে পরবর্তী ধাপে ডোনার প্রোফাইল আলাদাভাবে সক্রিয় করা এখনও প্রয়োজন।',
             ],
         ];
     } else {
         $state = [
-            'title' => 'Donor access remains limited to safe next steps',
-            'description' => 'This account can sign in, but donor portal history still depends on an explicit donor-domain eligibility state.',
+            'title' => 'ডোনার অ্যাক্সেস এখনো নিরাপদ পরবর্তী ধাপগুলোর মধ্যেই সীমাবদ্ধ',
+            'description' => 'এই অ্যাকাউন্ট দিয়ে সাইন ইন করা যায়, তবে ডোনার পোর্টালের ইতিহাস এখনো ডোনার-ডোমেইনের স্পষ্ট যোগ্যতার অবস্থার ওপর নির্ভরশীল।',
             'items' => [
-                'Donor login does not depend on universal verification.',
-                'Donor payment ability remains broader than donor portal access.',
-                'The donor portal stays read-only and fail-closed until portal eligibility exists.',
+                'ডোনার লগইন সর্বজনীন ভেরিফিকেশনের ওপর নির্ভর করে না।',
+                'ডোনার পেমেন্ট করার সক্ষমতা ডোনার পোর্টাল অ্যাক্সেসের চেয়ে বিস্তৃত থাকে।',
+                'পোর্টাল-যোগ্যতা তৈরি না হওয়া পর্যন্ত ডোনার পোর্টাল রিড-অনলি ও ফেইল-ক্লোজড অবস্থাতেই থাকে।',
             ],
         ];
     }
 
     $navItems = [
-        ['label' => 'Overview', 'route' => 'donor.dashboard', 'pattern' => 'donor.dashboard'],
+        ['label' => 'সারসংক্ষেপ', 'route' => 'donor.dashboard', 'pattern' => 'donor.dashboard'],
     ];
 @endphp
 
 <x-donor-layout
-    title="Donor Access"
-    description="Your account can stay account-linked for donor activity without assuming donor portal eligibility."
+    title="ডোনার অ্যাক্সেস"
+    description="ডোনার কার্যক্রমের জন্য আপনার অ্যাকাউন্ট সংযুক্ত থাকতে পারে, তবে এতে ডোনার পোর্টালের যোগ্যতা স্বয়ংক্রিয়ভাবে ধরে নেওয়া হবে না।"
     :nav-items="$navItems"
 >
     <div class="grid gap-6 xl:grid-cols-[1.15fr,0.85fr]">
         <x-ui.card :title="$state['title']" :description="$state['description']">
             <x-slot name="headerActions">
-                <x-ui.badge variant="warning">Donor no-portal state</x-ui.badge>
+                <x-ui.badge variant="warning">ডোনার নো-পোর্টাল অবস্থা</x-ui.badge>
             </x-slot>
 
             <div class="space-y-3">
@@ -67,50 +67,50 @@
         </x-ui.card>
 
         <x-ui.card
-            title="Current donor context"
-            description="These account details stay separate from donor portal enablement until an explicit donor-domain decision is made."
+            title="বর্তমান ডোনার প্রেক্ষাপট"
+            description="ডোনার-ডোমেইন সংক্রান্ত স্পষ্ট সিদ্ধান্ত না হওয়া পর্যন্ত এই অ্যাকাউন্টের তথ্যগুলো ডোনার পোর্টাল সক্রিয়করণ থেকে আলাদাই থাকবে।"
             soft
         >
             <dl class="grid gap-4">
                 <div class="rounded-[1.5rem] border border-slate-200 bg-white px-4 py-3">
-                    <dt class="ui-stat-label">Portal status</dt>
-                    <dd class="mt-2 text-sm font-semibold text-slate-900">Not enabled</dd>
+                    <dt class="ui-stat-label">পোর্টাল স্ট্যাটাস</dt>
+                    <dd class="mt-2 text-sm font-semibold text-slate-900">সক্রিয় নয়</dd>
                 </div>
                 <div class="rounded-[1.5rem] border border-slate-200 bg-white px-4 py-3">
-                    <dt class="ui-stat-label">Donor profile</dt>
-                    <dd class="mt-2 text-sm text-slate-700">{{ $donor?->name ?: 'No active donor portal profile is linked yet.' }}</dd>
+                    <dt class="ui-stat-label">ডোনার প্রোফাইল</dt>
+                    <dd class="mt-2 text-sm text-slate-700">{{ $donor?->name ?: 'এখনো কোনো সক্রিয় ডোনার পোর্টাল প্রোফাইল সংযুক্ত নেই।' }}</dd>
                 </div>
                 <div class="rounded-[1.5rem] border border-slate-200 bg-white px-4 py-3">
-                    <dt class="ui-stat-label">Contact email</dt>
+                    <dt class="ui-stat-label">যোগাযোগের ইমেইল</dt>
                     <dd class="mt-2 text-sm text-slate-700">{{ $donor?->email ?: Auth::user()->email }}</dd>
                 </div>
                 <div class="rounded-[1.5rem] border border-slate-200 bg-white px-4 py-3">
-                    <dt class="ui-stat-label">Next safe actions</dt>
-                    <dd class="mt-2 text-sm leading-6 text-slate-700">Keep your base profile current, continue using secure identified checkout, and rely on transaction-specific status or receipt access until donor portal enablement is granted explicitly.</dd>
+                    <dt class="ui-stat-label">পরবর্তী নিরাপদ করণীয়</dt>
+                    <dd class="mt-2 text-sm leading-6 text-slate-700">আপনার মূল প্রোফাইল হালনাগাদ রাখুন, নিরাপদ পরিচয়যুক্ত চেকআউট ব্যবহার চালিয়ে যান, এবং ডোনার পোর্টাল স্পষ্টভাবে সক্রিয় না হওয়া পর্যন্ত নির্দিষ্ট লেনদেনভিত্তিক স্ট্যাটাস বা রসিদ অ্যাক্সেসের ওপর নির্ভর করুন।</dd>
                 </div>
             </dl>
         </x-ui.card>
     </div>
 
     <div class="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <x-ui.card title="Donate safely">
+        <x-ui.card title="নিরাপদে অনুদান দিন">
             <div class="space-y-3 text-sm leading-6 text-slate-600">
-                <p>Account-linked checkout still works without widening donor portal access.</p>
-                <a href="{{ route('donations.guest.entry') }}" class="ui-button ui-button--primary">Open donor checkout</a>
+                <p>ডোনার পোর্টাল অ্যাক্সেস বিস্তৃত না করেও অ্যাকাউন্ট-সংযুক্ত চেকআউট ব্যবহার করা যাবে।</p>
+                <a href="{{ route('donations.guest.entry') }}" class="ui-button ui-button--primary">ডোনার চেকআউট খুলুন</a>
             </div>
         </x-ui.card>
 
-        <x-ui.card title="Profile settings">
+        <x-ui.card title="প্রোফাইল সেটিংস">
             <div class="space-y-3 text-sm leading-6 text-slate-600">
-                <p>Profile, password, and verification tools stay available on the shared account.</p>
-                <a href="{{ route('profile.edit') }}" class="ui-button ui-button--secondary">Open profile</a>
+                <p>শেয়ারড অ্যাকাউন্টে প্রোফাইল, পাসওয়ার্ড এবং ভেরিফিকেশন টুলস ব্যবহারযোগ্য থাকবে।</p>
+                <a href="{{ route('profile.edit') }}" class="ui-button ui-button--secondary">প্রোফাইল খুলুন</a>
             </div>
         </x-ui.card>
 
-        <x-ui.card title="Verification boundary">
+        <x-ui.card title="ভেরিফিকেশন সীমারেখা">
             <div class="space-y-3 text-sm leading-6 text-slate-600">
-                <p>Email and phone verification can improve contact trust, but neither one silently grants donor portal eligibility.</p>
-                <a href="{{ route('verification.notice') }}" class="ui-button ui-button--ghost">Review verification</a>
+                <p>ইমেইল ও ফোন ভেরিফিকেশন যোগাযোগের বিশ্বাসযোগ্যতা বাড়াতে পারে, তবে কোনোটি নীরবে ডোনার পোর্টালের যোগ্যতা প্রদান করে না।</p>
+                <a href="{{ route('verification.notice') }}" class="ui-button ui-button--ghost">ভেরিফিকেশন দেখুন</a>
             </div>
         </x-ui.card>
     </div>
